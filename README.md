@@ -191,3 +191,7 @@ node build.js
 MIT License。詳細は `LICENSE` を参照してください。
 
 Created with AI assistance from OpenAI Codex.
+
+<p align="center">
+  <img src="assets/investigation.png" width="960" alt="宝箱を調べるroomシリーズの仲間たち">
+</p>
