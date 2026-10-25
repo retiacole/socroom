@@ -1,0 +1,2039 @@
+{
+  "cases": [
+    {
+      "id": "low-lost-device",
+      "scenarioId": "low",
+      "difficulty": "low",
+      "title": "社外で途絶えた端末の通信",
+      "subtitle": "営業端末 / SA-LT-017",
+      "host": "sales-lt-017",
+      "user": "y.kida",
+      "source": "MDM",
+      "severity": "high",
+      "critical": true,
+      "context": "営業端末が社外で最後に接続した後、管理サーバーへの通信が途絶えました。端末の管理状態と、利用者からの連絡を確認してください。",
+      "logs": [
+        {
+          "id": "low-lost-device-log-01",
+          "time": "09:10:00",
+          "offset": 0,
+          "source": "MDM",
+          "host": "sales-lt-017",
+          "user": "y.kida",
+          "ip": "192.0.2.17",
+          "event": "端末の定期チェックイン",
+          "raw": "2026-10-20T09:10:00Z host=sales-lt-017 user=y.kida device=SA-LT-017 state=online encryption=enabled remote_lock=ready",
+          "path": "/var/log/security/mdm.log"
+        },
+        {
+          "id": "low-lost-device-log-02",
+          "time": "09:10:02",
+          "offset": 0,
+          "source": "MDM",
+          "host": "sales-lt-017",
+          "user": "y.kida",
+          "ip": "192.0.2.17",
+          "event": "最後の接続場所を記録",
+          "raw": "2026-10-20T09:10:02Z host=sales-lt-017 user=y.kida device=SA-LT-017 network=hotel-guest location=offsite last_seen=09:10:02",
+          "path": "/var/log/security/mdm.log"
+        },
+        {
+          "id": "low-lost-device-log-03",
+          "time": "09:10:05",
+          "offset": 0,
+          "source": "監査",
+          "host": "sales-lt-017",
+          "user": "y.kida",
+          "ip": "192.0.2.17",
+          "event": "営業資料のローカル保存",
+          "raw": "2026-10-20T09:10:05Z host=sales-lt-017 user=y.kida device=SA-LT-017 action=file_sync directory=/work/customers local_copy=present records=43 classification=confidential",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "low-lost-device-log-04",
+          "time": "09:12:00",
+          "offset": 0,
+          "source": "IdP",
+          "host": "sales-lt-017",
+          "user": "y.kida",
+          "ip": "192.0.2.17",
+          "event": "営業アプリのセッション状態",
+          "raw": "2026-10-20T09:12:00Z host=sales-lt-017 user=y.kida device=SA-LT-017 session=SD-17 state=active expires=17:10:00",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "low-lost-device-log-05",
+          "time": "09:20:00",
+          "offset": 0,
+          "source": "MDM",
+          "host": "sales-lt-017",
+          "user": "y.kida",
+          "ip": "192.0.2.17",
+          "event": "定期通信の未着を検知",
+          "raw": "2026-10-20T09:20:00Z host=sales-lt-017 user=y.kida device=SA-LT-017 missed_checkins=2 last_seen=09:10:02",
+          "path": "/var/log/security/mdm.log"
+        },
+        {
+          "id": "low-lost-device-log-06",
+          "time": "09:21:00",
+          "offset": 0,
+          "source": "MDM",
+          "host": "sales-lt-017",
+          "user": "y.kida",
+          "ip": "192.0.2.17",
+          "event": "現在の遠隔管理状態",
+          "raw": "2026-10-20T09:21:00Z host=sales-lt-017 user=y.kida device=SA-LT-017 state=offline lock_command=not_requested wipe_command=not_requested",
+          "path": "/var/log/security/mdm.log"
+        },
+        {
+          "id": "low-lost-device-log-07",
+          "time": "09:21:10",
+          "offset": 0,
+          "source": "EDR",
+          "host": "sales-lt-017",
+          "user": "y.kida",
+          "ip": "192.0.2.17",
+          "event": "最後に受け取った端末状態",
+          "raw": "2026-10-20T09:21:10Z host=sales-lt-017 user=y.kida device=SA-LT-017 sample_time=09:10:00 malware_alerts=0 sample_is_current=false",
+          "path": "/var/log/security/edr.log"
+        },
+        {
+          "id": "low-lost-device-log-08",
+          "time": "09:22:00",
+          "offset": 0,
+          "source": "収集基盤",
+          "host": "sales-lt-017",
+          "user": "y.kida",
+          "ip": "10.24.0.9",
+          "event": "管理サービスの受信状態",
+          "raw": "2026-10-20T09:22:00Z host=sales-lt-017 user=y.kida stream=mdm service=healthy other_devices_reporting=true",
+          "path": "/var/log/security/collector.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "low-lost-device-doc-asset",
+          "title": "営業端末の資産台帳",
+          "kind": "資産・アカウント",
+          "body": "SA-LT-017 / sales-lt-017 は木田 優の貸与端末。ディスク暗号化は有効だが、営業アプリのセッションと顧客43名のローカル資料を保持している。端末がオフラインでもMDMへロック指示を登録でき、再接続時に適用される。"
+        },
+        {
+          "id": "low-lost-device-doc-procedure",
+          "title": "端末紛失時の初動手順",
+          "kind": "対応手順",
+          "body": "所有者に所在を確認し、紛失が確認された端末はセキュリティ案件として高優先度で管理担当へ連携する。端末ロックと関連セッション失効を依頼し、データの種類と最終接続を記録する。通信未着だけで紛失とは断定しない。遠隔消去は責任者がデータ保全・復旧の要否を確認して判断する。"
+        }
+      ],
+      "contact": {
+        "id": "low-lost-device-contact",
+        "name": "木田 優",
+        "role": "営業部・端末利用者",
+        "question": "登録済みの電話番号で、端末の所在と最後の利用を確認する",
+        "replyId": "low-lost-device-reply",
+        "replyTitle": "木田からの回答：端末の所在",
+        "replyText": "09:10ごろ宿泊先のロビーで使った後、かばんを置いたまま席を外しました。戻った時には端末がなく、ホテルへの確認でも見つかっていません。09:15以降は操作していません。顧客訪問用の名簿を保存しています。端末番号は SA-LT-017 です。",
+        "delaySeconds": 20
+      },
+      "answer": {
+        "verdict": "incident",
+        "priorities": [
+          "high"
+        ],
+        "actions": [
+          "contain",
+          "escalate"
+        ],
+        "target": "sales-lt-017",
+        "evidenceGroups": [
+          [
+            "low-lost-device-log-03",
+            "low-lost-device-log-04",
+            "low-lost-device-log-06"
+          ],
+          [
+            "low-lost-device-reply"
+          ]
+        ],
+        "summary": "利用者が SA-LT-017 の紛失を確認した。端末には顧客資料が保存され、営業アプリのセッションも有効で、現在はオフラインのため現状を確認できない。",
+        "nextStep": "管理担当へ高優先度で連携し、MDMのロック指示登録と関連セッション失効を依頼する。データの範囲を確認し、再接続状況を監視する。",
+        "explanation": "単なる通信断では紛失は確定しませんが、今回は登録済み連絡先で利用者が所在不明を確認しています。暗号化の有効性を過信せず、残存するセッションとデータを保護します。データが読まれたという証拠はありません。",
+        "lessons": [
+          "端末紛失もセキュリティ案件として扱います。",
+          "確認できた事実と、現時点で不明なデータ閲覧の有無を分けます。"
+        ]
+      },
+      "hints": [
+        "端末がオフラインというログだけでは理由が分かりません。利用者へ所在を確認してください。",
+        "資料の保存とセッションの状態を示すログを証拠に追加します。",
+        "利用者の回答と端末の現在状態を根拠に、ロックとセッションへの初動を依頼します。"
+      ]
+    },
+    {
+      "id": "low-quarantine",
+      "scenarioId": "low",
+      "difficulty": "low",
+      "title": "ダウンロードファイルの隔離通知",
+      "subtitle": "QA端末 / QA-LT-008",
+      "host": "qa-lt-008",
+      "user": "m.fujino",
+      "source": "EDR",
+      "severity": "medium",
+      "critical": false,
+      "context": "QA端末でファイルが検知され、隔離されました。ファイルの識別子と、本日の作業予定を確認して判断してください。",
+      "logs": [
+        {
+          "id": "low-quarantine-log-01",
+          "time": "09:25:00",
+          "offset": 0,
+          "source": "IdP",
+          "host": "qa-lt-008",
+          "user": "m.fujino",
+          "ip": "10.24.50.8",
+          "event": "QA利用者が端末にサインイン",
+          "raw": "2026-10-20T09:25:00Z host=qa-lt-008 user=m.fujino device=QA-LT-008 authentication=certificate result=success",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "low-quarantine-log-02",
+          "time": "09:26:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "qa-lt-008",
+          "user": "m.fujino",
+          "ip": "10.24.50.8",
+          "event": "検証作業の開始",
+          "raw": "2026-10-20T09:26:00Z host=qa-lt-008 user=m.fujino job=AV-CHECK-31 change=CHG-3101 operator=m.fujino",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "low-quarantine-log-03",
+          "time": "09:26:04",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "qa-lt-008",
+          "user": "m.fujino",
+          "ip": "10.24.50.8",
+          "event": "社内検証サイトから取得",
+          "raw": "2026-10-20T09:26:04Z host=qa-lt-008 user=m.fujino dst=security-test.internal.example path=/fixtures/checkfile.txt request=QA-31 bytes_in=68 result=allowed",
+          "path": "/var/log/network/proxy.log"
+        },
+        {
+          "id": "low-quarantine-log-04",
+          "time": "09:26:04",
+          "offset": 0,
+          "source": "EDR",
+          "host": "qa-lt-008",
+          "user": "m.fujino",
+          "ip": "10.24.50.8",
+          "event": "ダウンロードファイルを検知",
+          "raw": "2026-10-20T09:26:04Z host=qa-lt-008 user=m.fujino file=/Downloads/checkfile.txt fingerprint=LAB-TEST-3101 category=antivirus-test-fixture request=QA-31",
+          "path": "/var/log/security/edr.log"
+        },
+        {
+          "id": "low-quarantine-log-05",
+          "time": "09:26:05",
+          "offset": 0,
+          "source": "EDR",
+          "host": "qa-lt-008",
+          "user": "m.fujino",
+          "ip": "10.24.50.8",
+          "event": "ファイルを実行前に隔離",
+          "raw": "2026-10-20T09:26:05Z host=qa-lt-008 user=m.fujino file=/Downloads/checkfile.txt fingerprint=LAB-TEST-3101 action=quarantine result=success execution=prevented",
+          "path": "/var/log/security/edr.log"
+        },
+        {
+          "id": "low-quarantine-log-06",
+          "time": "09:26:06",
+          "offset": 0,
+          "source": "監査",
+          "host": "qa-lt-008",
+          "user": "m.fujino",
+          "ip": "10.24.50.8",
+          "event": "隔離イベントを作業票へ保存",
+          "raw": "2026-10-20T09:26:06Z host=qa-lt-008 user=m.fujino ticket=CHG-3101 evidence=QA-31 operator=m.fujino result=stored",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "low-quarantine-log-07",
+          "time": "09:27:00",
+          "offset": 0,
+          "source": "EDR",
+          "host": "qa-lt-008",
+          "user": "m.fujino",
+          "ip": "10.24.50.8",
+          "event": "検知後の端末状態",
+          "raw": "2026-10-20T09:27:00Z host=qa-lt-008 user=m.fujino agent=healthy related_process_started=false new_detections=0",
+          "path": "/var/log/security/edr.log"
+        },
+        {
+          "id": "low-quarantine-log-08",
+          "time": "09:27:10",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "qa-lt-008",
+          "user": "m.fujino",
+          "ip": "10.24.50.8",
+          "event": "検証ジョブの終了",
+          "raw": "2026-10-20T09:27:10Z host=qa-lt-008 user=m.fujino job=AV-CHECK-31 observed=quarantine result=completed",
+          "path": "/var/log/jobs/scheduler.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "low-quarantine-doc-asset",
+          "title": "QA端末の用途",
+          "kind": "資産・アカウント",
+          "body": "qa-lt-008 は品質管理部が使用する検証端末。通常の業務データや顧客資料は保存しない。藤野が管理し、セキュリティ検証は作業票に対象と検証用ファイルの識別子を記録する。"
+        },
+        {
+          "id": "low-quarantine-doc-change",
+          "title": "変更申請 CHG-3101",
+          "kind": "変更申請",
+          "body": "承認済み。10月20日09:25〜09:35、qa-lt-008 でウイルス対策の隔離動作を確認する。社内サイト security-test.internal.example から教材用の無害な検証ファイルを取得する。識別子 LAB-TEST-3101、68バイト。期待する結果は実行前隔離。担当は藤野。外部サイトのファイルや他端末は対象外。"
+        }
+      ],
+      "contact": {
+        "id": "low-quarantine-contact",
+        "name": "藤野 真里",
+        "role": "品質管理・検証担当",
+        "question": "検証ファイルの取得と隔離結果が作業票と一致するか確認する",
+        "replyId": "low-quarantine-reply",
+        "replyTitle": "藤野からの回答：検証実施記録",
+        "replyText": "CHG-3101 の検証を私が実施しました。QA-31 は作業票どおりの無害な検証ファイルです。実行はせず、実行前に隔離されたことを確認して終了しました。識別子は LAB-TEST-3101 で一致しています。",
+        "delaySeconds": 20
+      },
+      "answer": {
+        "verdict": "benign",
+        "priorities": [
+          "low"
+        ],
+        "actions": [
+          "close"
+        ],
+        "target": "qa-lt-008",
+        "evidenceGroups": [
+          [
+            "low-quarantine-log-04",
+            "low-quarantine-log-05"
+          ],
+          [
+            "low-quarantine-doc-change"
+          ]
+        ],
+        "summary": "検知されたのは CHG-3101 で承認された無害な検証ファイルで、端末・時間帯・識別子が一致している。予定どおり実行前に隔離された。",
+        "nextStep": "作業票と隔離ログを添えてクローズする。隔離機能の検証結果を担当者へ返す。",
+        "explanation": "隔離済みという事実だけでは無害と判断できません。今回は検証ファイルの識別子と承認済み作業の対象が一致し、期待した防御動作を確認できます。一般の検知ファイルまで許可してはいけません。",
+        "lessons": [
+          "ファイル名より識別子と作業票の一致を確認します。",
+          "隔離されたことと、元の活動が正当だったことは別の判断です。"
+        ]
+      },
+      "hints": [
+        "検知ログの fingerprint と資料の識別子を比較してください。",
+        "対象端末と実施時間も作業票に含まれています。",
+        "隔離ログと変更申請を証拠に登録し、今回の正当な検証をクローズします。"
+      ]
+    },
+    {
+      "id": "low-backup",
+      "scenarioId": "low",
+      "difficulty": "low",
+      "title": "深夜帯に増えたストレージ通信",
+      "subtitle": "ファイルサーバー / FS-ARCHIVE-01",
+      "host": "fs-archive-01",
+      "user": "svc-snapshot",
+      "source": "Proxy",
+      "severity": "medium",
+      "critical": false,
+      "context": "ファイルサーバーからの送信量が通常より増えています。送信先とジョブの実行内容を照合し、予定された処理か確認してください。",
+      "logs": [
+        {
+          "id": "low-backup-log-01",
+          "time": "02:00:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "fs-archive-01",
+          "user": "svc-snapshot",
+          "ip": "10.24.60.11",
+          "event": "保管データの複製を開始",
+          "raw": "2026-10-20T02:00:00Z host=fs-archive-01 user=svc-snapshot job=BK-2010 mode=full destination=backup-vault.internal.example ticket=OPS-3110",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "low-backup-log-02",
+          "time": "02:00:02",
+          "offset": 0,
+          "source": "IdP",
+          "host": "fs-archive-01",
+          "user": "svc-snapshot",
+          "ip": "10.24.60.11",
+          "event": "複製用サービスの認証",
+          "raw": "2026-10-20T02:00:02Z host=fs-archive-01 user=svc-snapshot account=svc-snapshot auth=client_certificate result=success scope=backup.write",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "low-backup-log-03",
+          "time": "02:01:00",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "fs-archive-01",
+          "user": "svc-snapshot",
+          "ip": "10.24.60.90",
+          "event": "社内保管先への送信を開始",
+          "raw": "2026-10-20T02:01:00Z host=fs-archive-01 user=svc-snapshot src=10.24.60.11 dst=backup-vault.internal.example dst_ip=10.24.60.90 job=BK-2010 bytes_out=2147483648",
+          "path": "/var/log/network/proxy.log"
+        },
+        {
+          "id": "low-backup-log-04",
+          "time": "02:05:00",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "fs-archive-01",
+          "user": "svc-snapshot",
+          "ip": "10.24.60.90",
+          "event": "通信量ルールが検知",
+          "raw": "2026-10-20T02:05:00Z host=fs-archive-01 user=svc-snapshot dst=10.24.60.90 job=BK-2010 bytes_out_total=8589934592 rule=LARGE_TRANSFER",
+          "path": "/var/log/network/proxy.log"
+        },
+        {
+          "id": "low-backup-log-05",
+          "time": "02:08:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "fs-archive-01",
+          "user": "svc-snapshot",
+          "ip": "10.24.60.11",
+          "event": "複製対象の集計",
+          "raw": "2026-10-20T02:08:00Z host=fs-archive-01 user=svc-snapshot job=BK-2010 dataset=archive-2025 type=full files=6240 bytes=12884901888",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "low-backup-log-06",
+          "time": "02:10:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "fs-archive-01",
+          "user": "svc-snapshot",
+          "ip": "10.24.60.90",
+          "event": "複製先で整合性確認",
+          "raw": "2026-10-20T02:10:00Z host=fs-archive-01 user=svc-snapshot job=BK-2010 destination=backup-vault.internal.example checksum_match=true files=6240 result=success",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "low-backup-log-07",
+          "time": "02:10:10",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "fs-archive-01",
+          "user": "svc-snapshot",
+          "ip": "10.24.60.90",
+          "event": "ジョブ通信の集計",
+          "raw": "2026-10-20T02:10:10Z host=fs-archive-01 user=svc-snapshot job=BK-2010 destinations=10.24.60.90 external_connections=0 bytes_out=12884901888",
+          "path": "/var/log/network/proxy.log"
+        },
+        {
+          "id": "low-backup-log-08",
+          "time": "02:11:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "fs-archive-01",
+          "user": "svc-snapshot",
+          "ip": "10.24.60.11",
+          "event": "保管データの複製を終了",
+          "raw": "2026-10-20T02:11:00Z host=fs-archive-01 user=svc-snapshot job=BK-2010 phase=end result=success",
+          "path": "/var/log/jobs/scheduler.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "low-backup-doc-asset",
+          "title": "ファイル保管基盤の構成",
+          "kind": "資産・アカウント",
+          "body": "fs-archive-01（10.24.60.11）は過年度の社内文書を保管する。バックアップ装置 backup-vault.internal.example（10.24.60.90）は同社が管理する社内装置で、svc-snapshot に書き込み権限がある。外部の共有サービスではない。"
+        },
+        {
+          "id": "low-backup-doc-schedule",
+          "title": "作業予定 OPS-3110",
+          "kind": "作業予定",
+          "body": "承認済み。10月20日02:00〜02:30、過年度データ archive-2025 を全量バックアップする。対象 fs-archive-01、送信先 backup-vault.internal.example（10.24.60.90）、ジョブ BK-2010。予定は6,240ファイル・12GiB。普段の差分複製より通信量が増える。完了条件は送信先での整合性確認成功。"
+        }
+      ],
+      "contact": {
+        "id": "low-backup-contact",
+        "name": "長岡 誠",
+        "role": "保存基盤担当",
+        "question": "ジョブの実施と送信先の管理者を確認する",
+        "replyId": "low-backup-reply",
+        "replyTitle": "長岡からの回答：全量バックアップの結果",
+        "replyText": "OPS-3110 を実施しました。BK-2010 は社内の保管装置への全量複製です。6,240ファイルの整合性確認を終えており、外部サービスへのコピーは行っていません。来月以降の全量処理も作業票へ記録します。",
+        "delaySeconds": 20
+      },
+      "answer": {
+        "verdict": "benign",
+        "priorities": [
+          "low"
+        ],
+        "actions": [
+          "close"
+        ],
+        "target": "fs-archive-01",
+        "evidenceGroups": [
+          [
+            "low-backup-log-06",
+            "low-backup-log-07"
+          ],
+          [
+            "low-backup-doc-schedule"
+          ]
+        ],
+        "summary": "BK-2010 は OPS-3110 で予定された全量バックアップで、社内の保管先・データ量・ファイル数が一致している。送信先の整合性確認も成功した。",
+        "nextStep": "ログと作業予定を添えてクローズする。通常の差分処理との違いを記録し、必要なら予定された全量処理の検知条件を検討する。",
+        "explanation": "通信量の大きさだけでは流出とは判断できません。今回は社内の管理された送信先へ、予定された量の全量複製が完了しています。送信元・送信先・ジョブID・作業予定の照合が判断の根拠です。",
+        "lessons": [
+          "大量通信では送信先と処理の目的を確認します。",
+          "「バックアップ」という名前だけでなく、実行内容を予定と比較します。"
+        ]
+      },
+      "hints": [
+        "送信先の名前とIPを、資産資料で確認してください。",
+        "作業予定のジョブID・ファイル数・容量をログと比較します。",
+        "整合性確認ログと作業予定を証拠に登録すると、正当な処理と説明できます。"
+      ]
+    },
+    {
+      "id": "low-mail-rule",
+      "scenarioId": "low",
+      "difficulty": "low",
+      "title": "受信メールの転送設定が追加された",
+      "subtitle": "経理メール / MAIL-FIN-04",
+      "host": "mail-fin-04",
+      "user": "a.yano",
+      "source": "メール",
+      "severity": "high",
+      "critical": true,
+      "context": "経理担当のメールボックスに転送ルールが追加されました。転送先と実際の配信、利用者の意図を確認してください。",
+      "logs": [
+        {
+          "id": "low-mail-rule-log-01",
+          "time": "10:05:00",
+          "offset": 0,
+          "source": "IdP",
+          "host": "mail-fin-04",
+          "user": "a.yano",
+          "ip": "198.51.100.44",
+          "event": "メールサービスにログイン",
+          "raw": "2026-10-20T10:05:00Z host=mail-fin-04 user=a.yano session=MR-44 client=webmail src=198.51.100.44 result=success",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "low-mail-rule-log-02",
+          "time": "10:05:13",
+          "offset": 0,
+          "source": "メール",
+          "host": "mail-fin-04",
+          "user": "a.yano",
+          "ip": "198.51.100.44",
+          "event": "転送ルールを追加",
+          "raw": "2026-10-20T10:05:13Z host=mail-fin-04 user=a.yano session=MR-44 action=create_rule rule=R-FWD-44 match=all forward_to=receipts@invoice-share.example enabled=true",
+          "path": "/var/log/mail/audit.log"
+        },
+        {
+          "id": "low-mail-rule-log-03",
+          "time": "10:06:00",
+          "offset": 0,
+          "source": "メール",
+          "host": "mail-fin-04",
+          "user": "a.yano",
+          "ip": "10.24.70.4",
+          "event": "請求メールを受信",
+          "raw": "2026-10-20T10:06:00Z host=mail-fin-04 user=a.yano message=MSG-4401 recipient=a.yano subject_class=invoice attachments=1",
+          "path": "/var/log/mail/audit.log"
+        },
+        {
+          "id": "low-mail-rule-log-04",
+          "time": "10:06:01",
+          "offset": 0,
+          "source": "メール",
+          "host": "mail-fin-04",
+          "user": "a.yano",
+          "ip": "198.51.100.45",
+          "event": "追加ルールで外部へ転送",
+          "raw": "2026-10-20T10:06:01Z host=mail-fin-04 user=a.yano message=MSG-4401 rule=R-FWD-44 recipient=receipts@invoice-share.example delivery=accepted external=true",
+          "path": "/var/log/mail/audit.log"
+        },
+        {
+          "id": "low-mail-rule-log-05",
+          "time": "10:07:00",
+          "offset": 0,
+          "source": "メール",
+          "host": "mail-fin-04",
+          "user": "a.yano",
+          "ip": "10.24.70.4",
+          "event": "社内の通常配信",
+          "raw": "2026-10-20T10:07:00Z host=mail-fin-04 user=a.yano message=MSG-4402 recipient=accounting-team.internal.example delivery=success rule=default",
+          "path": "/var/log/mail/audit.log"
+        },
+        {
+          "id": "low-mail-rule-log-06",
+          "time": "10:08:00",
+          "offset": 0,
+          "source": "監査",
+          "host": "mail-fin-04",
+          "user": "a.yano",
+          "ip": "10.24.70.4",
+          "event": "現在の転送ルール状態",
+          "raw": "2026-10-20T10:08:00Z host=mail-fin-04 user=a.yano mailbox=a.yano rule=R-FWD-44 state=enabled created_by_session=MR-44",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "low-mail-rule-log-07",
+          "time": "10:08:10",
+          "offset": 0,
+          "source": "IdP",
+          "host": "mail-fin-04",
+          "user": "a.yano",
+          "ip": "198.51.100.44",
+          "event": "該当セッションは有効",
+          "raw": "2026-10-20T10:08:10Z host=mail-fin-04 user=a.yano session=MR-44 account=a.yano state=active",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "low-mail-rule-log-08",
+          "time": "10:09:00",
+          "offset": 0,
+          "source": "収集基盤",
+          "host": "mail-fin-04",
+          "user": "a.yano",
+          "ip": "10.24.0.9",
+          "event": "メール監査の受信確認",
+          "raw": "2026-10-20T10:09:00Z host=mail-fin-04 user=a.yano stream=mail-audit last_received=10:09:00 gaps=none",
+          "path": "/var/log/security/collector.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "low-mail-rule-doc-asset",
+          "title": "経理メールの利用規則",
+          "kind": "資産・アカウント",
+          "body": "mail-fin-04 は矢野 杏の経理業務用メールボックス。取引先の請求書を扱う。外部への自動転送は情報管理担当の承認が必要。invoice-share.example は社内のメールドメインでも承認済み転送先でもない。"
+        },
+        {
+          "id": "low-mail-rule-doc-change",
+          "title": "経理メールの設定変更一覧",
+          "kind": "変更申請",
+          "body": "10月20日午前の承認済み設定変更は、共有宛先 accounting-team.internal.example への社内振り分けのみ。外部への自動転送は申請されていない。緊急変更の有無はアカウント所有者に確認する。"
+        }
+      ],
+      "contact": {
+        "id": "low-mail-rule-contact",
+        "name": "矢野 杏",
+        "role": "経理担当・メール利用者",
+        "question": "登録済みの社内連絡先で、転送ルールを設定したか確認する",
+        "replyId": "low-mail-rule-reply",
+        "replyTitle": "矢野からの回答：転送先と操作の確認",
+        "replyText": "invoice-share.example は知りません。10:05のログインも転送ルールの追加も私の操作ではありません。経理メールの外部転送を誰かに依頼したこともありません。請求書を受信するアカウントなので、情報システム担当へ停止を依頼してください。",
+        "delaySeconds": 25
+      },
+      "answer": {
+        "verdict": "incident",
+        "priorities": [
+          "high"
+        ],
+        "actions": [
+          "contain",
+          "escalate"
+        ],
+        "target": "mail-fin-04",
+        "evidenceGroups": [
+          [
+            "low-mail-rule-log-04"
+          ],
+          [
+            "low-mail-rule-reply"
+          ]
+        ],
+        "summary": "本人が否定する転送ルール R-FWD-44 により、請求メール MSG-4401 が未承認の外部宛先へ配信された。ルールと該当セッションは現在も有効である。",
+        "nextStep": "メール管理担当へ高優先度で連携し、ルール停止・セッション失効・アカウント保護を依頼する。既に転送されたメールの範囲と添付情報を調査する。",
+        "explanation": "ルールの追加だけでなく、外部への実際の配信と本人の否定がそろっています。継続する転送を止める初動が必要です。確認できた1通を根拠に全メールの流出を断定せず、範囲を追加調査します。",
+        "lessons": [
+          "設定変更と、その設定が引き起こした動作を分けて確認します。",
+          "動作が継続中なら、記録を保全して管理者へ停止を依頼します。"
+        ]
+      },
+      "hints": [
+        "転送ルールの作成ログだけでなく、delivery=accepted の配信記録を見てください。",
+        "利用者に、該当ルールと転送先を知っているか確認します。",
+        "外部配信のログと本人の回答を証拠に、ルールとセッションの停止を依頼します。"
+      ]
+    },
+    {
+      "id": "low-log-gap",
+      "scenarioId": "low",
+      "difficulty": "low",
+      "title": "端末から届かなくなった監視ログ",
+      "subtitle": "企画端末 / PLAN-LT-012",
+      "host": "plan-lt-012",
+      "user": "s.ishii",
+      "source": "収集基盤",
+      "severity": "medium",
+      "critical": false,
+      "context": "企画端末の監視ログが途絶えました。監視基盤全体の障害なのか、端末側の問題なのか、現時点で確認できる範囲を整理してください。",
+      "logs": [
+        {
+          "id": "low-log-gap-log-01",
+          "time": "10:15:00",
+          "offset": 0,
+          "source": "EDR",
+          "host": "plan-lt-012",
+          "user": "s.ishii",
+          "ip": "10.24.50.12",
+          "event": "端末の最終ハートビート",
+          "raw": "2026-10-20T10:15:00Z host=plan-lt-012 user=s.ishii device=PLAN-LT-012 agent_version=7.2 state=healthy detections=0",
+          "path": "/var/log/security/edr.log"
+        },
+        {
+          "id": "low-log-gap-log-02",
+          "time": "10:16:00",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "plan-lt-012",
+          "user": "s.ishii",
+          "ip": "10.24.50.12",
+          "event": "社内ドキュメントへの通信",
+          "raw": "2026-10-20T10:16:00Z host=plan-lt-012 user=s.ishii src=10.24.50.12 dst=planning.internal.example status=200 bytes=4912",
+          "path": "/var/log/network/proxy.log"
+        },
+        {
+          "id": "low-log-gap-log-03",
+          "time": "10:20:00",
+          "offset": 0,
+          "source": "収集基盤",
+          "host": "plan-lt-012",
+          "user": "s.ishii",
+          "ip": "10.24.0.9",
+          "event": "ハートビートの未着を検知",
+          "raw": "2026-10-20T10:20:00Z host=plan-lt-012 user=s.ishii device=PLAN-LT-012 stream=edr last_received=10:15:00 missed=3",
+          "path": "/var/log/security/collector.log"
+        },
+        {
+          "id": "low-log-gap-log-04",
+          "time": "10:21:00",
+          "offset": 0,
+          "source": "収集基盤",
+          "host": "plan-lt-012",
+          "user": "s.ishii",
+          "ip": "10.24.0.9",
+          "event": "他端末の受信状態を確認",
+          "raw": "2026-10-20T10:21:00Z host=plan-lt-012 user=s.ishii scope=planning-floor healthy_devices=19 affected_devices=PLAN-LT-012 collector=healthy",
+          "path": "/var/log/security/collector.log"
+        },
+        {
+          "id": "low-log-gap-log-05",
+          "time": "10:21:10",
+          "offset": 0,
+          "source": "MDM",
+          "host": "plan-lt-012",
+          "user": "s.ishii",
+          "ip": "10.24.0.9",
+          "event": "端末への状態確認がタイムアウト",
+          "raw": "2026-10-20T10:21:10Z host=plan-lt-012 user=s.ishii device=PLAN-LT-012 request=PING-12 result=timeout reason=unreachable",
+          "path": "/var/log/security/mdm.log"
+        },
+        {
+          "id": "low-log-gap-log-06",
+          "time": "10:22:00",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "plan-lt-012",
+          "user": "s.ishii",
+          "ip": "10.24.50.12",
+          "event": "最後の通信時刻を集計",
+          "raw": "2026-10-20T10:22:00Z host=plan-lt-012 user=s.ishii src=10.24.50.12 last_seen=10:16:00 current_traffic=none",
+          "path": "/var/log/network/proxy.log"
+        },
+        {
+          "id": "low-log-gap-log-07",
+          "time": "10:22:10",
+          "offset": 0,
+          "source": "収集基盤",
+          "host": "plan-lt-012",
+          "user": "s.ishii",
+          "ip": "10.24.0.9",
+          "event": "停止理由は収集されていない",
+          "raw": "2026-10-20T10:22:10Z host=plan-lt-012 user=s.ishii device=PLAN-LT-012 shutdown_event=not_received agent_stop_event=not_received",
+          "path": "/var/log/security/collector.log"
+        },
+        {
+          "id": "low-log-gap-log-08",
+          "time": "10:23:00",
+          "offset": 0,
+          "source": "収集基盤",
+          "host": "plan-lt-012",
+          "user": "s.ishii",
+          "ip": "10.24.0.9",
+          "event": "未着状態が継続",
+          "raw": "2026-10-20T10:23:00Z host=plan-lt-012 user=s.ishii device=PLAN-LT-012 stream=edr state=missing current_state=unknown",
+          "path": "/var/log/security/collector.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "low-log-gap-doc-asset",
+          "title": "企画端末の管理台帳",
+          "kind": "資産・アカウント",
+          "body": "plan-lt-012 は石井 咲の企画業務端末。社内の一般資料を扱う。端末の電源断、ネットワーク断、エージェント停止はいずれもログ未着の原因になり得る。現在の電源状態とエージェント状態は、端末での確認が必要。"
+        },
+        {
+          "id": "low-log-gap-doc-procedure",
+          "title": "単一端末の監視欠落時の確認手順",
+          "kind": "対応手順",
+          "body": "収集基盤と他端末の受信を確認し、所有者または端末管理担当に電源・回線・エージェントの確認を依頼する。攻撃を示す証拠がなくても監視欠落を放置しない。復旧するまで原因は確定せず、欠落期間を記録する。"
+        }
+      ],
+      "contact": {
+        "id": "low-log-gap-contact",
+        "name": "尾形 航",
+        "role": "端末管理担当",
+        "question": "端末の電源・接続・エージェント状態を確認してもらう",
+        "replyId": "low-log-gap-reply",
+        "replyTitle": "尾形からの回答：端末確認の進捗",
+        "replyText": "収集サーバーには異常がなく、同じ部署の19台からは受信しています。石井さんは会議中で、端末の画面や電源状態はまだ確認できていません。管理サービスからも到達できません。電源断か故障か、意図的な停止かは今の情報では判断できません。端末確認のチケットを受け付けます。",
+        "delaySeconds": 20
+      },
+      "answer": {
+        "verdict": "unknown",
+        "priorities": [
+          "medium"
+        ],
+        "actions": [
+          "escalate"
+        ],
+        "target": "plan-lt-012",
+        "evidenceGroups": [
+          [
+            "low-log-gap-log-03",
+            "low-log-gap-log-07",
+            "low-log-gap-log-08"
+          ],
+          [
+            "low-log-gap-reply"
+          ]
+        ],
+        "summary": "plan-lt-012 の監視ログが10:15以降未着で、管理サービスからも到達できない。他端末は正常だが、対象の電源・回線・エージェント状態は未確認で、停止原因は判断できない。",
+        "nextStep": "端末管理担当へ確認を引き継ぎ、端末の状態と監視復旧を追跡する。欠落期間を記録し、復旧後にローカルログを回収する。",
+        "explanation": "ログの欠落は攻撃の証明でも安全の証明でもありません。単一端末の監視不能を認識し、確認できていない理由を示して追加調査へつなぎます。現在の証拠から端末隔離を必須とする根拠はありません。",
+        "lessons": [
+          "観測できない期間を明確にします。",
+          "正常か攻撃かを無理に決めず、確認先と調査内容を具体化します。"
+        ]
+      },
+      "hints": [
+        "監視基盤全体と、対象端末だけの状態を分けて確認してください。",
+        "端末管理担当から、電源やエージェントを確認できたか聞きます。",
+        "未着ログと担当者の回答を根拠に、原因を断定せず端末確認へ引き継ぎます。"
+      ]
+    },
+    {
+      "id": "medium-mfa-fatigue",
+      "scenarioId": "medium",
+      "difficulty": "medium",
+      "title": "連続する承認要求のあとに成功した認証",
+      "subtitle": "財務認証 / IDP-FINANCE-01",
+      "host": "idp-finance-01",
+      "user": "r.mizuno",
+      "source": "IdP",
+      "severity": "high",
+      "critical": true,
+      "context": "財務担当者に短時間で複数のMFA承認要求が送られ、そのうち1件が承認されました。端末と要求の対応、認証後の操作を追い、本人へ確認してください。",
+      "logs": [
+        {
+          "id": "medium-mfa-fatigue-log-01",
+          "time": "11:00:00",
+          "offset": 0,
+          "source": "IdP",
+          "host": "idp-finance-01",
+          "user": "r.mizuno",
+          "ip": "10.24.80.22",
+          "event": "登録端末からの通常ログイン",
+          "raw": "2026-10-20T11:00:00Z host=idp-finance-01 user=r.mizuno device=FIN-LT-022 src=10.24.80.22 session=MF-NORMAL factor=device_certificate result=success",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "medium-mfa-fatigue-log-02",
+          "time": "11:03:01",
+          "offset": 0,
+          "source": "IdP",
+          "host": "idp-finance-01",
+          "user": "r.mizuno",
+          "ip": "203.0.113.122",
+          "event": "新しい接続元でパスワード認証",
+          "raw": "2026-10-20T11:03:01Z host=idp-finance-01 user=r.mizuno device=unregistered src=203.0.113.122 request=MF-701 password_result=success",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "medium-mfa-fatigue-log-03",
+          "time": "11:03:05",
+          "offset": 0,
+          "source": "IdP",
+          "host": "idp-finance-01",
+          "user": "r.mizuno",
+          "ip": "203.0.113.122",
+          "event": "MFA要求を送信",
+          "raw": "2026-10-20T11:03:05Z host=idp-finance-01 user=r.mizuno request=MF-701 factor=push number_match=not_enabled delivery=success",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "medium-mfa-fatigue-log-04",
+          "time": "11:03:10",
+          "offset": 0,
+          "source": "IdP",
+          "host": "idp-finance-01",
+          "user": "r.mizuno",
+          "ip": "203.0.113.122",
+          "event": "利用者が承認を拒否",
+          "raw": "2026-10-20T11:03:10Z host=idp-finance-01 user=r.mizuno request=MF-701 factor=push result=denied",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "medium-mfa-fatigue-log-05",
+          "time": "11:04:20",
+          "offset": 0,
+          "source": "IdP",
+          "host": "idp-finance-01",
+          "user": "r.mizuno",
+          "ip": "203.0.113.122",
+          "event": "承認要求が繰り返された",
+          "raw": "2026-10-20T11:04:20Z host=idp-finance-01 user=r.mizuno request_series=MF-702..MF-707 src=203.0.113.122 push_requests=6 denied=6",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "medium-mfa-fatigue-log-06",
+          "time": "11:05:02",
+          "offset": 0,
+          "source": "IdP",
+          "host": "idp-finance-01",
+          "user": "r.mizuno",
+          "ip": "203.0.113.122",
+          "event": "同じ接続元の要求が承認された",
+          "raw": "2026-10-20T11:05:02Z host=idp-finance-01 user=r.mizuno request=MF-708 src=203.0.113.122 factor=push result=approved session=MF-FOREIGN device=unregistered",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "medium-mfa-fatigue-log-07",
+          "time": "11:05:05",
+          "offset": 0,
+          "source": "Web",
+          "host": "idp-finance-01",
+          "user": "r.mizuno",
+          "ip": "203.0.113.122",
+          "event": "財務ポータルを表示",
+          "raw": "2026-10-20T11:05:05Z host=idp-finance-01 user=r.mizuno session=MF-FOREIGN request=PAY-81 path=/payments/payees status=200",
+          "path": "/var/log/web/access.log"
+        },
+        {
+          "id": "medium-mfa-fatigue-log-08",
+          "time": "11:05:20",
+          "offset": 0,
+          "source": "監査",
+          "host": "idp-finance-01",
+          "user": "r.mizuno",
+          "ip": "203.0.113.122",
+          "event": "支払先一覧を出力",
+          "raw": "2026-10-20T11:05:20Z host=idp-finance-01 user=r.mizuno session=MF-FOREIGN request=PAY-82 action=payee_export records=218 result=success export=EXP-81",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "medium-mfa-fatigue-log-09",
+          "time": "11:05:22",
+          "offset": 0,
+          "source": "Web",
+          "host": "idp-finance-01",
+          "user": "r.mizuno",
+          "ip": "203.0.113.122",
+          "event": "同じセッションへ出力を返却",
+          "raw": "2026-10-20T11:05:22Z host=idp-finance-01 user=r.mizuno session=MF-FOREIGN export=EXP-81 path=/exports/EXP-81 status=200 bytes=42891",
+          "path": "/var/log/web/access.log"
+        },
+        {
+          "id": "medium-mfa-fatigue-log-10",
+          "time": "11:06:00",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "idp-finance-01",
+          "user": "r.mizuno",
+          "ip": "10.24.80.22",
+          "event": "登録端末の継続通信",
+          "raw": "2026-10-20T11:06:00Z host=idp-finance-01 user=r.mizuno device=FIN-LT-022 session=MF-NORMAL dst=calendar.internal.example status=200",
+          "path": "/var/log/network/proxy.log"
+        },
+        {
+          "id": "medium-mfa-fatigue-log-11",
+          "time": "11:06:20",
+          "offset": 0,
+          "source": "監査",
+          "host": "idp-finance-01",
+          "user": "r.mizuno",
+          "ip": "10.24.80.22",
+          "event": "同時間帯の別セッションの操作",
+          "raw": "2026-10-20T11:06:20Z host=idp-finance-01 user=r.mizuno session=MF-NORMAL action=view_calendar result=success finance_export=none",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "medium-mfa-fatigue-log-12",
+          "time": "11:07:00",
+          "offset": 0,
+          "source": "IdP",
+          "host": "idp-finance-01",
+          "user": "r.mizuno",
+          "ip": "203.0.113.122",
+          "event": "未登録端末のセッション状態",
+          "raw": "2026-10-20T11:07:00Z host=idp-finance-01 user=r.mizuno session=MF-FOREIGN state=active last_activity=11:05:22 expires=19:05:02",
+          "path": "/var/log/identity/idp.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "medium-mfa-fatigue-doc-asset",
+          "title": "財務アカウントと端末の台帳",
+          "kind": "資産・アカウント",
+          "body": "r.mizuno の登録端末は FIN-LT-022。財務ポータルで支払先一覧の参照・出力が可能。支払の確定権限はない。新端末や緊急の代理操作は担当責任者の申請が必要。"
+        },
+        {
+          "id": "medium-mfa-fatigue-doc-workflow",
+          "title": "MFA通知の取扱い",
+          "kind": "運用手順",
+          "body": "自身が開始していない承認要求は拒否し、SOCへ連絡する。MFAの承認記録は認証要素を通過した事実を示すが、本人がその接続を意図したことまでは証明しない。繰り返された通知も要求IDと接続元を追跡する。"
+        },
+        {
+          "id": "medium-mfa-fatigue-doc-change",
+          "title": "本日の財務アクセス申請",
+          "kind": "変更申請",
+          "body": "10月20日11:00〜12:00の新端末・外部経路からの操作申請はなし。通常業務は FIN-LT-022 から実施。支払先一覧の共有が必要な場合も、担当者と依頼票を確認する。"
+        }
+      ],
+      "contact": {
+        "id": "medium-mfa-fatigue-contact",
+        "name": "水野 梨奈",
+        "role": "財務担当・アカウント所有者",
+        "question": "登録済みの連絡先で、MFAの承認理由と一覧出力の実施を確認する",
+        "replyId": "medium-mfa-fatigue-reply",
+        "replyTitle": "水野からの回答：通知とポータル操作",
+        "replyText": "11時から社内の FIN-LT-022 で仕事をしています。突然通知が続き、最初は拒否しましたが止まらないので最後に1回承認してしまいました。社外からの接続や、支払先一覧の出力はしていません。MF-FOREIGN の操作は私のものではありません。",
+        "delaySeconds": 40
+      },
+      "answer": {
+        "verdict": "incident",
+        "priorities": [
+          "high"
+        ],
+        "actions": [
+          "contain",
+          "escalate"
+        ],
+        "target": "idp-finance-01",
+        "evidenceGroups": [
+          [
+            "medium-mfa-fatigue-log-06"
+          ],
+          [
+            "medium-mfa-fatigue-log-08",
+            "medium-mfa-fatigue-log-09"
+          ],
+          [
+            "medium-mfa-fatigue-reply"
+          ]
+        ],
+        "summary": "繰り返し拒否された接続元の要求 MF-708 が承認され、未登録端末のセッション MF-FOREIGN が成立した。同じセッションで支払先218件が出力・返却され、本人はその接続と出力を否定している。",
+        "nextStep": "ID・財務システム担当へ即時連携し、MF-FOREIGN の失効とアカウント保護を依頼する。出力内容と他操作を調査し、MFAの再登録・通知対策を検討する。",
+        "explanation": "MFA成功だけを根拠に正当なアクセスとはできません。今回は承認した理由、本人が否定する接続、同一セッションのデータ出力がそろっています。記録にない支払変更や全社侵害まで断定する必要はありません。",
+        "lessons": [
+          "要求IDからセッションIDへつなぎ、認証後の行動まで追います。",
+          "本人の意図は認証ログだけでは分かりません。",
+          "異なるセッションの正常業務を不正セッションの説明に使いません。"
+        ]
+      },
+      "hints": [
+        "拒否された要求と承認された要求の接続元を比較してください。",
+        "MF-FOREIGN と MF-NORMAL を混同せず、財務データ出力を行ったセッションを特定します。",
+        "認証成功、同じセッションの出力、本人の否定という3種類の根拠を登録します。"
+      ]
+    },
+    {
+      "id": "medium-oauth-consent",
+      "scenarioId": "medium",
+      "difficulty": "medium",
+      "title": "外部アプリへの同意後に増えたメールAPI利用",
+      "subtitle": "連携管理 / SAAS-CONNECT-01",
+      "host": "saas-connect-01",
+      "user": "n.ando",
+      "source": "SaaS",
+      "severity": "high",
+      "critical": true,
+      "context": "新しい連携アプリへの同意が記録され、その直後からメールAPIの利用が増えました。アプリID、付与権限、APIを使った主体を照合してください。",
+      "logs": [
+        {
+          "id": "medium-oauth-consent-log-01",
+          "time": "11:20:00",
+          "offset": 0,
+          "source": "IdP",
+          "host": "saas-connect-01",
+          "user": "n.ando",
+          "ip": "10.24.20.32",
+          "event": "通常端末でSaaSへ認証",
+          "raw": "2026-10-20T11:20:00Z host=saas-connect-01 user=n.ando device=SA-LT-032 session=OA-USER result=success src=10.24.20.32",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "medium-oauth-consent-log-02",
+          "time": "11:22:00",
+          "offset": 0,
+          "source": "SaaS",
+          "host": "saas-connect-01",
+          "user": "n.ando",
+          "ip": "10.24.20.32",
+          "event": "外部アプリの同意画面を表示",
+          "raw": "2026-10-20T11:22:00Z host=saas-connect-01 user=n.ando session=OA-USER application=Meeting-Helper app_id=APP-772 publisher=unverified",
+          "path": "/var/log/saas/audit.log"
+        },
+        {
+          "id": "medium-oauth-consent-log-03",
+          "time": "11:22:12",
+          "offset": 0,
+          "source": "SaaS",
+          "host": "saas-connect-01",
+          "user": "n.ando",
+          "ip": "10.24.20.32",
+          "event": "メール読取権限を付与",
+          "raw": "2026-10-20T11:22:12Z host=saas-connect-01 user=n.ando session=OA-USER action=consent app_id=APP-772 grant=G-772 scopes=Mail.Read,offline_access result=success",
+          "path": "/var/log/saas/audit.log"
+        },
+        {
+          "id": "medium-oauth-consent-log-04",
+          "time": "11:22:14",
+          "offset": 0,
+          "source": "IdP",
+          "host": "saas-connect-01",
+          "user": "n.ando",
+          "ip": "198.51.100.172",
+          "event": "アプリ用のトークンを発行",
+          "raw": "2026-10-20T11:22:14Z host=saas-connect-01 user=n.ando app_id=APP-772 grant=G-772 token_ref=T-772 actor=delegated_app result=success",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "medium-oauth-consent-log-05",
+          "time": "11:23:00",
+          "offset": 0,
+          "source": "SaaS",
+          "host": "saas-connect-01",
+          "user": "n.ando",
+          "ip": "198.51.100.172",
+          "event": "連携アプリがメール一覧を取得",
+          "raw": "2026-10-20T11:23:00Z host=saas-connect-01 user=n.ando app_id=APP-772 token_ref=T-772 request=API-7721 operation=messages.list items=100 status=200",
+          "path": "/var/log/saas/audit.log"
+        },
+        {
+          "id": "medium-oauth-consent-log-06",
+          "time": "11:23:08",
+          "offset": 0,
+          "source": "SaaS",
+          "host": "saas-connect-01",
+          "user": "n.ando",
+          "ip": "198.51.100.172",
+          "event": "同じアプリが本文を取得",
+          "raw": "2026-10-20T11:23:08Z host=saas-connect-01 user=n.ando app_id=APP-772 token_ref=T-772 request=API-7722 operation=messages.read mailbox=n.ando items=100 status=200",
+          "path": "/var/log/saas/audit.log"
+        },
+        {
+          "id": "medium-oauth-consent-log-07",
+          "time": "11:23:20",
+          "offset": 0,
+          "source": "SaaS",
+          "host": "saas-connect-01",
+          "user": "n.ando",
+          "ip": "198.51.100.172",
+          "event": "メールAPI利用量が増加",
+          "raw": "2026-10-20T11:23:20Z host=saas-connect-01 user=n.ando app_id=APP-772 token_ref=T-772 operation=messages.read total_items=540 rule=MAIL_API_BURST",
+          "path": "/var/log/saas/audit.log"
+        },
+        {
+          "id": "medium-oauth-consent-log-08",
+          "time": "11:24:00",
+          "offset": 0,
+          "source": "SaaS",
+          "host": "saas-connect-01",
+          "user": "n.ando",
+          "ip": "192.0.2.10",
+          "event": "既存の予定表アプリが同期",
+          "raw": "2026-10-20T11:24:00Z host=saas-connect-01 user=n.ando app_id=APP-CALENDAR-10 operation=calendar.read items=12 status=200",
+          "path": "/var/log/saas/audit.log"
+        },
+        {
+          "id": "medium-oauth-consent-log-09",
+          "time": "11:24:10",
+          "offset": 0,
+          "source": "IdP",
+          "host": "saas-connect-01",
+          "user": "n.ando",
+          "ip": "10.24.20.32",
+          "event": "利用者がブラウザをサインアウト",
+          "raw": "2026-10-20T11:24:10Z host=saas-connect-01 user=n.ando session=OA-USER action=logout result=success",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "medium-oauth-consent-log-10",
+          "time": "11:24:50",
+          "offset": 0,
+          "source": "IdP",
+          "host": "saas-connect-01",
+          "user": "n.ando",
+          "ip": "198.51.100.172",
+          "event": "連携アプリがトークンを更新",
+          "raw": "2026-10-20T11:24:50Z host=saas-connect-01 user=n.ando app_id=APP-772 grant=G-772 operation=refresh_token result=success",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "medium-oauth-consent-log-11",
+          "time": "11:25:00",
+          "offset": 0,
+          "source": "SaaS",
+          "host": "saas-connect-01",
+          "user": "n.ando",
+          "ip": "198.51.100.172",
+          "event": "サインアウト後もメールを取得",
+          "raw": "2026-10-20T11:25:00Z host=saas-connect-01 user=n.ando app_id=APP-772 grant=G-772 operation=messages.read items=20 status=200",
+          "path": "/var/log/saas/audit.log"
+        },
+        {
+          "id": "medium-oauth-consent-log-12",
+          "time": "11:26:00",
+          "offset": 0,
+          "source": "監査",
+          "host": "saas-connect-01",
+          "user": "n.ando",
+          "ip": "10.24.0.9",
+          "event": "付与権限は現在も有効",
+          "raw": "2026-10-20T11:26:00Z host=saas-connect-01 user=n.ando app_id=APP-772 grant=G-772 state=active scopes=Mail.Read,offline_access revoked=false",
+          "path": "/var/log/audit/audit.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "medium-oauth-consent-doc-asset",
+          "title": "メール連携の承認台帳",
+          "kind": "資産・アカウント",
+          "body": "許可された予定表アプリは APP-CALENDAR-10。予定表の参照権限のみを使用する。APP-772 / Meeting-Helper は未審査で、メール本文の取得や長期利用権限は承認されていない。表示名だけで既存アプリと同一とは判断しない。"
+        },
+        {
+          "id": "medium-oauth-consent-doc-scope",
+          "title": "連携トークンの取扱い",
+          "kind": "運用手順",
+          "body": "Mail.Read はメール本文を読む権限。offline_access の同意により、利用者のブラウザがサインアウトした後もアプリがトークンを更新できる。不要な連携はアプリ同意・付与権限・関連トークンを管理者が失効させる。"
+        },
+        {
+          "id": "medium-oauth-consent-doc-ticket",
+          "title": "営業推進部の業務依頼一覧",
+          "kind": "業務依頼",
+          "body": "当日の依頼は既存の予定表同期のみ。メール本文の一括収集、外部連携先への移管、Meeting-Helper の導入依頼はない。新しい連携の権限は情報システム部が審査する。"
+        }
+      ],
+      "contact": {
+        "id": "medium-oauth-consent-contact",
+        "name": "安藤 奈々",
+        "role": "営業推進・アカウント所有者",
+        "question": "同意した目的と、メール本文の利用を依頼したか確認する",
+        "replyId": "medium-oauth-consent-reply",
+        "replyTitle": "安藤からの回答：アプリ導入の経緯",
+        "replyText": "会議の時刻を表示できるという案内から Meeting-Helper に同意しましたが、メールの本文を読むつもりはありませんでした。APP-772 の導入申請もしていません。気付いて11:24にサインアウトしました。本文の一括取得は業務として依頼しておらず、この連携は止めたいです。",
+        "delaySeconds": 45
+      },
+      "answer": {
+        "verdict": "incident",
+        "priorities": [
+          "high"
+        ],
+        "actions": [
+          "contain",
+          "escalate"
+        ],
+        "target": "saas-connect-01",
+        "evidenceGroups": [
+          [
+            "medium-oauth-consent-log-03",
+            "medium-oauth-consent-log-12"
+          ],
+          [
+            "medium-oauth-consent-log-06",
+            "medium-oauth-consent-log-07",
+            "medium-oauth-consent-log-11"
+          ],
+          [
+            "medium-oauth-consent-reply"
+          ]
+        ],
+        "summary": "未審査アプリ APP-772 にメール読取と継続利用の権限が付与され、同じアプリがメール本文を大量に取得した。本人は本文取得を意図・依頼しておらず、サインアウト後も連携が継続している。",
+        "nextStep": "SaaS管理者へ即時連携し、APP-772 の同意・付与権限・関連トークンの失効を依頼する。取得対象メールと同じアプリへ同意した他利用者を調査する。",
+        "explanation": "本人が同意ボタンを押していても、未承認のアプリによる意図しないメール取得を放置できません。アプリIDを軸に同意とAPI利用を結び、利用者セッションの終了だけで対処済みとしないことが重要です。",
+        "lessons": [
+          "表示名ではなくアプリIDと付与権限で照合します。",
+          "利用者のブラウザセッションとアプリの権限を区別します。",
+          "業務上の意図と実際に付与した権限の差を確認します。"
+        ]
+      },
+      "hints": [
+        "APP-772 と既存の APP-CALENDAR-10 を分けて見てください。",
+        "G-772 の権限付与後にどのAPIが使われたか、サインアウト後も追います。",
+        "権限、実際の本文取得、本人の意図を示す3種類の証拠を登録し、連携の失効を依頼します。"
+      ]
+    },
+    {
+      "id": "medium-bulk-upload",
+      "scenarioId": "medium",
+      "difficulty": "medium",
+      "title": "設計共有領域からの大容量送信",
+      "subtitle": "設計共有 / DESIGN-FS-02",
+      "host": "design-fs-02",
+      "user": "svc-project-sync",
+      "source": "DLP",
+      "severity": "medium",
+      "critical": false,
+      "context": "設計共有サーバーから外部ストレージへの送信が検知されました。承認された共同作業の可能性もあります。送信先のテナント、対象データ、実行担当の記録を照合してください。",
+      "logs": [
+        {
+          "id": "medium-bulk-upload-log-01",
+          "time": "12:00:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "design-fs-02",
+          "user": "svc-project-sync",
+          "ip": "10.24.90.12",
+          "event": "プロジェクト同期を開始",
+          "raw": "2026-10-20T12:00:00Z host=design-fs-02 user=svc-project-sync job=SYNC-P42 ticket=REQ-3210 project=P42 dataset=release-candidate",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "medium-bulk-upload-log-02",
+          "time": "12:00:03",
+          "offset": 0,
+          "source": "IdP",
+          "host": "design-fs-02",
+          "user": "svc-project-sync",
+          "ip": "10.24.90.12",
+          "event": "同期用サービスが認証",
+          "raw": "2026-10-20T12:00:03Z host=design-fs-02 user=svc-project-sync account=svc-project-sync scope=project-P42.write tenant=TEN-PARTNER-42 result=success",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "medium-bulk-upload-log-03",
+          "time": "12:01:00",
+          "offset": 0,
+          "source": "DNS",
+          "host": "design-fs-02",
+          "user": "svc-project-sync",
+          "ip": "192.0.2.142",
+          "event": "外部ストレージの名前解決",
+          "raw": "2026-10-20T12:01:00Z host=design-fs-02 user=svc-project-sync query=design-share.example answer=192.0.2.142 result=success",
+          "path": "/var/log/network/dns.log"
+        },
+        {
+          "id": "medium-bulk-upload-log-04",
+          "time": "12:01:05",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "design-fs-02",
+          "user": "svc-project-sync",
+          "ip": "192.0.2.142",
+          "event": "外部ストレージへの接続",
+          "raw": "2026-10-20T12:01:05Z host=design-fs-02 user=svc-project-sync job=SYNC-P42 dst=design-share.example dst_ip=192.0.2.142 tenant=TEN-PARTNER-42 bucket=project-P42/review",
+          "path": "/var/log/network/proxy.log"
+        },
+        {
+          "id": "medium-bulk-upload-log-05",
+          "time": "12:01:10",
+          "offset": 0,
+          "source": "監査",
+          "host": "design-fs-02",
+          "user": "svc-project-sync",
+          "ip": "10.24.90.12",
+          "event": "送信するデータの一覧を確定",
+          "raw": "2026-10-20T12:01:10Z host=design-fs-02 user=svc-project-sync job=SYNC-P42 manifest=MAN-P42-10 files=86 dataset=release-candidate classification=partner-share redactions=verified",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "medium-bulk-upload-log-06",
+          "time": "12:03:00",
+          "offset": 0,
+          "source": "DLP",
+          "host": "design-fs-02",
+          "user": "svc-project-sync",
+          "ip": "192.0.2.142",
+          "event": "大量の外部送信を検知",
+          "raw": "2026-10-20T12:03:00Z host=design-fs-02 user=svc-project-sync job=SYNC-P42 rule=EXTERNAL_BULK data_label=partner-share bytes_out=2147483648 action=alert_only",
+          "path": "/var/log/security/dlp.log"
+        },
+        {
+          "id": "medium-bulk-upload-log-07",
+          "time": "12:04:10",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "design-fs-02",
+          "user": "svc-project-sync",
+          "ip": "192.0.2.142",
+          "event": "同期待ちの項目を再送",
+          "raw": "2026-10-20T12:04:10Z host=design-fs-02 user=svc-project-sync job=SYNC-P42 object=drawing-014.pdf retry=1 result=success duplicate_content=false",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "medium-bulk-upload-log-08",
+          "time": "12:06:00",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "design-fs-02",
+          "user": "svc-project-sync",
+          "ip": "10.24.90.31",
+          "event": "別ジョブの社内通信",
+          "raw": "2026-10-20T12:06:00Z host=design-fs-02 user=svc-project-sync job=DESIGN-INDEX dst=search.internal.example bytes_out=94211 status=200",
+          "path": "/var/log/network/proxy.log"
+        },
+        {
+          "id": "medium-bulk-upload-log-09",
+          "time": "12:07:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "design-fs-02",
+          "user": "svc-project-sync",
+          "ip": "192.0.2.142",
+          "event": "転送完了を確認",
+          "raw": "2026-10-20T12:07:00Z host=design-fs-02 user=svc-project-sync job=SYNC-P42 manifest=MAN-P42-10 files=86 bytes=3221225472 tenant=TEN-PARTNER-42 checksum_match=true result=success",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "medium-bulk-upload-log-10",
+          "time": "12:07:10",
+          "offset": 0,
+          "source": "SaaS",
+          "host": "design-fs-02",
+          "user": "svc-project-sync",
+          "ip": "192.0.2.142",
+          "event": "共有先のアクセス制御を記録",
+          "raw": "2026-10-20T12:07:10Z host=design-fs-02 user=svc-project-sync tenant=TEN-PARTNER-42 bucket=project-P42/review public_access=false members=project-P42-approved expiry=2026-10-27",
+          "path": "/var/log/saas/audit.log"
+        },
+        {
+          "id": "medium-bulk-upload-log-11",
+          "time": "12:08:00",
+          "offset": 0,
+          "source": "監査",
+          "host": "design-fs-02",
+          "user": "svc-project-sync",
+          "ip": "10.24.90.12",
+          "event": "共同作業領域以外は送信なし",
+          "raw": "2026-10-20T12:08:00Z host=design-fs-02 user=svc-project-sync job=SYNC-P42 manifest=MAN-P42-10 non_project_files=0 internal_only_files=0",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "medium-bulk-upload-log-12",
+          "time": "12:09:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "design-fs-02",
+          "user": "svc-project-sync",
+          "ip": "10.24.90.12",
+          "event": "同期ジョブを終了",
+          "raw": "2026-10-20T12:09:00Z host=design-fs-02 user=svc-project-sync job=SYNC-P42 phase=end result=success",
+          "path": "/var/log/jobs/scheduler.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "medium-bulk-upload-doc-asset",
+          "title": "設計共有サーバーの運用台帳",
+          "kind": "資産・アカウント",
+          "body": "design-fs-02 は共同開発と社内専用の両方の設計資料を保持する。外部共有はプロジェクトごとに審査し、ファイル単位の送信一覧を残す。ホスト名だけで全データの外部共有を許可しない。"
+        },
+        {
+          "id": "medium-bulk-upload-doc-approval",
+          "title": "共同開発の共有承認 REQ-3210",
+          "kind": "業務承認",
+          "body": "承認済み。10月20日12:00〜12:30、P42の公開前レビュー用資料86ファイル・3GiBを送信する。対象一覧 MAN-P42-10、匿名化確認済み。送信先 design-share.example の TEN-PARTNER-42 / project-P42/review に限定。公開リンクは禁止し、承認されたP42参加者のみが10月27日まで利用する。担当は柏木。"
+        },
+        {
+          "id": "medium-bulk-upload-doc-destination",
+          "title": "共同開発ストレージの契約台帳",
+          "kind": "資産・契約",
+          "body": "design-share.example は契約した外部ストレージ。TEN-PARTNER-42 はP42の共同開発契約にひも付く専用テナント。ホスティングサービスのドメインが同じでも、別テナントは未承認となる。"
+        }
+      ],
+      "contact": {
+        "id": "medium-bulk-upload-contact",
+        "name": "柏木 美月",
+        "role": "共同開発・データ共有責任者",
+        "question": "送信一覧、テナント、アクセス制限が承認どおりか確認する",
+        "replyId": "medium-bulk-upload-reply",
+        "replyTitle": "柏木からの回答：共有処理の確認",
+        "replyText": "REQ-3210 の依頼者です。MAN-P42-10 の86ファイルを私が確認し、社内専用情報を含まないレビュー版を送信しました。TEN-PARTNER-42 の指定領域へ3GiBを転送済みで、参加者限定・期限付きの設定も確認しました。他のテナントや公開リンクは利用していません。",
+        "delaySeconds": 50
+      },
+      "answer": {
+        "verdict": "benign",
+        "priorities": [
+          "low",
+          "medium"
+        ],
+        "actions": [
+          "close"
+        ],
+        "target": "design-fs-02",
+        "evidenceGroups": [
+          [
+            "medium-bulk-upload-log-09"
+          ],
+          [
+            "medium-bulk-upload-doc-approval"
+          ],
+          [
+            "medium-bulk-upload-reply"
+          ]
+        ],
+        "summary": "外部送信は REQ-3210 で承認されたP42レビュー資料の共有だった。送信一覧・件数・容量、専用テナントと領域が一致し、担当責任者も参加者限定・期限付きの共有を確認している。",
+        "nextStep": "承認票と実行記録、担当者確認を添えてクローズする。期限後の共有終了を業務担当の作業として引き継ぐ。",
+        "explanation": "外部宛てという理由だけでインシデントとは限りません。今回は送信先ドメインだけでなく、テナント・送信一覧・アクセス条件まで承認内容と一致しています。サービス全体を許可対象に広げる必要はありません。",
+        "lessons": [
+          "外部ストレージはテナントや共有領域まで確認します。",
+          "データの範囲と公開範囲の両方を照合します。",
+          "許可された一度の送信を、将来の送信全体の許可と混同しません。"
+        ]
+      },
+      "hints": [
+        "外部ストレージのドメインだけでなく、テナントIDを資料と比較してください。",
+        "MAN-P42-10 の件数・容量・アクセス条件が実行記録と一致するか確認します。",
+        "実行ログ、共有承認、責任者の回答という3種類の根拠を登録します。"
+      ]
+    },
+    {
+      "id": "medium-waf-import",
+      "scenarioId": "medium",
+      "difficulty": "medium",
+      "title": "CSV取込で繰り返されたWAF検知",
+      "subtitle": "物流ポータル / LOGISTICS-WEB-03",
+      "host": "logistics-web-03",
+      "user": "svc-csv-import",
+      "source": "WAF",
+      "severity": "medium",
+      "critical": false,
+      "context": "物流ポータルのCSV取込でWAFが攻撃パターンを検知しています。一方で同時刻には成功したWeb要求もあります。要求IDを分け、遮断対象と実際の処理結果を確認してください。",
+      "logs": [
+        {
+          "id": "medium-waf-import-log-01",
+          "time": "12:30:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "logistics-web-03",
+          "user": "svc-csv-import",
+          "ip": "10.24.100.23",
+          "event": "配送データ取込を開始",
+          "raw": "2026-10-20T12:30:00Z host=logistics-web-03 user=svc-csv-import job=IMP-330 ticket=OPS-3220 source=partner-csv manifest=CSV-330 rows=1200",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "medium-waf-import-log-02",
+          "time": "12:30:10",
+          "offset": 0,
+          "source": "WAF",
+          "host": "logistics-web-03",
+          "user": "svc-csv-import",
+          "ip": "10.24.100.23",
+          "event": "取込要求の文字列を検知",
+          "raw": "2026-10-20T12:30:10Z host=logistics-web-03 user=svc-csv-import request=CSV-REQ-31 path=/api/import/csv rule=SQL_PATTERN field=delivery_note action=block matched_fragment=union_sample query_executed=unknown",
+          "path": "/var/log/web/waf.log"
+        },
+        {
+          "id": "medium-waf-import-log-03",
+          "time": "12:30:10",
+          "offset": 0,
+          "source": "Web",
+          "host": "logistics-web-03",
+          "user": "svc-csv-import",
+          "ip": "10.24.100.23",
+          "event": "対象要求へ遮断応答",
+          "raw": "2026-10-20T12:30:10Z host=logistics-web-03 user=svc-csv-import request=CSV-REQ-31 path=/api/import/csv status=403 upstream_forwarded=false",
+          "path": "/var/log/web/access.log"
+        },
+        {
+          "id": "medium-waf-import-log-04",
+          "time": "12:31:00",
+          "offset": 0,
+          "source": "WAF",
+          "host": "logistics-web-03",
+          "user": "svc-csv-import",
+          "ip": "10.24.100.23",
+          "event": "同じデータの再試行を遮断",
+          "raw": "2026-10-20T12:31:00Z host=logistics-web-03 user=svc-csv-import request=CSV-REQ-32 payload_manifest=CSV-330 rule=SQL_PATTERN action=block",
+          "path": "/var/log/web/waf.log"
+        },
+        {
+          "id": "medium-waf-import-log-05",
+          "time": "12:31:00",
+          "offset": 0,
+          "source": "Web",
+          "host": "logistics-web-03",
+          "user": "svc-csv-import",
+          "ip": "10.24.100.23",
+          "event": "再試行もアプリへ未転送",
+          "raw": "2026-10-20T12:31:00Z host=logistics-web-03 user=svc-csv-import request=CSV-REQ-32 status=403 upstream_forwarded=false",
+          "path": "/var/log/web/access.log"
+        },
+        {
+          "id": "medium-waf-import-log-06",
+          "time": "12:31:05",
+          "offset": 0,
+          "source": "Web",
+          "host": "logistics-web-03",
+          "user": "svc-csv-import",
+          "ip": "10.24.0.8",
+          "event": "別要求の通常ヘルスチェック",
+          "raw": "2026-10-20T12:31:05Z host=logistics-web-03 user=svc-csv-import request=HEALTH-330 path=/health status=200 upstream_forwarded=true actor=monitor",
+          "path": "/var/log/web/access.log"
+        },
+        {
+          "id": "medium-waf-import-log-07",
+          "time": "12:32:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "logistics-web-03",
+          "user": "svc-csv-import",
+          "ip": "10.24.100.23",
+          "event": "取込処理を待機へ変更",
+          "raw": "2026-10-20T12:32:00Z host=logistics-web-03 user=svc-csv-import job=IMP-330 manifest=CSV-330 imported_rows=0 status=waiting reason=edge_block",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "medium-waf-import-log-08",
+          "time": "12:33:00",
+          "offset": 0,
+          "source": "監査",
+          "host": "logistics-web-03",
+          "user": "svc-csv-import",
+          "ip": "10.24.100.23",
+          "event": "対象ジョブのDB操作状況",
+          "raw": "2026-10-20T12:33:00Z host=logistics-web-03 user=svc-csv-import job=IMP-330 request_ids=CSV-REQ-31,CSV-REQ-32 db_queries=0 audit_coverage=complete",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "medium-waf-import-log-09",
+          "time": "12:34:00",
+          "offset": 0,
+          "source": "監査",
+          "host": "logistics-web-03",
+          "user": "svc-csv-import",
+          "ip": "10.24.100.23",
+          "event": "別ジョブの参照処理",
+          "raw": "2026-10-20T12:34:00Z host=logistics-web-03 user=svc-csv-import job=ROUTE-LOOKUP actor=svc-route query_type=prepared_select rows=24 result=success",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "medium-waf-import-log-10",
+          "time": "12:34:20",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "logistics-web-03",
+          "user": "svc-csv-import",
+          "ip": "10.24.100.23",
+          "event": "入力内容の再検証",
+          "raw": "2026-10-20T12:34:20Z host=logistics-web-03 user=svc-csv-import job=IMP-330 manifest=CSV-330 schema_valid=true formula_fields=0 executable_fields=0 field=delivery_note type=quoted_text",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "medium-waf-import-log-11",
+          "time": "12:35:00",
+          "offset": 0,
+          "source": "EDR",
+          "host": "logistics-web-03",
+          "user": "svc-csv-import",
+          "ip": "10.24.100.23",
+          "event": "アプリプロセスの稼働状況",
+          "raw": "2026-10-20T12:35:00Z host=logistics-web-03 user=svc-csv-import service=csv-import worker=healthy unexpected_child_processes=0",
+          "path": "/var/log/security/edr.log"
+        },
+        {
+          "id": "medium-waf-import-log-12",
+          "time": "12:36:00",
+          "offset": 0,
+          "source": "収集基盤",
+          "host": "logistics-web-03",
+          "user": "svc-csv-import",
+          "ip": "10.24.0.9",
+          "event": "関連監査の到着確認",
+          "raw": "2026-10-20T12:36:00Z host=logistics-web-03 user=svc-csv-import streams=waf,web,db-audit job=IMP-330 gaps=none",
+          "path": "/var/log/security/collector.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "medium-waf-import-doc-asset",
+          "title": "CSV取込の処理仕様",
+          "kind": "資産・アプリ仕様",
+          "body": "logistics-web-03 の /api/import/csv は配送データを受信する。配送メモ delivery_note は引用符付きの文字列として検証し、SQLのパラメーターへ渡す。WAFで遮断された要求はアプリに転送されない。Webの200応答は要求IDごとに確認する。"
+        },
+        {
+          "id": "medium-waf-import-doc-job",
+          "title": "取込依頼 OPS-3220",
+          "kind": "業務依頼",
+          "body": "承認済み。10月20日12:30、配送データ CSV-330 の1,200行をジョブ IMP-330 で取り込む。備考には取引先の商品名「Union Sample Pack」が含まれる。送信元は10.24.100.23。取込失敗時は内容と遮断理由を確認し、WAFの全体無効化は行わない。"
+        },
+        {
+          "id": "medium-waf-import-doc-inspection",
+          "title": "入力ファイルの確認記録",
+          "kind": "検証記録",
+          "body": "CSV-330 を取得元の原本と照合した結果、件数・識別子が一致している。該当欄の union_sample は配送メモの商品名を正規化した文字列で、命令文ではない。取り込み担当は原本を保管している。今回のデータに限定した検知見直しは、Web防御担当がレビューする。"
+        }
+      ],
+      "contact": {
+        "id": "medium-waf-import-contact",
+        "name": "宮本 修",
+        "role": "物流データ取込担当",
+        "question": "入力の出所と遮断された要求、成功した要求の関係を確認する",
+        "replyId": "medium-waf-import-reply",
+        "replyTitle": "宮本からの回答：取込要求と原本の確認",
+        "replyText": "IMP-330 は OPS-3220 の定期取込で、CSV-REQ-31 と CSV-REQ-32 は私たちの再試行です。原本の商品名がWAFのパターンに一致しています。HEALTH-330 は別の監視要求で、取込成功ではありません。CSVはまだ1行も取り込まれておらず、限定した調整をWeb防御担当へ依頼します。",
+        "delaySeconds": 40
+      },
+      "answer": {
+        "verdict": "benign",
+        "priorities": [
+          "low",
+          "medium"
+        ],
+        "actions": [
+          "close"
+        ],
+        "target": "logistics-web-03",
+        "evidenceGroups": [
+          [
+            "medium-waf-import-log-03",
+            "medium-waf-import-log-05",
+            "medium-waf-import-log-08"
+          ],
+          [
+            "medium-waf-import-doc-job",
+            "medium-waf-import-doc-inspection"
+          ],
+          [
+            "medium-waf-import-reply"
+          ]
+        ],
+        "summary": "WAF検知は承認済みの配送CSVに含まれる商品名への一致で、対象要求 CSV-REQ-31/32 はアプリへ未転送だった。200応答は別の監視要求で、原本確認と担当者の回答から正当な業務の遮断と判断できる。",
+        "nextStep": "セキュリティの侵害調査は根拠を添えてクローズし、取込未完了を業務担当へ引き継ぐ。Web防御担当に対象を限定した検知調整を依頼する。",
+        "explanation": "遮断されたから正当という判断ではありません。原本・業務依頼・担当者確認によって入力の意図と出所を確認でき、要求ID別のログでも攻撃成立を示す事実はありません。業務停止の解消は別途必要です。",
+        "lessons": [
+          "同じ時刻の403と200を同一要求と扱いません。",
+          "検知文字列だけで入力の意味を断定しません。",
+          "正当な業務への誤検知でも、防御機能全体の無効化は避けます。"
+        ]
+      },
+      "hints": [
+        "CSV-REQ-31/32 と HEALTH-330 を要求IDで分けて追ってください。",
+        "配送メモの文字列が、業務依頼と原本確認の内容に一致するか照合します。",
+        "遮断範囲のログ、業務または原本の資料、実施担当の回答を証拠に登録します。"
+      ]
+    },
+    {
+      "id": "medium-saas-gap",
+      "scenarioId": "medium",
+      "difficulty": "medium",
+      "title": "管理権限の変更通知と途切れた監査",
+      "subtitle": "人事SaaS / HR-SAAS-01",
+      "host": "hr-saas-01",
+      "user": "未確認",
+      "source": "SaaS",
+      "severity": "high",
+      "critical": true,
+      "context": "人事SaaSで管理ロールが変わったという通知が届きましたが、詳細監査の収集が止まっています。通知の確度と、確認できていない変更内容を整理してください。",
+      "logs": [
+        {
+          "id": "medium-saas-gap-log-01",
+          "time": "13:00:00",
+          "offset": 0,
+          "source": "SaaS",
+          "host": "hr-saas-01",
+          "user": "未確認",
+          "ip": "192.0.2.160",
+          "event": "変更前の管理ロールを取得",
+          "raw": "2026-10-20T13:00:00Z host=hr-saas-01 user=unknown snapshot=HR-SNAP-60 roles=hr.viewer:18,hr.admin:2 fetched_at=13:00:00 result=success",
+          "path": "/var/log/saas/audit.log"
+        },
+        {
+          "id": "medium-saas-gap-log-02",
+          "time": "13:01:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "hr-saas-01",
+          "user": "未確認",
+          "ip": "10.24.110.10",
+          "event": "定期的な属性同期を開始",
+          "raw": "2026-10-20T13:01:00Z host=hr-saas-01 user=unknown job=HR-SYNC-601 ticket=CHG-3230 scope=department_attributes phase=start",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "medium-saas-gap-log-03",
+          "time": "13:02:00",
+          "offset": 0,
+          "source": "収集基盤",
+          "host": "hr-saas-01",
+          "user": "未確認",
+          "ip": "192.0.2.160",
+          "event": "SaaS監査APIへの接続に失敗",
+          "raw": "2026-10-20T13:02:00Z host=hr-saas-01 user=unknown stream=hr-admin-audit cursor=HR-A-9901 response=503 last_success=13:01:50",
+          "path": "/var/log/security/collector.log"
+        },
+        {
+          "id": "medium-saas-gap-log-04",
+          "time": "13:02:30",
+          "offset": 0,
+          "source": "SaaS",
+          "host": "hr-saas-01",
+          "user": "未確認",
+          "ip": "192.0.2.160",
+          "event": "ロール変更の通知を受信",
+          "raw": "2026-10-20T13:02:30Z host=hr-saas-01 user=unknown notification=HR-N-602 event=role_mapping_changed actor=redacted correlation=HR-C-602 delivery_channel=webhook signature=valid",
+          "path": "/var/log/saas/audit.log"
+        },
+        {
+          "id": "medium-saas-gap-log-05",
+          "time": "13:03:00",
+          "offset": 0,
+          "source": "監査",
+          "host": "hr-saas-01",
+          "user": "未確認",
+          "ip": "10.24.0.9",
+          "event": "通知のローカル受信を確認",
+          "raw": "2026-10-20T13:03:00Z host=hr-saas-01 user=unknown notification=HR-N-602 payload_fields=event,correlation signature_validation=passed details_in_audit_api=true",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "medium-saas-gap-log-06",
+          "time": "13:03:10",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "hr-saas-01",
+          "user": "未確認",
+          "ip": "10.24.110.10",
+          "event": "属性同期が完了",
+          "raw": "2026-10-20T13:03:10Z host=hr-saas-01 user=unknown job=HR-SYNC-601 changed_departments=24 role_change_requested=false result=success",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "medium-saas-gap-log-07",
+          "time": "13:04:00",
+          "offset": 0,
+          "source": "IdP",
+          "host": "hr-saas-01",
+          "user": "svc-hr-admin",
+          "ip": "10.24.110.10",
+          "event": "サービスアカウントの認証",
+          "raw": "2026-10-20T13:04:00Z host=hr-saas-01 user=svc-hr-admin account=svc-hr-admin auth=certificate client=hr-sync request=HR-T-601 result=success",
+          "path": "/var/log/identity/idp.log"
+        },
+        {
+          "id": "medium-saas-gap-log-08",
+          "time": "13:04:30",
+          "offset": 0,
+          "source": "収集基盤",
+          "host": "hr-saas-01",
+          "user": "未確認",
+          "ip": "192.0.2.160",
+          "event": "ロール情報の再取得に失敗",
+          "raw": "2026-10-20T13:04:30Z host=hr-saas-01 user=unknown operation=current_roles response=503 snapshot_available=HR-SNAP-60 snapshot_age_seconds=270",
+          "path": "/var/log/security/collector.log"
+        },
+        {
+          "id": "medium-saas-gap-log-09",
+          "time": "13:05:00",
+          "offset": 0,
+          "source": "SaaS",
+          "host": "hr-saas-01",
+          "user": "未確認",
+          "ip": "192.0.2.160",
+          "event": "一般利用画面の稼働確認",
+          "raw": "2026-10-20T13:05:00Z host=hr-saas-01 user=unknown path=/employee/home status=200 operation=healthcheck admin_audit_status=unknown",
+          "path": "/var/log/saas/audit.log"
+        },
+        {
+          "id": "medium-saas-gap-log-10",
+          "time": "13:05:20",
+          "offset": 0,
+          "source": "収集基盤",
+          "host": "hr-saas-01",
+          "user": "未確認",
+          "ip": "192.0.2.160",
+          "event": "監査の欠落期間が継続",
+          "raw": "2026-10-20T13:05:20Z host=hr-saas-01 user=unknown stream=hr-admin-audit missing_since=13:01:50 records_recovered=0",
+          "path": "/var/log/security/collector.log"
+        },
+        {
+          "id": "medium-saas-gap-log-11",
+          "time": "13:06:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "hr-saas-01",
+          "user": "未確認",
+          "ip": "10.24.110.10",
+          "event": "通知と同期ジョブの相関を確認",
+          "raw": "2026-10-20T13:06:00Z host=hr-saas-01 user=unknown job=HR-SYNC-601 correlation=HR-C-601 notification_correlation=HR-C-602 match=false",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "medium-saas-gap-log-12",
+          "time": "13:07:00",
+          "offset": 0,
+          "source": "収集基盤",
+          "host": "hr-saas-01",
+          "user": "未確認",
+          "ip": "192.0.2.160",
+          "event": "管理API障害を再確認",
+          "raw": "2026-10-20T13:07:00Z host=hr-saas-01 user=unknown operations=admin_audit,current_roles response=503 retry_after=60 current_role_state=unknown",
+          "path": "/var/log/security/collector.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "medium-saas-gap-doc-asset",
+          "title": "人事SaaSの権限構成",
+          "kind": "資産・アカウント",
+          "body": "hr-saas-01 には社員の個人情報が保存されている。hr.admin は閲覧範囲とデータ出力権限を変更できる。ロール変更通知の簡略ペイロードには、変更前後の権限や実際の操作主体は含まれず、詳細監査APIで確認する。"
+        },
+        {
+          "id": "medium-saas-gap-doc-change",
+          "title": "変更申請 CHG-3230",
+          "kind": "変更申請",
+          "body": "承認済み。13:00〜13:10の HR-SYNC-601 は異動に伴う部署属性24件の更新のみ。ロールマッピングや管理権限の付与は含まれない。ジョブの相関IDは HR-C-601。別の緊急変更は人事システム責任者の確認が必要。"
+        },
+        {
+          "id": "medium-saas-gap-doc-gap",
+          "title": "取得できている情報と欠落範囲",
+          "kind": "収集状況",
+          "body": "13:01:50以降の管理操作監査と現在のロール一覧が取得できていない。13:00の HR-SNAP-60 は変更前の状態であり、現在の権限を示さない。署名付き通知 HR-N-602 の受信は確認済みだが、何がどう変わったかは未確認。一般利用画面の稼働確認では管理権限の安全性は判断できない。"
+        }
+      ],
+      "contact": {
+        "id": "medium-saas-gap-contact",
+        "name": "大庭 悠",
+        "role": "人事SaaS運用担当",
+        "question": "権限変更の予定と、詳細監査・現在のロールの確認状況を問い合わせる",
+        "replyId": "medium-saas-gap-reply",
+        "replyTitle": "大庭からの回答：権限変更は確認継続中",
+        "replyText": "CHG-3230 の部署属性更新は完了しましたが、HR-C-602 のロール変更はそのジョブと別です。私の担当作業に権限変更はありません。ほかの管理者の緊急作業か不正操作かはまだ確認できず、API障害で変更内容も見られません。人事情報への影響があるため、責任者とSaaS提供元に監査回収と現在権限の確認を優先依頼してください。",
+        "delaySeconds": 60
+      },
+      "answer": {
+        "verdict": "unknown",
+        "priorities": [
+          "high"
+        ],
+        "actions": [
+          "escalate"
+        ],
+        "target": "hr-saas-01",
+        "evidenceGroups": [
+          [
+            "medium-saas-gap-log-04",
+            "medium-saas-gap-log-05"
+          ],
+          [
+            "medium-saas-gap-doc-gap",
+            "medium-saas-gap-log-08",
+            "medium-saas-gap-log-10",
+            "medium-saas-gap-log-12"
+          ],
+          [
+            "medium-saas-gap-reply"
+          ]
+        ],
+        "summary": "署名を確認したロール変更通知 HR-N-602 を受信したが、管理監査と現在ロールの取得障害により、操作主体・変更内容・影響範囲が分からない。予定された部署属性更新とは相関IDが異なり、担当者も正当性を確認できていない。",
+        "nextStep": "人事システム責任者へ高優先度で引き継ぎ、SaaS提供元に監査回収と現在の権限確認を依頼する。別管理者の緊急変更の有無を確認し、保護措置の要否を責任者が判断できる材料をそろえる。",
+        "explanation": "正しい署名の通知は実イベントの根拠になりますが、不正変更の断定には足りません。古いスナップショットで安全と決めることもできません。人事管理権限への影響と観測不能を踏まえ、高優先度で確認を進めるのが適切です。",
+        "lessons": [
+          "通知の受信確認と、変更内容の確定を区別します。",
+          "古いスナップショットを現在の状態として扱いません。",
+          "重大な対象では、未確定でも優先して追加調査を依頼します。"
+        ]
+      },
+      "hints": [
+        "通知 HR-C-602 と定期同期 HR-C-601 は同じ処理でしょうか。",
+        "13:00のロール一覧が、通知後の現在状態を示せるか確認してください。",
+        "通知を受信した根拠、現在状態を見られない根拠、担当者の未確認事項を示す回答を登録します。"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "sales-lt-017",
+      "name": "sales-lt-017",
+      "owner": "営業部・木田 優",
+      "importance": "高",
+      "description": "営業用ノートPC。顧客名簿を一時保存し、MDMからロックを指示できる。"
+    },
+    {
+      "id": "qa-lt-008",
+      "name": "qa-lt-008",
+      "owner": "品質管理部・藤野 真里",
+      "importance": "中",
+      "description": "検証用のQA端末。承認された防御機能の動作確認に使用する。"
+    },
+    {
+      "id": "fs-archive-01",
+      "name": "fs-archive-01",
+      "owner": "情報システム部・保存基盤チーム",
+      "importance": "中",
+      "description": "保管用ファイルサーバー。社内バックアップ装置へ定期的に複製する。"
+    },
+    {
+      "id": "mail-fin-04",
+      "name": "mail-fin-04",
+      "owner": "経理部・矢野 杏",
+      "importance": "高",
+      "description": "請求書を受信する経理担当のメールボックス。外部への自動転送は承認制。"
+    },
+    {
+      "id": "plan-lt-012",
+      "name": "plan-lt-012",
+      "owner": "企画部・石井 咲",
+      "importance": "中",
+      "description": "社内企画用の端末。顧客情報は扱わず、リモート管理で状態を確認する。"
+    },
+    {
+      "id": "idp-finance-01",
+      "name": "idp-finance-01",
+      "owner": "財務部・水野 梨奈",
+      "importance": "高",
+      "description": "財務ポータルの認証サービス。利用者は支払先情報の参照権限を持つ。"
+    },
+    {
+      "id": "saas-connect-01",
+      "name": "saas-connect-01",
+      "owner": "営業推進部・安藤 奈々",
+      "importance": "高",
+      "description": "メールSaaSの連携管理。OAuthの委任権限を持つアプリを管理する。"
+    },
+    {
+      "id": "design-fs-02",
+      "name": "design-fs-02",
+      "owner": "設計部・共同開発支援チーム",
+      "importance": "高",
+      "description": "共同開発用の図面を一時保存する共有サーバー。外部共有は案件ごとの承認が必要。"
+    },
+    {
+      "id": "logistics-web-03",
+      "name": "logistics-web-03",
+      "owner": "物流システム部・取込基盤チーム",
+      "importance": "中",
+      "description": "取引先の配送データを取り込むポータル。CSVは検証後にデータとして保存する。"
+    },
+    {
+      "id": "hr-saas-01",
+      "name": "hr-saas-01",
+      "owner": "人事システム部・アクセス管理チーム",
+      "importance": "高",
+      "description": "人事情報を保持するSaaS。管理者は閲覧範囲とエクスポート権限を変更できる。"
+    }
+  ]
+}

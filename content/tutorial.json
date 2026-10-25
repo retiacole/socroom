@@ -1,0 +1,182 @@
+{
+  "cases": [
+    {
+      "id": "tutorial-scan",
+      "scenarioId": "tutorial",
+      "difficulty": "low",
+      "title": "短時間に広がった接続先",
+      "subtitle": "scan-lab-01 / 検証用ネットワーク",
+      "host": "scan-lab-01",
+      "user": "svc-inspect",
+      "source": "EDR",
+      "severity": "medium",
+      "critical": false,
+      "context": "scan-lab-01 から複数の端末へ短時間に接続が行われ、接続先の急増を知らせる警報が出ました。接続した範囲、目的、事前の申請と実際の作業を確認してください。これは操作を覚えるためのチュートリアル専用案件です。通常勤務とは別の問題です。",
+      "logs": [
+        {
+          "id": "ts-01",
+          "time": "08:52:00",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "scan-lab-01",
+          "user": "svc-inspect",
+          "ip": "10.24.90.10",
+          "event": "資産検査ジョブを開始",
+          "raw": "2026-10-20T08:52:00Z host=scan-lab-01 job=asset-reachability run=INV-310 user=svc-inspect request=REQ-310 mode=connect_only phase=start",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "ts-02",
+          "time": "08:52:01",
+          "offset": 0,
+          "source": "監査",
+          "host": "scan-lab-01",
+          "user": "svc-inspect",
+          "ip": "10.24.90.10",
+          "event": "検査設定を読み込み",
+          "raw": "2026-10-20T08:52:01Z host=scan-lab-01 run=INV-310 config=lab-scope-v3 targets=10.24.90.21,10.24.90.22,10.24.90.23,10.24.90.24 port=443 authentication=false configuration_change=false",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "ts-03",
+          "time": "08:52:03",
+          "offset": 0,
+          "source": "監査",
+          "host": "scan-lab-01",
+          "user": "svc-inspect",
+          "ip": "10.24.90.21",
+          "event": "検査対象の2台へ接続",
+          "raw": "2026-10-20T08:52:03Z host=scan-lab-01 run=INV-310 src=10.24.90.10 dst=10.24.90.21,10.24.90.22 dst_port=443 operation=tcp_connect result=reachable",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "ts-04",
+          "time": "08:52:05",
+          "offset": 0,
+          "source": "EDR",
+          "host": "scan-lab-01",
+          "user": "svc-inspect",
+          "ip": "10.24.90.10",
+          "event": "短時間の接続先増加を検知",
+          "raw": "2026-10-20T08:52:05Z host=scan-lab-01 user=svc-inspect process=inventory-check run=INV-310 dst_count=4 interval=5s rule=DESTINATION_FANOUT severity=medium",
+          "path": "/var/log/security/edr.log"
+        },
+        {
+          "id": "ts-05",
+          "time": "08:52:06",
+          "offset": 0,
+          "source": "監査",
+          "host": "scan-lab-01",
+          "user": "svc-inspect",
+          "ip": "10.24.90.23",
+          "event": "残りの検査対象2台へ接続",
+          "raw": "2026-10-20T08:52:06Z host=scan-lab-01 run=INV-310 src=10.24.90.10 dst=10.24.90.23,10.24.90.24 dst_port=443 operation=tcp_connect result=reachable",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "ts-06",
+          "time": "08:52:10",
+          "offset": 0,
+          "source": "監査",
+          "host": "scan-lab-01",
+          "user": "svc-inspect",
+          "ip": "10.24.90.10",
+          "event": "資産検査の実施範囲を確認",
+          "raw": "2026-10-20T08:52:10Z host=scan-lab-01 run=INV-310 request=REQ-310 user=svc-inspect src=10.24.90.10 targets=10.24.90.21,10.24.90.22,10.24.90.23,10.24.90.24 dst_port=443 operation=tcp_connect scope_check=match outside_scope_connections=0 audit_coverage=complete result=success",
+          "path": "/var/log/audit/audit.log"
+        },
+        {
+          "id": "ts-07",
+          "time": "08:52:12",
+          "offset": 0,
+          "source": "ジョブ",
+          "host": "scan-lab-01",
+          "user": "svc-inspect",
+          "ip": "10.24.90.10",
+          "event": "検査結果を社内台帳へ記録",
+          "raw": "2026-10-20T08:52:12Z host=scan-lab-01 run=INV-310 destination=inventory.internal.example asset_count=4 output=INV-310-result result=success",
+          "path": "/var/log/jobs/scheduler.log"
+        },
+        {
+          "id": "ts-08",
+          "time": "08:54:00",
+          "offset": 0,
+          "source": "EDR",
+          "host": "scan-lab-01",
+          "user": "svc-inspect",
+          "ip": "10.24.90.10",
+          "event": "定期ヘルスチェック",
+          "raw": "2026-10-20T08:54:00Z host=scan-lab-01 agent=healthy heartbeat=success",
+          "path": "/var/log/security/edr.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "ts-doc-asset",
+          "title": "検証用ネットワークの資産台帳",
+          "kind": "資産・アカウント",
+          "body": "scan-lab-01（10.24.90.10）は検証用ネットワークの到達性を確認する専用端末。svc-inspect は検査ジョブ専用アカウント。検証対象は lab-app-01〜04（10.24.90.21〜24）の4台。本番ネットワークの資産検査はこの端末の担当範囲に含まれない。今回の監査ログは、ジョブの開始から完了までの接続先と接続方式を欠落なく記録している。"
+        },
+        {
+          "id": "ts-doc-plan",
+          "title": "資産検査申請 REQ-310",
+          "kind": "作業申請",
+          "body": "承認済み。10月20日08:50〜09:10（UTC）、scan-lab-01 の svc-inspect により、検証用サーバー 10.24.90.21、10.24.90.22、10.24.90.23、10.24.90.24 の4台を対象に資産検査を行う。許可する操作は TCP 443 番ポートへの接続による到達性確認のみ。対象への認証、設定変更、申請外の接続先への検査は禁止。実行IDは INV-310、設定は lab-scope-v3。担当は森田。"
+        }
+      ],
+      "contact": {
+        "id": "ts-contact",
+        "name": "森田 彩",
+        "role": "検証環境担当",
+        "question": "資産検査の実施と、申請された範囲を確認する",
+        "replyId": "ts-reply",
+        "replyTitle": "森田からの回答：検査の実施結果",
+        "delaySeconds": 0,
+        "replyText": "REQ-310 に従って08:52に私が検査を実施しました。実行ID INV-310、設定 lab-scope-v3 の結果を照合し、申請した 10.24.90.21〜24 の4台、TCP 443 番への接続のみで完了したことを確認しました。認証や設定変更はしていません。台帳への結果記録も完了しています。今回の検知はこの検査によるものですが、同じ端末の今後の通信を無条件に許可する必要はありません。"
+      },
+      "hints": [
+        "まず資産検査の実施範囲を確認したログを読み、接続元・接続先・時刻・操作をメモします。",
+        "作業申請 REQ-310 と、実行ID INV-310 の対象や操作が一致するか確認します。",
+        "申請は予定です。担当者の回答を取り寄せて実施結果も照合し、根拠を3つ登録します。"
+      ],
+      "answer": {
+        "verdict": "benign",
+        "priorities": [
+          "low"
+        ],
+        "actions": [
+          "close"
+        ],
+        "target": "scan-lab-01",
+        "evidenceGroups": [
+          [
+            "ts-06"
+          ],
+          [
+            "ts-doc-plan"
+          ],
+          [
+            "ts-reply"
+          ]
+        ],
+        "summary": "scan-lab-01 の短時間の複数接続は、承認済みの資産検査 REQ-310 によるものだった。実行ID INV-310 の監査ログは申請された4台の TCP 443 番への接続のみを示し、時刻・実施端末・操作内容も申請と一致した。森田さんが実施結果と完了を確認しているため、正当な業務と判断した。",
+        "nextStep": "実施範囲の監査ログ、作業申請、担当者の回答を添えてクローズする。今回の確認だけで将来の通信や同種の警報を一括許可せず、申請外の接続があれば別案件として調査する。",
+        "explanation": "複数の接続先への通信は調査のきっかけですが、それだけで攻撃とは決まりません。この案件では、実際の接続先・時刻・操作、承認された申請、担当者の実施確認が一致しています。申請があることだけで終了せず、実際の作業が承認範囲に収まったと確かめるのがポイントです。",
+        "lessons": [
+          "警報の名前から結論を決めず、実際に行われた操作を確認します。",
+          "予定された作業と、実施された作業の対象・時刻・操作を照合します。",
+          "ログ、申請、担当者の確認という別々の根拠を報告に残します。"
+        ]
+      }
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset-tutorial-scan",
+      "name": "scan-lab-01",
+      "owner": "検証環境担当",
+      "importance": "低",
+      "description": "検証用サーバー4台の到達性を確認する端末。チュートリアル専用。"
+    }
+  ]
+}

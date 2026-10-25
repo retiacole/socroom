@@ -1,0 +1,1229 @@
+{
+  "cases": [
+    {
+      "id": "bridge-app-update",
+      "scenarioId": "bridge",
+      "difficulty": "low",
+      "title": "業務アプリのサービスが入れ替わった",
+      "subtitle": "support-12 / 承認と実績を照合する",
+      "host": "support-12",
+      "user": "svc-appdeploy",
+      "source": "EDR",
+      "severity": "medium",
+      "critical": false,
+      "context": "サポート端末 support-12 で業務アプリのサービス実行ファイルが変更され、EDRが警報を出しました。正規の更新によるものか、予定外の変更かを調べます。実施記録と申請内容を照合し、担当者の回答を含めて報告してください。",
+      "logs": [
+        {
+          "id": "bg1-01",
+          "time": "09:09:50",
+          "offset": 0,
+          "source": "配布管理",
+          "host": "support-12",
+          "user": "svc-appdeploy",
+          "ip": "10.28.10.12",
+          "event": "配布管理の事前確認",
+          "raw": "2026-10-20T09:09:50Z host=support-12 run=DEP-421 request=CHG-421 package=DeskHelp-7.4 operation=precheck result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg1-02",
+          "time": "09:10:00",
+          "offset": 0,
+          "source": "配布管理",
+          "host": "support-12",
+          "user": "svc-appdeploy",
+          "ip": "10.28.10.12",
+          "event": "更新ジョブを開始",
+          "raw": "2026-10-20T09:10:00Z host=support-12 user=svc-appdeploy run=DEP-421 request=CHG-421 package=DeskHelp-7.4 action=start",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg1-03",
+          "time": "09:10:08",
+          "offset": 0,
+          "source": "EDR",
+          "host": "support-12",
+          "user": "svc-appdeploy",
+          "ip": "10.28.10.12",
+          "event": "サービスの実行ファイル変更を検知",
+          "raw": "2026-10-20T09:10:08Z host=support-12 user=svc-appdeploy run=DEP-421 service=DeskHelpAgent operation=service_binary_change old=DeskHelp-7.3 new=DeskHelp-7.4 rule=SERVICE_BINARY_CHANGED",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg1-05",
+          "time": "09:10:12",
+          "offset": 0,
+          "source": "OS監査",
+          "host": "support-12",
+          "user": "svc-appdeploy",
+          "ip": "10.28.10.12",
+          "event": "新しいバージョンのサービスが起動",
+          "raw": "2026-10-20T09:10:12Z host=support-12 user=svc-appdeploy run=DEP-421 service=DeskHelpAgent version=7.4 operation=service_start result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg1-04",
+          "time": "09:10:20",
+          "offset": 0,
+          "source": "配布管理",
+          "host": "support-12",
+          "user": "svc-appdeploy",
+          "ip": "10.28.10.12",
+          "event": "更新の実施内容と完了を記録",
+          "raw": "2026-10-20T09:10:20Z host=support-12 user=svc-appdeploy run=DEP-421 request=CHG-421 package=DeskHelp-7.4 publisher=DeskHelpLtd signature=valid target=support-12 changed_service=DeskHelpAgent other_service_changes=0 result=success audit_coverage=complete",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg1-06",
+          "time": "09:11:00",
+          "offset": 0,
+          "source": "アプリ",
+          "host": "support-12",
+          "user": "support-user",
+          "ip": "10.28.10.12",
+          "event": "問い合わせ画面の起動確認",
+          "raw": "2026-10-20T09:11:00Z host=support-12 user=support-user app=DeskHelp version=7.4 operation=healthcheck result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg1-07",
+          "time": "09:12:00",
+          "offset": 0,
+          "source": "EDR",
+          "host": "support-12",
+          "user": "svc-appdeploy",
+          "ip": "10.28.10.12",
+          "event": "定期ヘルスチェック",
+          "raw": "2026-10-20T09:12:00Z host=support-12 agent=healthy heartbeat=success",
+          "path": "/var/log/audit/events.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "bg1-doc-asset",
+          "title": "サポート端末の配布管理",
+          "kind": "資産・運用",
+          "body": "support-12 は問い合わせ対応用端末。DeskHelpAgent は業務アプリのサービスで、svc-appdeploy が更新する。配布管理ログは今回のジョブが変更したサービスと完了結果を記録している。サービス変更は更新でも発生するが、申請外の変更は担当者確認が必要。"
+        },
+        {
+          "id": "bg1-doc-change",
+          "title": "更新申請 CHG-421",
+          "kind": "作業申請",
+          "body": "承認済み。10月20日09:00〜09:30 UTC、support-12 の DeskHelp を7.3から7.4へ更新する。アカウント svc-appdeploy、実行ID DEP-421 を使用。DeskHelp Ltd の署名が有効な DeskHelp-7.4 パッケージで DeskHelpAgent を更新し、再起動する。他のサービス変更は申請に含まれない。担当は大野。"
+        }
+      ],
+      "contact": {
+        "id": "bg1-contact",
+        "name": "大野 蓮",
+        "role": "配布管理担当",
+        "question": "CHG-421 の実施内容と完了結果を確認する",
+        "replyId": "bg1-reply",
+        "replyTitle": "大野からの回答：更新結果",
+        "delaySeconds": 0,
+        "replyText": "CHG-421 に従って DEP-421 を09:10に実行しました。support-12 の DeskHelpAgent を7.4へ更新し、再起動と動作確認が完了しています。配布管理の結果一覧でも変更したサービスは DeskHelpAgent だけでした。申請外の端末や別のサービスにこの申請を適用しないでください。"
+      },
+      "hints": [
+        "サービス名と更新ジョブが実際に変更した対象を比べます。",
+        "申請の端末・時間帯・アカウント・パッケージが実績と一致するか確認します。",
+        "完了ログ、更新申請、担当者の実施確認という3種類の根拠を残します。"
+      ],
+      "answer": {
+        "verdict": "benign",
+        "priorities": [
+          "low"
+        ],
+        "actions": [
+          "close"
+        ],
+        "target": "support-12",
+        "evidenceGroups": [
+          [
+            "bg1-04"
+          ],
+          [
+            "bg1-doc-change"
+          ],
+          [
+            "bg1-reply"
+          ]
+        ],
+        "summary": "support-12 のサービス変更は承認済みの更新 CHG-421 に対応する。DEP-421 の完了ログで、時間帯・端末・アカウント・パッケージと変更サービスが申請範囲に一致し、他サービスの変更がないことを確認した。担当者から更新と動作確認の完了回答も得たため、正当な業務と判断した。",
+        "nextStep": "完了ログ、CHG-421、担当者回答を添えてクローズする。今回の確認を根拠に、別端末・別サービスの変更まで一括して許可しない。",
+        "explanation": "サービス変更は更新でも発生します。今回は実施内容と承認範囲が一致し、完了も確認できています。申請があるだけでなく、実際の変更がその範囲内かを照合します。",
+        "lessons": [
+          "警報名ではなく実際の変更内容を確認する。",
+          "端末・時刻・実行ID・サービスで予定と実績を結び付ける。",
+          "確認できた今回の作業に範囲を限定してクローズする。"
+        ]
+      },
+      "bridge": {
+        "stage": "guided",
+        "objective": "サービス変更の実施内容・承認範囲・担当者の確認をつなぎ、根拠を添えて対応を提出する。",
+        "focus": "警報から即断せず、予定と実績を照合する。",
+        "steps": [
+          {
+            "id": "context",
+            "title": "警報の対象と確認事項を整理する",
+            "instruction": "「依頼・状況」を開き、対象端末・利用者・検知された操作を確認します。変更理由と申請範囲内の操作かを確かめます。",
+            "why": "最初に対象と確認事項を絞ると、別の端末や操作を混ぜずに調査できます。",
+            "target": "[data-action=\"context\"]",
+            "kind": "seen",
+            "flag": "context"
+          },
+          {
+            "id": "logs",
+            "title": "実際に起きた操作を生ログで確認する",
+            "instruction": "「ログ検索」で「更新の実施内容と完了を記録」の「生ログを表示」を押します。DEP-421 を手がかりに、サービス・パッケージ・結果を読み取ります。",
+            "why": "短いイベント名だけで結論を出さず、実行した主体・対象・結果を元の記録で確かめます。",
+            "target": "[data-log-details=\"bg1-04\"] > summary",
+            "tab": "logs",
+            "kind": "seen",
+            "flag": "raw"
+          },
+          {
+            "id": "log-evidence",
+            "title": "判断の根拠になるログを登録する",
+            "instruction": "同じ「更新の実施内容と完了を記録」の「証拠に追加」を押します。警報だけでなく実際の変更内容が分かる記録を選びます。",
+            "why": "報告を受ける人が同じ事実をたどれるよう、判断を支える具体的な記録を残します。",
+            "target": "[data-evidence=\"bg1-04\"]",
+            "kind": "evidence",
+            "source": "log",
+            "tab": "logs"
+          },
+          {
+            "id": "resources",
+            "title": "資料から許可範囲と判断基準を確認する",
+            "instruction": "「資産・資料」を開きます。CHG-421 の端末・時刻・アカウント・変更対象をログと比べます。",
+            "why": "操作が起きた事実と、その操作が許可されたかどうかは別々に確かめます。",
+            "target": "[data-tab=\"resources\"]",
+            "tab": "resources",
+            "kind": "seen",
+            "flag": "resources"
+          },
+          {
+            "id": "document-evidence",
+            "title": "ログと照合した資料を証拠に残す",
+            "instruction": "判断に用いた資料を証拠登録します。ログのどの部分と一致・不一致なのかを考えてください。",
+            "why": "ログだけでは分からない業務上の背景を、独立した根拠として報告に残します。",
+            "target": "[data-evidence=\"bg1-doc-change\"]",
+            "tab": "resources",
+            "kind": "evidence",
+            "source": "document"
+          },
+          {
+            "id": "request",
+            "title": "担当者に実施内容と未確認事項を照会する",
+            "instruction": "「照会」タブの「確認を依頼する」を押して回答を読みます。申請の存在と申請どおりの完了を分けて確認します。",
+            "why": "予定だけで実施結果を決めつけず、担当者が確認した範囲も調べます。",
+            "target": "[data-action=\"contact\"]",
+            "tab": "contact",
+            "kind": "request"
+          },
+          {
+            "id": "reply-evidence",
+            "title": "担当者の回答を根拠に加える",
+            "instruction": "回答を証拠登録し、ログで確認できた事実と担当者の説明を区別します。",
+            "why": "複数の根拠が一致しているか、追加確認が必要な点が残るかを整理します。",
+            "target": "[data-evidence=\"bg1-reply\"]",
+            "tab": "contact",
+            "kind": "evidence",
+            "source": "reply"
+          },
+          {
+            "id": "draft",
+            "title": "判断・根拠・次の対応を自分の言葉でまとめる",
+            "instruction": "判定・優先度・対象・対応を選び、「確認した事実・判断の理由」と「未確認事項・引き継ぎ」を記入します。「何が起きたか → 何と照合したか → 判断できること」の順に書いてみましょう。次の対応には、誰が何をするかと対象範囲を書きます。",
+            "why": "他の担当者へ引き継げる報告にします。推測を事実のように書かず、確認できた範囲を示します。",
+            "target": "#draft-summary",
+            "kind": "draft",
+            "fields": [
+              "verdict",
+              "priority",
+              "target",
+              "action",
+              "summary",
+              "nextStep"
+            ]
+          },
+          {
+            "id": "submitted",
+            "title": "対応を提出し、根拠と報告を振り返る",
+            "instruction": "証拠と記入内容を見直して「判断と対応を記録する」を押します。不足が示されたら調査を補って再提出できます。",
+            "why": "自分の報告と参考例を比べ、根拠や未確認事項が伝わるかを振り返ります。",
+            "target": "#case-form .submit",
+            "kind": "submitted"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bridge-usb-copy",
+      "scenarioId": "bridge",
+      "difficulty": "low",
+      "title": "取り外し媒体へファイルがコピーされた",
+      "subtitle": "legal-08 / 許可範囲と実際の持ち出し",
+      "host": "legal-08",
+      "user": "y.izumi",
+      "source": "DLP",
+      "severity": "high",
+      "critical": false,
+      "context": "法務端末 legal-08 で媒体へのファイルコピーがDLPに記録されました。DLPは検知モードのため、警報が出てもコピーを止めたとは限りません。結果・媒体の識別番号・利用者の申請を調べ、確認できた影響と次の対応を整理してください。",
+      "logs": [
+        {
+          "id": "bg2-01",
+          "time": "10:14:40",
+          "offset": 0,
+          "source": "ファイル監査",
+          "host": "legal-08",
+          "user": "y.izumi",
+          "ip": "10.28.20.8",
+          "event": "契約資料フォルダを開く",
+          "raw": "2026-10-20T10:14:40Z host=legal-08 user=y.izumi operation=folder_open path=C:/legal/contracts result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg2-02",
+          "time": "10:15:00",
+          "offset": 0,
+          "source": "OS監査",
+          "host": "legal-08",
+          "user": "y.izumi",
+          "ip": "10.28.20.8",
+          "event": "USB媒体を接続",
+          "raw": "2026-10-20T10:15:00Z host=legal-08 user=y.izumi operation=usb_attach device_serial=HOME-882 volume=E encryption=none result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg2-04",
+          "time": "10:15:24",
+          "offset": 0,
+          "source": "DLP",
+          "host": "legal-08",
+          "user": "y.izumi",
+          "ip": "10.28.20.8",
+          "event": "機密資料の媒体コピーを検知",
+          "raw": "2026-10-20T10:15:24Z host=legal-08 user=y.izumi operation=file_copy device_serial=HOME-882 classification=restricted policy=MEDIA_EXPORT mode=detect_only action=alert transfer_id=COPY-882",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg2-03",
+          "time": "10:15:25",
+          "offset": 0,
+          "source": "ファイル監査",
+          "host": "legal-08",
+          "user": "y.izumi",
+          "ip": "10.28.20.8",
+          "event": "媒体へのコピー完了を記録",
+          "raw": "2026-10-20T10:15:25Z host=legal-08 user=y.izumi transfer_id=COPY-882 destination=usb:HOME-882 files=contract-A.pdf,contract-B.pdf,contract-C.pdf file_count=3 classification=restricted bytes=146320 result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg2-05",
+          "time": "10:15:26",
+          "offset": 0,
+          "source": "DLP",
+          "host": "legal-08",
+          "user": "y.izumi",
+          "ip": "10.28.20.8",
+          "event": "警報を監視基盤へ配送",
+          "raw": "2026-10-20T10:15:26Z host=legal-08 transfer_id=COPY-882 operation=alert_delivery result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg2-06",
+          "time": "10:16:00",
+          "offset": 0,
+          "source": "OS監査",
+          "host": "legal-08",
+          "user": "y.izumi",
+          "ip": "10.28.20.8",
+          "event": "USB媒体の取り外しを記録",
+          "raw": "2026-10-20T10:16:00Z host=legal-08 user=y.izumi operation=usb_detach device_serial=HOME-882 result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg2-07",
+          "time": "10:17:00",
+          "offset": 0,
+          "source": "EDR",
+          "host": "legal-08",
+          "user": "y.izumi",
+          "ip": "10.28.20.8",
+          "event": "端末の管理通信は正常",
+          "raw": "2026-10-20T10:17:00Z host=legal-08 agent=healthy heartbeat=success",
+          "path": "/var/log/audit/events.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "bg2-doc-media",
+          "title": "法務部の媒体持ち出しルールと今回の申請",
+          "kind": "持ち出し申請",
+          "body": "契約資料（restricted）の持ち出しは承認された社給暗号化USBに限る。個人媒体へのコピーは禁止。申請 OUT-882 は10月20日の契約打合せ用として、泉が legal-08 から契約書 contract-A.pdf、contract-B.pdf、contract-C.pdf の3件を社給暗号化USB CORP-114 へコピーすることを承認した。承認対象の媒体識別番号は CORP-114 のみ。"
+        },
+        {
+          "id": "bg2-doc-response",
+          "title": "媒体コピー時の対応手順",
+          "kind": "対応基準",
+          "body": "mode=detect_only は通知のみで、コピー遮断の意味ではない。申請外媒体への機密資料コピーが完了した場合は情報持ち出しのインシデントとして扱う。端末の追加操作と媒体の状況を担当部署に確認し、媒体の確保・回収と影響確認を依頼する。ログにないファイルや第三者への再配布を断定しない。端末隔離だけでは取り外された媒体は回収できない。"
+        }
+      ],
+      "contact": {
+        "id": "bg2-contact",
+        "name": "泉 優",
+        "role": "法務部・端末利用者",
+        "question": "使用したUSB媒体とコピー後の状況を確認する",
+        "replyId": "bg2-reply",
+        "replyTitle": "泉からの回答：使った媒体",
+        "delaySeconds": 0,
+        "replyText": "社給の CORP-114 が見つからず、私物USBの HOME-882 に契約書3件をコピーしました。個人媒体の使用申請はしていません。USBはいま自分の机にあり、別の端末にはまだ挿していません。これ以上操作せず回収の指示を待ちます。"
+      },
+      "hints": [
+        "DLP通知だけでは遮断されたと判断できません。コピー結果を確認します。",
+        "申請はファイルだけでなく媒体も指定しています。",
+        "コピー完了ログ、許可された媒体の資料、利用者回答を根拠にします。"
+      ],
+      "answer": {
+        "verdict": "incident",
+        "priorities": [
+          "high"
+        ],
+        "actions": [
+          "escalate",
+          "contain"
+        ],
+        "target": "legal-08",
+        "evidenceGroups": [
+          [
+            "bg2-03"
+          ],
+          [
+            "bg2-doc-media"
+          ],
+          [
+            "bg2-reply"
+          ]
+        ],
+        "summary": "legal-08 から契約資料3件が私物USB HOME-882 へコピーされたことを COPY-882 の成功ログで確認した。OUT-882 が許可した媒体は CORP-114 であり、実際の媒体は承認範囲外だった。利用者も私物USBの使用を認めている。DLPは検知のみで、申請外の機密資料持ち出しとして対応する。",
+        "nextStep": "法務部と対応担当へ連絡し、legal-08 の追加操作抑止と HOME-882 の確保・回収、保管を依頼する。「他端末では未使用」は利用者の申告として残し、媒体の利用履歴と対象3件の扱いを確認する。端末隔離とは別に媒体回収が必要。第三者への流出は未確認と記載する。",
+        "explanation": "検知モードの通知は遮断の証明になりません。コピー成功と実際の媒体を確認すると、承認範囲外へのコピーが成立しています。端末だけでなく、取り外された媒体の確保も引き継ぎます。",
+        "lessons": [
+          "検知・遮断・成功を区別する。",
+          "承認対象の識別子を実際の操作と照合する。",
+          "端末対処と既にコピーされた媒体の回収を分けて考える。"
+        ]
+      },
+      "bridge": {
+        "stage": "guided",
+        "objective": "コピーが実行されたかと、使った媒体が許可されたものかを別々に確かめて報告する。",
+        "focus": "検知と遮断、申請と許可対象を区別する。",
+        "steps": [
+          {
+            "id": "context",
+            "title": "警報の対象と確認事項を整理する",
+            "instruction": "「依頼・状況」を開き、対象端末・利用者・検知された操作を確認します。コピーは成功したか、その媒体は承認されていたかを分けて調べます。",
+            "why": "最初に対象と確認事項を絞ると、別の端末や操作を混ぜずに調査できます。",
+            "target": "[data-action=\"context\"]",
+            "kind": "seen",
+            "flag": "context"
+          },
+          {
+            "id": "logs",
+            "title": "実際に起きた操作を生ログで確認する",
+            "instruction": "「ログ検索」で「媒体へのコピー完了を記録」の「生ログを表示」を押します。COPY-882 を追い、DLPの mode とファイル監査の result・媒体を比べます。",
+            "why": "短いイベント名だけで結論を出さず、実行した主体・対象・結果を元の記録で確かめます。",
+            "target": "[data-log-details=\"bg2-03\"] > summary",
+            "tab": "logs",
+            "kind": "seen",
+            "flag": "raw"
+          },
+          {
+            "id": "log-evidence",
+            "title": "判断の根拠になるログを登録する",
+            "instruction": "同じ「媒体へのコピー完了を記録」の「証拠に追加」を押します。コピー成否と、どの媒体へ何件コピーされたか分かる記録を選びます。",
+            "why": "報告を受ける人が同じ事実をたどれるよう、判断を支える具体的な記録を残します。",
+            "target": "[data-evidence=\"bg2-03\"]",
+            "kind": "evidence",
+            "source": "log",
+            "tab": "logs"
+          },
+          {
+            "id": "resources",
+            "title": "資料から許可範囲と判断基準を確認する",
+            "instruction": "「資産・資料」を開きます。OUT-882 が許可したファイルと媒体を実際のコピーと照合します。",
+            "why": "操作が起きた事実と、その操作が許可されたかどうかは別々に確かめます。",
+            "target": "[data-tab=\"resources\"]",
+            "tab": "resources",
+            "kind": "seen",
+            "flag": "resources"
+          },
+          {
+            "id": "document-evidence",
+            "title": "ログと照合した資料を証拠に残す",
+            "instruction": "判断に用いた資料を証拠登録します。ログのどの部分と一致・不一致なのかを考えてください。",
+            "why": "ログだけでは分からない業務上の背景を、独立した根拠として報告に残します。",
+            "target": "[data-evidence=\"bg2-doc-media\"]",
+            "tab": "resources",
+            "kind": "evidence",
+            "source": "document"
+          },
+          {
+            "id": "request",
+            "title": "担当者に実施内容と未確認事項を照会する",
+            "instruction": "「照会」タブの「確認を依頼する」を押して回答を読みます。媒体の現在地とコピー後の利用状況を確認します。",
+            "why": "予定だけで実施結果を決めつけず、担当者が確認した範囲も調べます。",
+            "target": "[data-action=\"contact\"]",
+            "tab": "contact",
+            "kind": "request"
+          },
+          {
+            "id": "reply-evidence",
+            "title": "担当者の回答を根拠に加える",
+            "instruction": "回答を証拠登録し、ログで確認できた事実と担当者の説明を区別します。",
+            "why": "複数の根拠が一致しているか、追加確認が必要な点が残るかを整理します。",
+            "target": "[data-evidence=\"bg2-reply\"]",
+            "tab": "contact",
+            "kind": "evidence",
+            "source": "reply"
+          },
+          {
+            "id": "draft",
+            "title": "判断・根拠・次の対応を自分の言葉でまとめる",
+            "instruction": "判定・優先度・対象・対応を選び、「確認した事実・判断の理由」と「未確認事項・引き継ぎ」を記入します。確認済みのファイル数・媒体・結果を含め、利用者の申告とログの事実を区別します。次の対応は端末側と媒体側で必要なことを考えて書きます。",
+            "why": "他の担当者へ引き継げる報告にします。推測を事実のように書かず、確認できた範囲を示します。",
+            "target": "#draft-summary",
+            "kind": "draft",
+            "fields": [
+              "verdict",
+              "priority",
+              "target",
+              "action",
+              "summary",
+              "nextStep"
+            ]
+          },
+          {
+            "id": "submitted",
+            "title": "対応を提出し、根拠と報告を振り返る",
+            "instruction": "証拠と記入内容を見直して「判断と対応を記録する」を押します。不足が示されたら調査を補って再提出できます。",
+            "why": "自分の報告と参考例を比べ、根拠や未確認事項が伝わるかを振り返ります。",
+            "target": "#case-form .submit",
+            "kind": "submitted"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bridge-service-auth",
+      "scenarioId": "bridge",
+      "difficulty": "low",
+      "title": "サービス用アカウントの認証失敗が続いた",
+      "subtitle": "metrics-03 / 時系列で設定変更を照合する",
+      "host": "metrics-03",
+      "user": "svc-metrics",
+      "source": "認証",
+      "severity": "medium",
+      "critical": false,
+      "context": "監視集計端末 metrics-03 のサービス用アカウントで認証失敗が続きました。同じ時間帯に資格情報の更新作業が予定されています。要求の出所と実行ID、更新前後の結果を照合し、警報をどう扱うか判断してください。",
+      "logs": [
+        {
+          "id": "bg3-01",
+          "time": "11:00:00",
+          "offset": 0,
+          "source": "認証",
+          "host": "metrics-03",
+          "user": "svc-metrics",
+          "ip": "10.28.30.3",
+          "event": "サービス用パスワードが更新された",
+          "raw": "2026-10-20T11:00:00Z host=metrics-03 user=svc-metrics actor=secret-rotation request=ROT-203 credential_version=32 operation=password_rotate result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg3-02",
+          "time": "11:00:05",
+          "offset": 0,
+          "source": "認証",
+          "host": "metrics-03",
+          "user": "svc-metrics",
+          "ip": "10.28.30.3",
+          "event": "集計ジョブの認証が失敗",
+          "raw": "2026-10-20T11:00:05Z host=metrics-03 user=svc-metrics src=10.28.30.3 client=metrics-collector job=MET-203 credential_version=31 result=failed reason=old_credential",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg3-03",
+          "time": "11:00:35",
+          "offset": 0,
+          "source": "認証",
+          "host": "metrics-03",
+          "user": "svc-metrics",
+          "ip": "10.28.30.3",
+          "event": "同じジョブの再試行で失敗が継続",
+          "raw": "2026-10-20T11:00:35Z host=metrics-03 user=svc-metrics src=10.28.30.3 client=metrics-collector job=MET-203 credential_version=31 result=failed reason=old_credential attempts=6",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg3-04",
+          "time": "11:01:00",
+          "offset": 0,
+          "source": "運用",
+          "host": "metrics-03",
+          "user": "svc-metrics",
+          "ip": "10.28.30.3",
+          "event": "サービスに更新済み資格情報を反映",
+          "raw": "2026-10-20T11:01:00Z host=metrics-03 user=svc-metrics actor=ops-secret request=ROT-203 service=metrics-collector credential_version=32 operation=reload result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg3-05",
+          "time": "11:01:10",
+          "offset": 0,
+          "source": "認証",
+          "host": "metrics-03",
+          "user": "svc-metrics",
+          "ip": "10.28.30.3",
+          "event": "更新後の集計ジョブが認証に成功",
+          "raw": "2026-10-20T11:01:10Z host=metrics-03 user=svc-metrics src=10.28.30.3 client=metrics-collector job=MET-203 credential_version=32 result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg3-07",
+          "time": "11:02:00",
+          "offset": 0,
+          "source": "アプリ",
+          "host": "metrics-03",
+          "user": "svc-metrics",
+          "ip": "10.28.30.3",
+          "event": "メトリクス集計結果を更新",
+          "raw": "2026-10-20T11:02:00Z host=metrics-03 user=svc-metrics job=MET-203 operation=aggregate_publish result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg3-06",
+          "time": "11:05:00",
+          "offset": 0,
+          "source": "監査",
+          "host": "metrics-03",
+          "user": "svc-metrics",
+          "ip": "10.28.30.3",
+          "event": "警報対象要求の出所と終息を集計",
+          "raw": "2026-10-20T11:05:00Z host=metrics-03 user=svc-metrics alert=AUTH-203 window=11:00:00-11:05:00 failed_requests=6 failed_src=10.28.30.3 failed_client=metrics-collector failed_job=MET-203 reason=old_credential last_failure=11:00:35 success_after_reload=4 unexpected_sources=0 audit_coverage=complete",
+          "path": "/var/log/audit/events.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "bg3-doc-rotation",
+          "title": "資格情報更新 ROT-203 とサービス構成",
+          "kind": "作業申請",
+          "body": "承認済み。10月20日11:00〜11:05 UTC、svc-metrics の資格情報を31から32へ更新する。利用元は metrics-03（10.28.30.3）の metrics-collector。実行中の集計ジョブ MET-203 が古い資格情報で再試行する場合は、11:01に設定を再読込して新しい資格情報を反映する。今回の対象はこのサービスのみ。"
+        },
+        {
+          "id": "bg3-doc-coverage",
+          "title": "認証監査の見方",
+          "kind": "監査仕様",
+          "body": "AUTH-203 の集計は11:00〜11:05 UTCの警報対象要求を網羅する。failed_src、failed_client、failed_job は失敗要求の送信元・クライアント・実行ID。success_after_reload は再読込後に同じサービスで成功した要求数。audit_coverage=complete はこの時間帯・集計範囲の収集に欠落がない意味であり、将来の操作まで安全だという保証ではない。"
+        }
+      ],
+      "contact": {
+        "id": "bg3-contact",
+        "name": "小林 真",
+        "role": "監視基盤担当",
+        "question": "資格情報更新と集計サービスの復旧を確認する",
+        "replyId": "bg3-reply",
+        "replyTitle": "小林からの回答：更新後の確認",
+        "delaySeconds": 0,
+        "replyText": "ROT-203 を実施しました。MET-203 が古い資格情報を使って再試行したため11:01に再読込しました。以後の認証と集計は成功し、監視画面への反映も確認済みです。今回の警報の6回の失敗は同じジョブからの要求でした。次回は再読込のタイミングを見直します。"
+      },
+      "hints": [
+        "失敗件数だけでなく src・client・job を確認します。",
+        "資格情報更新、古い情報での失敗、再読込、新しい情報での成功を時系列で並べます。",
+        "警報と作業を結び付ける根拠と、復旧結果を登録します。"
+      ],
+      "answer": {
+        "verdict": "benign",
+        "priorities": [
+          "low"
+        ],
+        "actions": [
+          "close"
+        ],
+        "target": "metrics-03",
+        "evidenceGroups": [
+          [
+            "bg3-06"
+          ],
+          [
+            "bg3-doc-rotation"
+          ],
+          [
+            "bg3-reply"
+          ]
+        ],
+        "summary": "認証失敗6回は metrics-03 の metrics-collector、MET-203 が古い資格情報を使った要求に限定されていた。ROT-203 の予定と更新・再読込の時系列が一致し、再読込後の成功を確認した。担当者も集計の復旧を確認しているため、承認された更新に伴う警報として扱う。",
+        "nextStep": "監査集計、ROT-203、担当者回答を添えてクローズする。次回の再読込順序を運用担当に見直してもらう。別の送信元や実行IDの失敗を今回と同一原因として扱わない。",
+        "explanation": "失敗回数だけで攻撃とは決められません。今回は対象要求が既知のジョブに限定され、資格情報更新と復旧につながっています。予定があるだけでなく、警報の要求の出所と復旧を確認します。",
+        "lessons": [
+          "件数だけでなく要求の主体と実行IDを見る。",
+          "予定・失敗原因・復旧を時系列でつなぐ。",
+          "クローズの判断と運用改善の引き継ぎを両立する。"
+        ]
+      },
+      "bridge": {
+        "stage": "checklist",
+        "objective": "認証失敗の発生元・設定更新・その後の結果をつなぎ、警報への対応を提出する。",
+        "focus": "時系列と実行元から原因と復旧範囲を判断する。",
+        "steps": [
+          {
+            "id": "context",
+            "title": "対象アカウントと警報時間帯を確認する",
+            "instruction": "「依頼・状況」を開き、対象端末・利用者・検知された操作を確認します。警報時間帯とサービスを確認します。",
+            "why": "最初に対象と確認事項を絞ると、別の端末や操作を混ぜずに調査できます。",
+            "target": "[data-action=\"context\"]",
+            "kind": "seen",
+            "flag": "context"
+          },
+          {
+            "id": "logs",
+            "title": "失敗・設定反映・成功を時系列で照合する",
+            "instruction": "「ログ検索」で関連する行の生ログを展開します。AUTH-203 と MET-203 の時系列を比べます。",
+            "why": "短いイベント名だけで結論を出さず、実行した主体・対象・結果を元の記録で確かめます。",
+            "target": "[data-tab=\"logs\"]",
+            "tab": "logs",
+            "kind": "seen",
+            "flag": "raw"
+          },
+          {
+            "id": "log-evidence",
+            "title": "失敗要求の出所を示すログを残す",
+            "instruction": "ログ行の「証拠に追加」ボタンを押します。失敗の出所と設定反映後の状態を示す記録を選びます。",
+            "why": "報告を受ける人が同じ事実をたどれるよう、判断を支える具体的な記録を残します。",
+            "target": ".evidence-tray",
+            "kind": "evidence",
+            "source": "log"
+          },
+          {
+            "id": "resources",
+            "title": "更新申請の対象と実施時刻を照合する",
+            "instruction": "「資産・資料」を開きます。申請の実行元・時間帯・資格情報バージョンを照合します。",
+            "why": "操作が起きた事実と、その操作が許可されたかどうかは別々に確かめます。",
+            "target": "[data-tab=\"resources\"]",
+            "tab": "resources",
+            "kind": "seen",
+            "flag": "resources"
+          },
+          {
+            "id": "document-evidence",
+            "title": "照合に使った更新申請を残す",
+            "instruction": "判断に用いた資料を証拠登録します。ログのどの部分と一致・不一致なのかを考えてください。",
+            "why": "ログだけでは分からない業務上の背景を、独立した根拠として報告に残します。",
+            "target": "[data-tab=\"resources\"]",
+            "tab": "resources",
+            "kind": "evidence",
+            "source": "document"
+          },
+          {
+            "id": "request",
+            "title": "集計処理の復旧を担当者に確認する",
+            "instruction": "「照会」タブの「確認を依頼する」を押して回答を読みます。本来の集計処理が復旧したかも確認します。",
+            "why": "予定だけで実施結果を決めつけず、担当者が確認した範囲も調べます。",
+            "target": "[data-tab=\"contact\"]",
+            "tab": "contact",
+            "kind": "request"
+          },
+          {
+            "id": "reply-evidence",
+            "title": "復旧確認の回答を根拠に残す",
+            "instruction": "回答を証拠登録し、ログで確認できた事実と担当者の説明を区別します。",
+            "why": "複数の根拠が一致しているか、追加確認が必要な点が残るかを整理します。",
+            "target": "[data-tab=\"contact\"]",
+            "tab": "contact",
+            "kind": "evidence",
+            "source": "reply"
+          },
+          {
+            "id": "draft",
+            "title": "原因・確認範囲・次の対応を報告する",
+            "instruction": "判定・優先度・対象・対応を選び、「確認した事実・判断の理由」と「未確認事項・引き継ぎ」を記入します。判断を支える時系列と、その判断が適用できる範囲を書きます。",
+            "why": "他の担当者へ引き継げる報告にします。推測を事実のように書かず、確認できた範囲を示します。",
+            "target": "#draft-summary",
+            "kind": "draft",
+            "fields": [
+              "verdict",
+              "priority",
+              "target",
+              "action",
+              "summary",
+              "nextStep"
+            ]
+          },
+          {
+            "id": "submitted",
+            "title": "提出して根拠と報告を振り返る",
+            "instruction": "証拠と記入内容を見直して「判断と対応を記録する」を押します。不足が示されたら調査を補って再提出できます。",
+            "why": "自分の報告と参考例を比べ、根拠や未確認事項が伝わるかを振り返ります。",
+            "target": "#case-form .submit",
+            "kind": "submitted"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bridge-link-followup",
+      "scenarioId": "bridge",
+      "difficulty": "low",
+      "title": "メールのURLを開いた後の状態が分からない",
+      "subtitle": "sales-14 / 確認済みの事実と不明点を分ける",
+      "host": "sales-14",
+      "user": "n.endo",
+      "source": "Proxy",
+      "severity": "medium",
+      "critical": false,
+      "context": "営業担当者から「メールのURLを開くと読み込みが続いたので閉じた」と連絡がありました。新しく観測されたドメインのためProxyの通知も届いています。接続の許可と実際の取得・実行を区別し、現時点で言えることと必要な確認を報告してください。",
+      "logs": [
+        {
+          "id": "bg4-04",
+          "time": "12:19:40",
+          "offset": 0,
+          "source": "EDR",
+          "host": "sales-14",
+          "user": "n.endo",
+          "ip": "10.28.40.14",
+          "event": "URL操作前の端末状態を受信",
+          "raw": "2026-10-20T12:19:40Z host=sales-14 user=n.endo agent=healthy last_event_received=2026-10-20T12:19:40Z process_audit_watermark=2026-10-20T12:19:40Z",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg4-01",
+          "time": "12:20:00",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "sales-14",
+          "user": "n.endo",
+          "ip": "10.28.40.14",
+          "event": "メール内URLへの接続要求を受信",
+          "raw": "2026-10-20T12:20:00Z host=sales-14 user=n.endo request_id=WEB-614 method=GET url=https://delivery-notice.example/view/new domain_age_category=newly_observed operation=request_received",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg4-02",
+          "time": "12:20:00",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "sales-14",
+          "user": "n.endo",
+          "ip": "10.28.40.14",
+          "event": "接続要求に許可判定を記録",
+          "raw": "2026-10-20T12:20:00Z host=sales-14 user=n.endo request_id=WEB-614 destination=delivery-notice.example policy_decision=allow stage=request_policy response_status=not_recorded response_bytes=not_recorded",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg4-06",
+          "time": "12:20:01",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "sales-14",
+          "user": "n.endo",
+          "ip": "10.28.40.14",
+          "event": "新しく観測した宛先の通知",
+          "raw": "2026-10-20T12:20:01Z host=sales-14 request_id=WEB-614 destination=delivery-notice.example category=newly_observed threat_verdict=unclassified action=notify",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg4-03",
+          "time": "12:20:02",
+          "offset": 0,
+          "source": "Proxy",
+          "host": "sales-14",
+          "user": "n.endo",
+          "ip": "10.28.40.14",
+          "event": "応答側の記録が未収集と判明",
+          "raw": "2026-10-20T12:20:02Z host=sales-14 user=n.endo request_id=WEB-614 operation=response_audit status=unavailable reason=collector_restart coverage=request_only",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg4-05",
+          "time": "12:22:00",
+          "offset": 0,
+          "source": "端末管理",
+          "host": "sales-14",
+          "user": "n.endo",
+          "ip": "10.28.40.14",
+          "event": "現在は端末へ照会できない",
+          "raw": "2026-10-20T12:22:00Z host=sales-14 user=n.endo connection=offline remote_query=unavailable last_contact=2026-10-20T12:19:40Z",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg4-07",
+          "time": "12:23:00",
+          "offset": 0,
+          "source": "端末管理",
+          "host": "sales-14",
+          "user": "n.endo",
+          "ip": "10.28.40.14",
+          "event": "端末の追加照会は保留中",
+          "raw": "2026-10-20T12:23:00Z host=sales-14 operation=remote_inventory status=pending reason=device_offline query_scope=post_12:20",
+          "path": "/var/log/audit/events.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "bg4-doc-meaning",
+          "title": "Proxyの判定段階と端末確認",
+          "kind": "記録の仕様",
+          "body": "policy_decision=allow は要求時点で接続を止めない判断であり、応答・取得の完了や取得物の実行を保証しない。WEB-614 の応答記録は収集器再起動で未取得。EDRの process_audit_watermark より後の端末操作は、この画面の記録では確認できない。newly_observed は初観測の分類であり、悪性の確定ではない。"
+        },
+        {
+          "id": "bg4-doc-procedure",
+          "title": "未確認のURL操作を引き継ぐ基準",
+          "kind": "対応基準",
+          "body": "悪性や取得・実行の成否を確定できない場合、確認済みの要求と不足記録を分けて追加調査へ引き継ぐ。URLを再度開いて確かめるよう依頼しない。安全に調査可能になった後に、操作時刻付近のブラウザ履歴・ダウンロード記録・プロセス履歴と、Proxy応答記録の復元可否を確認する。送信元メールも保全する。"
+        }
+      ],
+      "contact": {
+        "id": "bg4-contact",
+        "name": "遠藤 奈央",
+        "role": "営業部・端末利用者",
+        "question": "URL操作時の表示と現在の端末状態を確認する",
+        "replyId": "bg4-reply",
+        "replyTitle": "遠藤からの回答：操作時の記憶",
+        "delaySeconds": 0,
+        "replyText": "12:20ごろリンクを押しました。読み込みが続き、何の画面か分からないまま閉じました。ダウンロードしたかは確認していません。移動のため端末を閉じ、現在はネットワークにつながっていません。メールは残っています。リンクはもう開かず、調査方法の案内を待ちます。"
+      },
+      "hints": [
+        "allow はどの段階の判定か資料で確かめます。",
+        "操作時刻とEDRが確認済みの時刻を比べます。",
+        "不明点を「何が分からないか」「何を確認すれば埋められるか」に分けます。"
+      ],
+      "answer": {
+        "verdict": "unknown",
+        "priorities": [
+          "medium"
+        ],
+        "actions": [
+          "escalate"
+        ],
+        "target": "sales-14",
+        "evidenceGroups": [
+          [
+            "bg4-03"
+          ],
+          [
+            "bg4-doc-meaning"
+          ],
+          [
+            "bg4-reply"
+          ]
+        ],
+        "summary": "sales-14 から12:20に delivery-notice.example への要求があり、Proxyは要求時点で許可していた。ただしWEB-614 の応答記録は未収集で、取得の成否は不明。EDRの確認済み時刻も操作より前で、その後の実行有無を確認できない。利用者も取得結果を確認していないため、悪性や端末への影響を確定せず追加調査とする。",
+        "nextStep": "調査担当へ WEB-614 の応答記録復元可否と、sales-14 の12:20前後のブラウザ履歴・ダウンロード記録・プロセス履歴の確認を依頼する。メールを保全し、再アクセスしないよう伝える。担当者と安全な端末調査方法を調整し、取得・実行や認証情報入力など追加事実が分かり次第、判定と優先度を見直す。",
+        "explanation": "接続許可は取得完了の証明ではなく、記録に実行がないことも実行しなかった証明にはなりません。確認範囲が操作時刻に届かないため、悪性とも無害とも確定できません。不足する証拠と収集方法を具体的に引き継ぎます。",
+        "lessons": [
+          "要求・許可・完了・実行を分けて読む。",
+          "確認済み時刻と調査対象時刻を比較する。",
+          "判定保留でも追加確認と確認先を具体的に報告する。"
+        ]
+      },
+      "bridge": {
+        "stage": "checklist",
+        "objective": "URL操作について確認済みの範囲を整理し、不明点を埋める具体的な追加調査を引き継ぐ。",
+        "focus": "許可・完了・実行を混同せず、判定を保留する根拠を示す。",
+        "steps": [
+          {
+            "id": "context",
+            "title": "アクセス先と操作時刻を確認する",
+            "instruction": "「依頼・状況」を開き、対象端末・利用者・検知された操作を確認します。確認済みの事実と未確認事項を分けます。",
+            "why": "最初に対象と確認事項を絞ると、別の端末や操作を混ぜずに調査できます。",
+            "target": "[data-action=\"context\"]",
+            "kind": "seen",
+            "flag": "context"
+          },
+          {
+            "id": "logs",
+            "title": "接続許可と取得・実行の成否を区別する",
+            "instruction": "「ログ検索」で関連する行の生ログを展開します。要求時刻、応答記録、端末の確認済み時刻を読みます。",
+            "why": "短いイベント名だけで結論を出さず、実行した主体・対象・結果を元の記録で確かめます。",
+            "target": "[data-tab=\"logs\"]",
+            "tab": "logs",
+            "kind": "seen",
+            "flag": "raw"
+          },
+          {
+            "id": "log-evidence",
+            "title": "ログの確認範囲が分かる記録を残す",
+            "instruction": "ログ行の「証拠に追加」ボタンを押します。記録がどこまで確認でき、どこから不明か示す根拠を選びます。",
+            "why": "報告を受ける人が同じ事実をたどれるよう、判断を支える具体的な記録を残します。",
+            "target": ".evidence-tray",
+            "kind": "evidence",
+            "source": "log"
+          },
+          {
+            "id": "resources",
+            "title": "記録の項目と確認済み時刻の意味を確かめる",
+            "instruction": "「資産・資料」を開きます。allow と newly_observed の意味を確認します。",
+            "why": "操作が起きた事実と、その操作が許可されたかどうかは別々に確かめます。",
+            "target": "[data-tab=\"resources\"]",
+            "tab": "resources",
+            "kind": "seen",
+            "flag": "resources"
+          },
+          {
+            "id": "document-evidence",
+            "title": "確認範囲の判断に用いた資料を残す",
+            "instruction": "判断に用いた資料を証拠登録します。ログのどの部分と一致・不一致なのかを考えてください。",
+            "why": "ログだけでは分からない業務上の背景を、独立した根拠として報告に残します。",
+            "target": "[data-tab=\"resources\"]",
+            "tab": "resources",
+            "kind": "evidence",
+            "source": "document"
+          },
+          {
+            "id": "request",
+            "title": "操作時の様子と端末の状況を照会する",
+            "instruction": "「照会」タブの「確認を依頼する」を押して回答を読みます。利用者が確認したことと不明なことを分けます。",
+            "why": "予定だけで実施結果を決めつけず、担当者が確認した範囲も調べます。",
+            "target": "[data-tab=\"contact\"]",
+            "tab": "contact",
+            "kind": "request"
+          },
+          {
+            "id": "reply-evidence",
+            "title": "利用者の確認範囲が分かる回答を残す",
+            "instruction": "回答を証拠登録し、ログで確認できた事実と担当者の説明を区別します。",
+            "why": "複数の根拠が一致しているか、追加確認が必要な点が残るかを整理します。",
+            "target": "[data-tab=\"contact\"]",
+            "tab": "contact",
+            "kind": "evidence",
+            "source": "reply"
+          },
+          {
+            "id": "draft",
+            "title": "事実・不明点・追加確認先を報告する",
+            "instruction": "判定・優先度・対象・対応を選び、「確認した事実・判断の理由」と「未確認事項・引き継ぎ」を記入します。未確認事項を明記し、追加で必要な記録と確認先を具体化します。",
+            "why": "他の担当者へ引き継げる報告にします。推測を事実のように書かず、確認できた範囲を示します。",
+            "target": "#draft-summary",
+            "kind": "draft",
+            "fields": [
+              "verdict",
+              "priority",
+              "target",
+              "action",
+              "summary",
+              "nextStep"
+            ]
+          },
+          {
+            "id": "submitted",
+            "title": "提出して根拠と報告を振り返る",
+            "instruction": "証拠と記入内容を見直して「判断と対応を記録する」を押します。不足が示されたら調査を補って再提出できます。",
+            "why": "自分の報告と参考例を比べ、根拠や未確認事項が伝わるかを振り返ります。",
+            "target": "#case-form .submit",
+            "kind": "submitted"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bridge-local-admin",
+      "scenarioId": "bridge",
+      "difficulty": "low",
+      "title": "業務端末に管理者アカウントが追加された",
+      "subtitle": "design-06 / 自力で調査を完了する",
+      "host": "design-06",
+      "user": "a.nishi",
+      "source": "OS監査",
+      "severity": "high",
+      "critical": false,
+      "context": "設計端末 design-06 にローカルアカウントが作られ、管理者グループへ追加された通知が届きました。あなたがこの案件の担当です。関連記録を調査し、判断と根拠、影響範囲、次の対応をまとめて提出してください。時間制限はありません。",
+      "logs": [
+        {
+          "id": "bg5-01",
+          "time": "13:30:00",
+          "offset": 0,
+          "source": "認証",
+          "host": "design-06",
+          "user": "a.nishi",
+          "ip": "10.28.50.6",
+          "event": "業務アカウントが端末にログオン",
+          "raw": "2026-10-20T13:30:00Z host=design-06 user=a.nishi session_id=SES-906 operation=interactive_logon result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg5-02",
+          "time": "13:32:10",
+          "offset": 0,
+          "source": "OS監査",
+          "host": "design-06",
+          "user": "a.nishi",
+          "ip": "10.28.50.6",
+          "event": "ローカルアカウントを作成",
+          "raw": "2026-10-20T13:32:10Z host=design-06 actor=a.nishi session_id=SES-906 operation=local_user_create target_user=help-cache target_sid=S-1-5-21-906-1051 result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg5-03",
+          "time": "13:32:12",
+          "offset": 0,
+          "source": "OS監査",
+          "host": "design-06",
+          "user": "a.nishi",
+          "ip": "10.28.50.6",
+          "event": "新規アカウントを管理者グループへ追加",
+          "raw": "2026-10-20T13:32:12Z host=design-06 actor=a.nishi session_id=SES-906 operation=local_group_add target_sid=S-1-5-21-906-1051 target_user=help-cache group=Administrators result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg5-06",
+          "time": "13:32:13",
+          "offset": 0,
+          "source": "OS監査",
+          "host": "design-06",
+          "user": "a.nishi",
+          "ip": "10.28.50.6",
+          "event": "権限変更の通知を転送",
+          "raw": "2026-10-20T13:32:13Z host=design-06 target_user=help-cache target_sid=S-1-5-21-906-1051 operation=alert_forward result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg5-04",
+          "time": "13:33:00",
+          "offset": 0,
+          "source": "認証",
+          "host": "design-06",
+          "user": "help-cache",
+          "ip": "10.28.50.6",
+          "event": "追加されたアカウントでログオン",
+          "raw": "2026-10-20T13:33:00Z host=design-06 user=help-cache user_sid=S-1-5-21-906-1051 session_id=SES-907 operation=interactive_logon result=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg5-05",
+          "time": "13:34:00",
+          "offset": 0,
+          "source": "端末管理",
+          "host": "design-06",
+          "user": "system",
+          "ip": "10.28.50.6",
+          "event": "追加された管理者権限が現在も有効",
+          "raw": "2026-10-20T13:34:00Z host=design-06 operation=account_inventory target_user=help-cache target_sid=S-1-5-21-906-1051 enabled=true local_group=Administrators collected=success",
+          "path": "/var/log/audit/events.log"
+        },
+        {
+          "id": "bg5-07",
+          "time": "13:35:00",
+          "offset": 0,
+          "source": "EDR",
+          "host": "design-06",
+          "user": "system",
+          "ip": "10.28.50.6",
+          "event": "端末の管理通信は継続中",
+          "raw": "2026-10-20T13:35:00Z host=design-06 agent=healthy heartbeat=success",
+          "path": "/var/log/audit/events.log"
+        }
+      ],
+      "documents": [
+        {
+          "id": "bg5-doc-policy",
+          "title": "設計端末のアカウント管理と当日の作業申請",
+          "kind": "権限・申請",
+          "body": "design-06 の利用者は西。管理アカウントは端末管理担当が管理し、利用者判断による新規ローカル管理者作成は禁止。10月20日のこの端末に対するアカウント追加・権限付与の承認申請はない。a.nishi には旧設定により管理者操作権限が残っており是正対象だが、技術的に操作できることは操作の承認を意味しない。"
+        },
+        {
+          "id": "bg5-doc-response",
+          "title": "未承認の管理者追加時の対応基準",
+          "kind": "対応基準",
+          "body": "未承認のローカル管理者追加が実際に成功した場合は権限管理のインシデントとして対応する。追加アカウントの利用抑止と端末の追加操作抑止を管理担当に依頼し、作成・権限付与・利用記録を保全する。削除や再インストールを急いで証拠を消さない。確認済みの端末範囲を報告し、他端末への展開や情報持ち出しは追加調査で判断する。"
+        }
+      ],
+      "contact": {
+        "id": "bg5-contact",
+        "name": "西 明",
+        "role": "設計部・端末利用者",
+        "question": "新規アカウント作成と管理者追加の意図を確認する",
+        "replyId": "bg5-reply",
+        "replyTitle": "西からの回答：操作の経緯",
+        "delaySeconds": 0,
+        "replyText": "社外の掲示板で見つけたアプリ改善手順を見て、13:32ごろ help-cache を作り管理者グループへ追加し、そのアカウントでログオンしました。社内申請も端末管理担当への相談もしていません。いまは操作を止めています。参照した手順と実施内容を共有できます。"
+      },
+      "hints": [
+        "名前とSIDを使い、作成・権限付与・利用の記録を照合します。",
+        "操作権限があったことと業務上の承認を分けて確認します。",
+        "対象端末とアカウントを特定し、権限の利用抑止と記録保全を引き継ぎます。"
+      ],
+      "answer": {
+        "verdict": "incident",
+        "priorities": [
+          "high"
+        ],
+        "actions": [
+          "contain",
+          "escalate"
+        ],
+        "target": "design-06",
+        "evidenceGroups": [
+          [
+            "bg5-03",
+            "bg5-05"
+          ],
+          [
+            "bg5-doc-policy"
+          ],
+          [
+            "bg5-reply"
+          ]
+        ],
+        "summary": "design-06 で help-cache（SID S-1-5-21-906-1051）が作成され、Administrators への追加に成功した。追加後のログオンと現在も有効な権限を確認した。承認申請はなく、利用者も社外手順に従い未申請で作成したと回答しているため、未承認の管理者権限付与として対応する。他端末や情報持ち出しへの影響は未確認。",
+        "nextStep": "端末管理担当と対応担当へ連絡し、help-cache の利用抑止、design-06 の追加操作抑止、作成・権限付与・ログオン記録の保全を依頼する。参照した手順と実施内容を取得し、追加ログオン後の操作と他の変更有無を確認する。a.nishi の過剰な権限も管理担当へ是正を引き継ぐ。",
+        "explanation": "操作できることは業務上の承認を意味しません。今回は権限追加の成功、現在の状態、承認状況、回答が一致しています。攻撃者による侵入と断定する必要はありませんが、残存する権限を抑止し、実施操作を調べる必要があります。",
+        "lessons": [
+          "操作権限と承認を区別する。",
+          "名前だけでなくSIDで操作を結び付ける。",
+          "確認済みの変更に対処し、未確認の影響を別途調べる。"
+        ]
+      },
+      "bridge": {
+        "stage": "independent",
+        "objective": "自分で調査の順序を決め、判定・優先度・対象・対応と、証拠付きの調査要約・次の対応を提出する。",
+        "focus": "根拠を自分で選び、引き継げる報告を完成させる。",
+        "steps": []
+      }
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset-bridge-app-update",
+      "name": "support-12",
+      "owner": "社内サポート",
+      "importance": "中",
+      "description": "問い合わせ対応用端末。業務アプリの更新は配布管理担当が申請単位で行う。"
+    },
+    {
+      "id": "asset-bridge-usb-copy",
+      "name": "legal-08",
+      "owner": "法務部",
+      "importance": "高",
+      "description": "契約関係の機密資料を扱う端末。持ち出しは登録済み暗号化USBに限定する。"
+    },
+    {
+      "id": "asset-bridge-service-auth",
+      "name": "metrics-03",
+      "owner": "監視基盤担当",
+      "importance": "中",
+      "description": "svc-metrics の認証を使い、社内メトリクスを集計する端末。"
+    },
+    {
+      "id": "asset-bridge-link-followup",
+      "name": "sales-14",
+      "owner": "営業部",
+      "importance": "中",
+      "description": "外出用業務端末。問題のURL操作後にオフラインとなっている。"
+    },
+    {
+      "id": "asset-bridge-local-admin",
+      "name": "design-06",
+      "owner": "設計部",
+      "importance": "高",
+      "description": "設計資料を扱う業務端末。利用者判断による新規ローカル管理者追加は禁止。"
+    }
+  ]
+}
