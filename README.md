@@ -1,6 +1,17 @@
+<p align="center">
+  <img src="docs/images/socroom-banner.png" width="960" alt="山並みと街を見守るSOCroomのキャラクターを描いたピクセルアート">
+</p>
+
 # SOCroom v0.5
 
+<img src="docs/images/socroom-character.png" align="right" width="120" alt="青い盾と剣を持つSOCroomのキャラクター">
+
+**証拠を見極め、次の一手を選ぶ。**<br>
+*Assess the evidence. Choose the next step.*
+
 ブラウザだけで、SOCアナリストの一次対応を体験する演習室です。操作チュートリアル専用1問、ガイド付き実務演習5問、低・中・高それぞれ異なる5問、合計21問を収録しています。難易度を変えると、調査する問題そのものが変わります。仮想シェルは [Logroom](https://github.com/retiacole/logroom) のMITライセンスの実装を基にしています。
+
+<br clear="right">
 
 ## v0.5の主な変更
 
