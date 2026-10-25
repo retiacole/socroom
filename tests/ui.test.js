@@ -124,16 +124,18 @@ function solveThroughDOM(h, id) {
   while (h.session.records[id].arrival === null) h.click('[data-action="step"]');
   h.click(`[data-case="${id}"]`);
   h.click('[data-tab="contact"]');
-  if (h.document.querySelector('[data-action="contact"]')) h.click('[data-action="contact"]');
+  if (h.document.querySelector('[data-action="contact"]')) h.click('[data-action="contact"][data-question="specific"]');
   while (!h.window.SocEngine.replyAvailable(h.session, id)) h.click('[data-action="step"]');
   for (const group of c.answer.evidenceGroups) {
-    const evidenceId = group.find(ref => h.window.SocEngine.evidenceAvailable(h.session, ref));
+    let evidenceId = group.find(ref => h.window.SocEngine.evidenceAvailable(h.session, ref));
+    for (let attempts = 0; !evidenceId && attempts < 20; attempts++) { h.click('[data-action="step"]'); evidenceId = group.find(ref => h.window.SocEngine.evidenceAvailable(h.session, ref)); }
     assert.ok(evidenceId, 'evidence released');
     const tab = c.logs.some(log => log.id === evidenceId) ? 'logs' : c.documents.some(doc => doc.id === evidenceId) ? 'resources' : 'contact';
     h.click(`[data-tab="${tab}"]`);
+    if (tab === 'logs') h.input('#log-search', evidenceId);
     h.click(`[data-evidence="${evidenceId}"]`);
   }
-  for (const [field, value] of Object.entries({ verdict: c.answer.verdict, priority: c.answer.priorities[0], target: c.answer.target, action: c.answer.actions[0], summary: 'ログと資料を照合して確認した。', nextStep: '担当者に根拠と未確認事項を引き継ぐ。' })) h.input('#draft-' + field, value);
+  for (const [field, value] of Object.entries({ verdict: c.answer.verdict, priority: c.answer.priorities[0], target: c.answer.target, action: c.answer.actions[0], summary: `${c.answer.target} のログと資料を照合して確認した。`, nextStep: '担当者に根拠と未確認事項を引き継ぐ。' })) h.input('#draft-' + field, value);
   h.submit('#case-form');
   assert.equal(h.session.records[id].status, 'resolved');
 }
@@ -245,7 +247,7 @@ test('search, pivot, evidence removal and terminal use the same released logs', 
   const h = harness(t);
   start(h, 'high');
   const c = h.window.SOC_DATA.cases.find(c => c.id === h.session.selectedCaseId);
-  assert.equal(h.document.querySelectorAll('.log-row').length, c.logs.length);
+  assert.equal(h.document.querySelectorAll('.log-row').length, Math.min(100, h.window.SocEngine.visibleLogs(h.session).length));
   h.input('#log-search', c.logs[0].id);
   assert.equal(h.document.querySelectorAll('.log-row').length, 1);
   h.click(`[data-evidence="${c.logs[0].id}"]`);
@@ -369,13 +371,13 @@ test('Japanese IME retains the input node during composition and filters after c
   h.input('#log-search', 'にちじ');
   assert.equal(h.get('#log-search'), input);
   assert.equal(h.document.activeElement, input);
-  assert.equal(h.document.querySelectorAll('.log-row').length, h.window.SocEngine.getCase(h.session.selectedCaseId).logs.length);
+  assert.equal(h.document.querySelectorAll('.log-row').length, Math.min(100, h.window.SocEngine.visibleLogs(h.session).length));
   // A new case arrives while the learner is choosing a Japanese conversion.
   // Rendering must wait without replacing the focused search control.
   h.tick(45);
   assert.equal(h.window.SocEngine.activeCases(h.session).length, 2);
   assert.equal(h.get('#log-search'), input);
-  const eventTitle = h.window.SocEngine.getCase(h.session.selectedCaseId).logs[0].event;
+  const eventTitle = h.window.SocEngine.getCase(h.session.selectedCaseId).logs[0].id;
   input.value = eventTitle;
   input.dispatchEvent(new h.window.CompositionEvent('compositionend', { bubbles: true, data: input.value }));
   assert.notEqual(h.get('#log-search'), input);
@@ -385,7 +387,7 @@ test('Japanese IME retains the input node during composition and filters after c
   assert.equal(h.document.querySelectorAll('[data-case]').length, 2);
 });
 
-test('next update control jumps high difficulty to each 45-second arrival', t => {
+test('next update control stops at delayed log arrivals as well as new cases', t => {
   const h = harness(t);
   start(h, 'high');
   h.click('[data-action="step"]');
@@ -393,10 +395,17 @@ test('next update control jumps high difficulty to each 45-second arrival', t =>
   assert.equal(h.document.querySelectorAll('[data-case]').length, 2);
   assert.equal(h.get('#shift-clock').textContent, '00:45');
   h.click('[data-action="step"]');
+  assert.equal(h.session.elapsed, 60, 'a delayed log is the next update before the third case');
+  assert.ok(h.window.SocEngine.evidenceAvailable(h.session, 'hi-ci-15'));
+  h.click('[data-action="step"]');
   assert.equal(h.session.elapsed, 90);
   assert.equal(h.document.querySelectorAll('[data-case]').length, 3);
   assert.equal(h.get('#shift-clock').textContent, '01:30');
-  for (const [at,count] of [[135,4],[180,5]]) {h.click('[data-action="step"]');assert.equal(h.session.elapsed,at);assert.equal(h.document.querySelectorAll('[data-case]').length,count);}
+  for (const [at,count] of [[135,4],[180,5]]) {
+    while (h.session.elapsed < at) h.click('[data-action="step"]');
+    assert.equal(h.session.elapsed,at);
+    assert.equal(h.document.querySelectorAll('[data-case]').length,count);
+  }
 });
 
 test('all fifteen normal cases can collect every required evidence group and complete through DOM controls', t => {
@@ -436,10 +445,10 @@ function operateTutorialStep(h) {
     details.open = true;
     details.dispatchEvent(new h.window.Event('toggle'));
     assert.equal(h.get('[data-log-details="ts-06"]'), details, 'reading a log must not replace the open node');
-    assert.match(details.textContent, /run=INV-310/);
+    assert.equal(JSON.parse(details.querySelector('pre.raw').textContent).properties.run, 'INV-310');
   } else if (id === 'resources') h.click('[data-tab="resources"]');
   else if (id === 'contact') h.click('[data-tab="contact"]');
-  else if (id === 'request') h.click('[data-action="contact"]');
+  else if (id === 'request') h.click('[data-action="contact"][data-question="specific"]');
   else if (id.endsWith('-evidence')) {
     const evidenceIds = { 'log-evidence': 'ts-06', 'document-evidence': 'ts-doc-plan', 'reply-evidence': 'ts-reply' };
     h.click(`[data-evidence="${evidenceIds[id]}"]`);
@@ -831,10 +840,146 @@ test('advanced timelines and references include related hosts while excluding th
   start(h,'high','high',c.id);
   assert.ok(c.relatedHosts.length>=2);
   h.click('[data-tab="timeline"]');
-  for(const host of new Set(c.logs.map(l=>l.host)))assert.ok(h.get('#investigation-view').textContent.includes(host));
-  assert.equal(h.document.querySelectorAll('.timeline-item').length,c.logs.length);
+  assert.equal(h.document.querySelectorAll('.timeline-item').length,Math.min(100,h.window.SocEngine.visibleLogs(h.session,c.id).length));
+  while(h.document.querySelector('[data-action="more-logs"]'))h.click('[data-action="more-logs"]');
+  for(const host of new Set(h.window.SocEngine.visibleLogs(h.session,c.id).map(l=>l.host).filter(Boolean)))assert.ok(h.get('#investigation-view').textContent.includes(host));
   h.click('[data-tab="resources"]');
   for(const host of [c.host,...c.relatedHosts])assert.ok(h.get('.asset-table').textContent.includes(host));
   assert.doesNotMatch(h.get('.asset-table').textContent,/scan-lab-01/);
-  assert.match(h.get('#draft-target').closest('label').textContent,/主な対象端末/);
+  assert.match(h.get('#draft-target').closest('label').textContent,/主な対象（端末・アカウント・アプリ）/);
+});
+
+test('main evidence budget is visible and excessive evidence must be narrowed before submission', t => {
+  const h = harness(t);
+  const c = h.window.SOC_DATA.cases.find(c => c.id === 'medium-waf-import');
+  start(h, 'medium', 'medium', c.id);
+  const E = h.window.SocEngine, limit = E.evidenceLimit(c.id);
+  assert.match(h.get('.evidence-tray').textContent, new RegExp(`最大${limit}件`));
+  h.click('[data-tab="contact"]');
+  h.click('[data-action="contact"][data-question="specific"]');
+  while (!E.replyAvailable(h.session, c.id, 'specific')) h.click('[data-action="step"]');
+  const required = c.answer.evidenceGroups.map(group => group.find(id => E.evidenceAvailable(h.session, id)));
+  assert.ok(required.every(Boolean));
+  const extra = E.visibleLogs(h.session, c.id).filter(l => !required.includes(l.id)).slice(0, limit + 1 - required.length).map(l => l.id);
+  for (const id of [...required, ...extra]) {
+    const tab = c.logs.some(l => l.id === id) ? 'logs' : c.documents.some(d => d.id === id) ? 'resources' : 'contact';
+    h.click(`[data-tab="${tab}"]`);
+    if (tab === 'logs') h.input('#log-search', id);
+    h.click(`[data-evidence="${id}"]`);
+  }
+  assert.equal(h.session.records[c.id].evidenceIds.length, limit + 1);
+  assert.match(h.get('.evidence-tray h3').textContent, new RegExp(`${limit + 1} / ${limit}`));
+  for (const [key, value] of Object.entries({verdict:c.answer.verdict, priority:c.answer.priorities[0], action:c.answer.actions[0], target:c.answer.target, summary:c.answer.summary, nextStep:c.answer.nextStep})) h.input('#draft-' + key, value);
+  h.submit('#case-form');
+  assert.equal(h.session.records[c.id].assessment.passed, false);
+  assert.equal(h.session.records[c.id].assessment.checks.find(x => x.id === 'evidenceFocus').passed, false);
+  assert.match(h.get('.assessment').textContent, /絞り込み/);
+  for (const id of extra) h.click(`[data-remove-evidence="${id}"]`);
+  h.submit('#case-form');
+  assert.equal(h.session.records[c.id].assessment.passed, true);
+});
+
+test('vague and specific inquiries have independent replies and only the useful reply satisfies evidence', t => {
+  const h = harness(t);
+  const c = h.window.SOC_DATA.cases.find(c => c.id === 'medium-mfa-fatigue');
+  const specific = c.contact.questions.find(q => q.id === 'specific'), vague = c.contact.questions.find(q => q.id === 'vague');
+  start(h, 'medium', 'medium', c.id);
+  const E = h.window.SocEngine;
+  h.click('[data-tab="contact"]');
+  h.click('[data-action="contact"][data-question="vague"]');
+  assert.equal(h.session.records[c.id].contactRequests.vague, 0);
+  assert.equal(h.session.records[c.id].contactRequests.specific, undefined);
+  while (!E.replyAvailable(h.session, c.id, 'vague')) h.click('[data-action="step"]');
+  assert.equal(E.replyAvailable(h.session, c.id, 'specific'), false);
+  assert.equal(h.document.querySelector(`[data-evidence="${specific.replyId}"]`), null);
+  h.click(`[data-evidence="${vague.replyId}"]`);
+  assert.ok(h.session.records[c.id].evidenceIds.includes(vague.replyId));
+  for (const group of c.answer.evidenceGroups.filter(group => !group.includes(specific.replyId))) {
+    const id = group.find(id => E.evidenceAvailable(h.session, id));
+    assert.ok(id);
+    const tab = c.logs.some(l => l.id === id) ? 'logs' : 'resources';
+    h.click(`[data-tab="${tab}"]`);
+    if (tab === 'logs') h.input('#log-search', id);
+    h.click(`[data-evidence="${id}"]`);
+  }
+  for (const [key,value] of Object.entries({verdict:c.answer.verdict,priority:c.answer.priorities[0],action:c.answer.actions[0],target:c.answer.target,summary:c.answer.summary,nextStep:c.answer.nextStep})) h.input('#draft-' + key,value);
+  h.submit('#case-form');
+  assert.equal(h.session.records[c.id].assessment.checks.find(x => x.id === 'evidence').passed,false,'a vague reply cannot replace the requested observation');
+  assert.equal(h.session.records[c.id].assessment.passed,false);
+  h.click('[data-tab="contact"]');
+  h.click('[data-action="contact"][data-question="specific"]');
+  assert.ok(h.session.records[c.id].contactRequests.specific > h.session.records[c.id].contactRequests.vague);
+  while (!E.replyAvailable(h.session, c.id, 'specific')) h.click('[data-action="step"]');
+  h.click(`[data-evidence="${specific.replyId}"]`);
+  assert.ok(h.session.records[c.id].evidenceIds.includes(vague.replyId));
+  assert.ok(h.session.records[c.id].evidenceIds.includes(specific.replyId));
+  assert.ok(c.answer.evidenceGroups.some(group => group.includes(specific.replyId)));
+  assert.equal(c.answer.evidenceGroups.flat().includes(vague.replyId), false);
+  h.submit('#case-form');
+  assert.equal(h.session.records[c.id].assessment.passed,true,'the specific follow-up closes the evidence gap');
+  h.click('[data-action="export"]');
+  const restored = E.hydrate(JSON.parse(h.downloads.at(-1).content).session);
+  assert.deepEqual({...restored.records[c.id].contactRequests}, {...h.session.records[c.id].contactRequests});
+  assert.equal(E.availableReplies(restored, c.id).length, 2);
+});
+
+test('terminal grep line numbers register the corresponding original log and reject a working copy', t => {
+  const h = harness(t);
+  const c = h.window.SOC_DATA.cases.find(c => c.id === 'high-pipeline');
+  start(h, 'high', 'high', c.id);
+  const target = c.logs.find(l => l.id === 'hi-ci-03');
+  h.click('[data-tab="terminal"]');
+  h.input('#terminal-input', `grep -n 'postpackage-helper' ${target.path}`);
+  h.submit('#terminal-form');
+  const output = h.get('#terminal-output').textContent;
+  const line = output.split('\n').find(line => /^\d+:/.test(line) && line.includes(target.raw));
+  assert.ok(line, 'grep prints the original line with its line number');
+  const number = Number(line.match(/^\d+/)[0]);
+  h.input('#terminal-input', `evidence ${target.path}:${number}`);
+  h.submit('#terminal-form');
+  assert.ok(h.session.records[c.id].evidenceIds.includes(target.id));
+  assert.ok(h.get('.evidence-tray').textContent.includes(target.id));
+  h.input('#terminal-input', `cp ${target.path} working.log`);
+  h.submit('#terminal-form');
+  h.click('[data-action="export"]');
+  assert.ok(JSON.parse(h.downloads.at(-1).content).workspace.files['/home/analyst/working.log'].includes(target.raw),'working copy exists before registration is rejected');
+  h.input('#terminal-input', `evidence /home/analyst/working.log:${number}`);
+  h.submit('#terminal-form');
+  assert.match(h.get('#terminal-output').textContent, /公開済みの原本|原本の行/);
+  assert.deepEqual(Array.from(h.session.records[c.id].evidenceIds), [target.id]);
+  // Arrival of later data must not change a previously identified original line.
+  h.tick(180);
+  h.click(`[data-remove-evidence="${target.id}"]`);
+  h.input('#terminal-input', `evidence ${target.path}:${number}`);
+  h.submit('#terminal-form');
+  assert.deepEqual(Array.from(h.session.records[c.id].evidenceIds), [target.id]);
+});
+
+test('source, host, UTC range and query filters combine and are retained in the timeline', t => {
+  const h = harness(t);
+  const c = h.window.SOC_DATA.cases.find(c => c.id === 'high-lateral');
+  start(h, 'high', 'high', c.id);
+  const target = c.logs.find(l => l.id === 'hi-lm-08');
+  h.input('#source-filter', target.source, 'change');
+  h.input('#host-filter', target.host, 'change');
+  h.input('#time-from', target.time, 'change');
+  h.input('#time-to', target.time, 'change');
+  h.input('#log-search', target.id);
+  assert.equal(h.document.querySelectorAll('.log-row').length, 1);
+  assert.ok(h.get('.log-row').textContent.includes(target.id));
+  h.click(`[data-evidence="${target.id}"]`);
+  const checkbox = h.get('#evidence-only');
+  checkbox.checked = true;
+  checkbox.dispatchEvent(new h.window.Event('change', {bubbles:true}));
+  h.click('[data-tab="timeline"]');
+  assert.equal(h.document.querySelectorAll('.timeline-item').length, 1);
+  assert.ok(h.get('.timeline-item').textContent.includes(target.id));
+  h.input('#time-from', '23:59:59', 'change');
+  assert.equal(h.document.querySelectorAll('.timeline-item').length, 0);
+  h.click('[data-action="clear-filter"]');
+  assert.equal(h.get('#log-search').value, '');
+  assert.equal(h.get('#time-from').value, '');
+  assert.equal(h.get('#time-to').value, '');
+  assert.equal(h.get('#evidence-only').checked, false);
+  assert.equal(h.document.querySelectorAll('.timeline-item').length, Math.min(100, h.window.SocEngine.visibleLogs(h.session, c.id).length));
 });

@@ -6,6 +6,9 @@ const E = require('../src/engine.js');
 const B = require('../src/bridge.js');
 const D = require('../src/data.js');
 const copy = value => JSON.parse(JSON.stringify(value));
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
 
 function fixture(course = B.create()) {
   const c = B.currentCase(course);
@@ -257,4 +260,79 @@ test('forged completion flags and incorrect submitted answers cannot unlock the 
   assert.throws(() => B.advance(wrong));
   const wrongCurrent = E.createSession('bridge', 'low', c.id);
   assert.throws(() => B.hydrate(course, wrongCurrent), 'completed proof cannot accompany an unresolved current attempt');
+});
+
+test('reflection notes round-trip with bounded, whitelisted fact/limit/next fields', () => {
+  const { course, c, session } = fixture();
+  course.reflections[c.id] = { facts: 'ログで確認できた操作', limits: '操作理由は未確認', next: '担当者へ照会する' };
+  const restored = B.hydrate(copy(course), E.hydrate(copy(session)));
+  assert.deepEqual(restored.reflections, course.reflections);
+  for (const reflections of [{ unknown: {} }, { [c.id]: { facts: 'x'.repeat(1401) } }, { [c.id]: { facts: 1 } }, { [c.id]: { unexpected: '' } }, []]) {
+    assert.throws(() => B.hydrate({ ...copy(course), reflections }, E.hydrate(copy(session))));
+  }
+});
+
+test('migration workspaces survive export with the same terminal path and size validation', () => {
+  const { course, session } = fixture();
+  const id = B.CASE_IDS[2], workspace = { files: { '/home/analyst/notes.txt': '後続ケースの調査メモ' }, dirs: ['/home/analyst'], history: ['cat notes.txt'], cwd: '/home/analyst', oldcwd: '/home/analyst' };
+  course.reviewWorkspaces[id] = workspace;
+  const restored = B.hydrate(copy(course), E.hydrate(copy(session)));
+  assert.deepEqual(restored.reviewWorkspaces[id], workspace);
+  for (const reviewWorkspaces of [
+    { foreign: workspace },
+    { [id]: { ...workspace, files: { '/var/log/auth.log': '改変' } } },
+    { [id]: { ...workspace, files: { '/home/analyst/huge': 'x'.repeat(2097153) } } },
+    { [id]: { ...workspace, files: { '/home/analyst/file': 'x', '/home/analyst/file/child': 'y' } } },
+    Object.fromEntries(B.CASE_IDS.map(id => [id, { ...workspace, files: { '/home/analyst/notes.txt': 'x'.repeat(1000000) } }]))
+  ]) assert.throws(() => B.hydrate({ ...copy(course), reviewWorkspaces }, E.hydrate(copy(session))));
+});
+
+test('legacy bridge progress revisits earlier reopened work and preserves later completed and draft sessions', () => {
+  const data = copy(D); data.version = 'socroom-3';
+  const sandbox = { SOC_DATA: data };
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../src/engine.js'), 'utf8'), sandbox);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../src/bridge.js'), 'utf8'), sandbox);
+  const engine = sandbox.SocEngine, bridge = sandbox.SocBridge, course = bridge.create();
+  const sessions = [];
+  function finishCurrent(session) {
+    const c = engine.getCase(session.individualCaseId);
+    if (session.phase === 'paused') engine.resume(session);
+    engine.requestContact(session, c.id);
+    session.records[c.id].evidenceIds = c.answer.evidenceGroups.map(group => group[0]);
+    session.records[c.id].draft = { verdict: c.answer.verdict, priority: c.answer.priorities[0], action: c.answer.actions[0], target: c.answer.target, summary: c.answer.summary, nextStep: c.answer.nextStep };
+    assert.equal(engine.submitCase(session, c.id).passed, true);
+    bridge.finish(course, session);
+  }
+  for (let i = 0; i < 2; i += 1) {
+    const session = engine.createSession('bridge', 'low', bridge.CASE_IDS[i]);
+    finishCurrent(session); sessions.push(session); bridge.advance(course);
+  }
+  const current = engine.createSession('bridge', 'low', bridge.CASE_IDS[2]);
+  current.records[current.individualCaseId].draft.summary = '途中の調査メモを保持';
+  const raw = copy(course), oldCurrent = copy(current);
+  oldCurrent.version = 'socroom-2';
+  raw.completed.forEach(s => { s.version = 'socroom-2'; Object.values(s.records).forEach(r => { delete r.contactRequests; }); });
+  raw.completed[0].records[bridge.CASE_IDS[0]].submission.draft.summary = '記録した';
+  const restored = bridge.hydrate(raw, engine.hydrate(oldCurrent));
+  assert.equal(restored.index, 0);
+  assert.equal(restored.completed.length, 0);
+  assert.equal(restored.resumeSession.phase, 'paused');
+  assert.equal(restored.reviewArchive[bridge.CASE_IDS[1]].phase, 'completed');
+  assert.equal(restored.reviewArchive[bridge.CASE_IDS[2]].records[bridge.CASE_IDS[2]].draft.summary, '途中の調査メモを保持');
+  let active = restored.resumeSession; delete restored.resumeSession;
+  const roundTrip = bridge.hydrate(copy(restored), engine.hydrate(copy(active)));
+  assert.equal(Object.keys(roundTrip.reviewArchive).length, 2);
+  const c = engine.getCase(active.individualCaseId);
+  engine.resume(active);
+  active.records[c.id].draft.summary = c.answer.summary;
+  assert.equal(engine.submitCase(active, c.id).passed, true);
+  bridge.finish(roundTrip, active); bridge.advance(roundTrip);
+  active = bridge.resumeArchived(roundTrip);
+  assert.equal(active.phase, 'completed');
+  assert.equal(roundTrip.completed.length, 2);
+  bridge.advance(roundTrip);
+  active = bridge.resumeArchived(roundTrip);
+  assert.equal(active.phase, 'paused');
+  assert.equal(active.records[active.individualCaseId].draft.summary, '途中の調査メモを保持');
+  assert.equal(Object.keys(roundTrip.reviewArchive).length, 0);
 });

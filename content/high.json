@@ -26,7 +26,7 @@
           "host": "ci-control-01",
           "user": "svc-release",
           "ip": "10.60.10.12",
-          "event": "朝の定期ビルドが完了",
+          "event": "build.completed",
           "raw": "2026-10-20T08:40:00Z host=ci-control-01 run=CI-640 revision=rev-8d1 trigger=schedule status=success artifact=app-6.4.0",
           "path": "/var/log/jobs/scheduler.log"
         },
@@ -38,7 +38,7 @@
           "host": "ci-control-01",
           "user": "svc-release",
           "ip": "198.51.100.151",
-          "event": "リリース用トークンの利用",
+          "event": "service_token.sign_in",
           "raw": "2026-10-20T08:42:05Z host=ci-control-01 token_id=REL-T19 src=198.51.100.151 device=unregistered auth=service_token result=success session=CI-S992",
           "path": "/var/log/identity/idp.log"
         },
@@ -50,8 +50,8 @@
           "host": "ci-control-01",
           "user": "svc-release",
           "ip": "198.51.100.151",
-          "event": "ビルド定義の更新",
-          "raw": "2026-10-20T08:42:09Z host=ci-control-01 session=CI-S992 action=workflow_update workflow=release-prod old_revision=wf-77 new_revision=wf-78 added_step=postpackage-helper result=success approval_ref=none",
+          "event": "workflow.update",
+          "raw": "2026-10-20T08:42:09Z host=ci-control-01 session=CI-S992 action=workflow_update workflow=release-prod old_revision=wf-77 new_revision=wf-78 added_step=postpackage-helper result=success",
           "path": "/var/log/audit/audit.log"
         },
         {
@@ -62,7 +62,7 @@
           "host": "ci-control-01",
           "user": "svc-release",
           "ip": "198.51.100.151",
-          "event": "手動ビルドの開始",
+          "event": "workflow_dispatch",
           "raw": "2026-10-20T08:42:11Z host=ci-control-01 session=CI-S992 action=run_create run=CI-641 workflow_revision=wf-78 source_revision=rev-8d1 reason=manual",
           "path": "/var/log/audit/audit.log"
         },
@@ -74,7 +74,7 @@
           "host": "build-worker-02",
           "user": "svc-build",
           "ip": "10.60.10.12",
-          "event": "指定された定義でジョブを開始",
+          "event": "build.started",
           "raw": "2026-10-20T08:42:12Z host=build-worker-02 run=CI-641 workflow_revision=wf-78 source_revision=rev-8d1 runner=build-worker-02 state=started",
           "path": "/var/log/jobs/scheduler.log"
         },
@@ -86,8 +86,8 @@
           "host": "build-worker-02",
           "user": "svc-build",
           "ip": "10.60.10.12",
-          "event": "追加ステップによる成果物の書き換え",
-          "raw": "2026-10-20T08:42:40Z host=build-worker-02 run=CI-641 parent=build-agent step=postpackage-helper action=file_write path=/build/output/app/runtime-settings.json new_endpoint=telemetry-cache.example signer=none",
+          "event": "file.write",
+          "raw": "2026-10-20T08:42:40Z host=build-worker-02 run=CI-641 parent=build-agent step=postpackage-helper action=file_write path=/build/output/app/runtime-settings.json new_endpoint=telemetry-cache.example",
           "path": "/var/log/security/edr.log"
         },
         {
@@ -98,7 +98,7 @@
           "host": "artifact-registry-01",
           "user": "svc-build",
           "ip": "10.60.10.12",
-          "event": "成果物の登録",
+          "event": "artifact.publish",
           "raw": "2026-10-20T08:42:55Z host=artifact-registry-01 run=CI-641 artifact=app-6.4.1 digest=lab-a641 workflow_revision=wf-78 published_by=svc-build result=success",
           "path": "/var/log/audit/audit.log"
         },
@@ -110,8 +110,8 @@
           "host": "build-worker-02",
           "user": "svc-test",
           "ip": "10.60.10.12",
-          "event": "通常の単体試験が完了",
-          "raw": "2026-10-20T08:43:00Z host=build-worker-02 run=CI-641 test_suite=unit result=passed config_integrity_check=not_in_suite",
+          "event": "test_suite.completed",
+          "raw": "2026-10-20T08:43:00Z host=build-worker-02 run=CI-641 test_suite=unit result=passed",
           "path": "/var/log/jobs/scheduler.log"
         },
         {
@@ -122,8 +122,8 @@
           "host": "ci-control-01",
           "user": "svc-release",
           "ip": "198.51.100.151",
-          "event": "配布チャネルの更新",
-          "raw": "2026-10-20T08:43:08Z host=ci-control-01 session=CI-S992 action=release_channel_update channel=production old_artifact=app-6.4.0 new_artifact=app-6.4.1 digest=lab-a641 change_ref=none",
+          "event": "release_channel.update",
+          "raw": "2026-10-20T08:43:08Z host=ci-control-01 session=CI-S992 action=release_channel_update channel=production old_artifact=app-6.4.0 new_artifact=app-6.4.1 digest=lab-a641",
           "path": "/var/log/audit/audit.log"
         },
         {
@@ -134,7 +134,7 @@
           "host": "release-agent-01",
           "user": "svc-deploy",
           "ip": "10.60.20.11",
-          "event": "配布エージェントが成果物を取得",
+          "event": "artifact.download",
           "raw": "2026-10-20T08:43:15Z host=release-agent-01 deployment=DEP-641 artifact=app-6.4.1 digest=lab-a641 registry=artifact-registry-01 result=downloaded",
           "path": "/var/log/audit/audit.log"
         },
@@ -146,7 +146,7 @@
           "host": "release-agent-01",
           "user": "svc-deploy",
           "ip": "10.60.20.11",
-          "event": "本番カナリアへの反映",
+          "event": "deployment.activate",
           "raw": "2026-10-20T08:43:18Z host=release-agent-01 deployment=DEP-641 target_group=prod-canary nodes=2 artifact=app-6.4.1 result=activated remaining_nodes=18 state=waiting_health_gate",
           "path": "/var/log/jobs/scheduler.log"
         },
@@ -156,9 +156,9 @@
           "offset": 0,
           "source": "Proxy",
           "host": "release-agent-01",
-          "user": "svc-deploy",
+          "user": "",
           "ip": "10.60.20.11",
-          "event": "通常のヘルスチェック",
+          "event": "HTTP GET",
           "raw": "2026-10-20T08:43:20Z host=release-agent-01 deployment=DEP-641 dst=health.internal.example response=200 check=process_liveness",
           "path": "/var/log/network/proxy.log"
         },
@@ -170,7 +170,7 @@
           "host": "artifact-registry-01",
           "user": "svc-build",
           "ip": "10.60.10.13",
-          "event": "別プロジェクトの成果物が登録",
+          "event": "artifact.publish",
           "raw": "2026-10-20T08:43:22Z host=artifact-registry-01 project=docs run=DOC-810 artifact=docs-2.1.8 digest=lab-doc218 result=success",
           "path": "/var/log/audit/audit.log"
         },
@@ -180,33 +180,33 @@
           "offset": 0,
           "source": "収集基盤",
           "host": "ci-control-01",
-          "user": "svc-collector",
+          "user": "",
           "ip": "10.60.0.9",
-          "event": "CI操作監査の連続性を確認",
-          "raw": "2026-10-20T08:43:35Z host=ci-control-01 stream=ci-admin-audit interval=08:40:00-08:43:30 missing_events=0 sequence=complete",
+          "event": "collector.checkpoint",
+          "raw": "2026-10-20T08:43:35Z host=ci-control-01 stream=ci-admin-audit checkpoint=4819 last_event_time=08:43:30 received_events=38 state=running",
           "path": "/var/log/security/collector.log"
         },
         {
           "id": "hi-ci-15",
           "time": "08:43:45",
-          "offset": 0,
+          "offset": 60,
           "source": "監査",
           "host": "ci-control-01",
           "user": "svc-release",
           "ip": "198.51.100.151",
-          "event": "同じトークンが引き続き有効",
+          "event": "token.status",
           "raw": "2026-10-20T08:43:45Z host=ci-control-01 token_id=REL-T19 session=CI-S992 state=active scope=workflow.write,channel.write expires=18:00:00",
           "path": "/var/log/audit/audit.log"
         },
         {
           "id": "hi-ci-16",
           "time": "08:44:00",
-          "offset": 0,
+          "offset": 120,
           "source": "ジョブ",
           "host": "release-agent-01",
           "user": "svc-deploy",
           "ip": "10.60.20.11",
-          "event": "残りの配布は待機中",
+          "event": "deployment.health_gate",
           "raw": "2026-10-20T08:44:00Z host=release-agent-01 deployment=DEP-641 target_group=prod-main nodes=18 state=waiting_health_gate automatic_promotion_at=08:50:00",
           "path": "/var/log/jobs/scheduler.log"
         }
@@ -222,13 +222,19 @@
           "id": "hi-ci-doc-change",
           "title": "本日のリリース計画 REL-620",
           "kind": "変更申請",
-          "body": "承認済み対象は08:40 UTCの CI-640、定義 wf-77、ソース rev-8d1、成果物 app-6.4.0。09:30 UTCまで追加リリースは予定なし。postpackage-helper の追加、外部エンドポイントへの設定変更、app-6.4.1 の登録・本番チャネル切り替えはいずれもこの承認に含まれない。別プロジェクト docs の定期ビルドは独立した計画。"
+          "body": "承認済み。08:40 UTC、CI-640を定義wf-77、ソースrev-8d1で実行し、成果物app-6.4.0を本番チャネルへ登録する。実施担当はリリース運用。次の申請受付は09:30 UTC。docsプロジェクトは別の定期ビルド計画で管理する。"
         },
         {
           "id": "hi-ci-doc-response",
           "title": "配布事故時の初動手順",
           "kind": "対応手順",
-          "body": "まずリリース責任者へ連絡し、対象トークンと DEP-641 の後続配布を停止する。成果物・定義・CI監査の保全後、反映済みカナリア2台を確認して既知の正常版への復旧を判断する。稼働中の全サービスやCI全体を無条件に停止しない。ヘルスチェック成功は設定の正当性を検証したものではない。"
+          "body": "本番トークンの失効と配布の停止権限はリリース運用チームが保有し、SOCには操作権限も直接の停止依頼経路もない。SOCは当番インシデント責任者へ緊急エスカレーションし、責任者からリリース運用へ対象資格情報・配布・影響範囲を伝えて停止判断を依頼する。成果物・定義・操作監査を保全し、復旧はリリース運用が業務責任者と調整する。"
+        },
+        {
+          "id": "hi-ci-doc-coverage",
+          "title": "CI・試験の収集範囲",
+          "kind": "収集状況",
+          "body": "CI管理操作は変更前後のリビジョン、認証セッション、成果物ダイジェストを記録する。単体試験はアプリの機能テスト、ヘルスゲートはプロセスの生存確認を行い、実行時設定の内容を検査する項目はない。実行プロセスのファイル書き込みはEDRに記録する。収集器のチェックポイントは受信済み位置であり、承認の有無を示すものではない。配布エージェントの状態は約2分間隔で転送される。"
         }
       ],
       "hints": [
@@ -240,11 +246,37 @@
         "id": "hi-ci-contact",
         "name": "真田 悠",
         "role": "リリース責任者",
-        "question": "CI-641の承認と、配布済み範囲・トークン利用者を確認する",
+        "question": "08:42〜08:44ごろ、リリース定義や本番の配布先を変更しましたか。実施者・予定範囲と停止の連絡先を確認させてください。",
         "replyId": "hi-ci-reply",
         "replyTitle": "真田 悠からの回答",
-        "replyText": "CI-641、wf-78、app-6.4.1 の変更はチームの誰も承認・実施していません。CI管理者による緊急作業もありません。REL-620で承認したのはCI-640だけです。DEP-641 はカナリア2台へ反映済みで、残り18台はゲート待ちです。REL-T19の失効とこの配布の停止を担当できます。成果物と監査を保全して引き継いでください。",
-        "delaySeconds": 80
+        "replyText": "今朝の作業は8時40分の定例リリースです。その後の定義編集や手動配布は私も当番2名も行っていません。緊急作業の連絡も受けていません。配布画面に評価待ちの処理が見えますが、端末の状態までは見ていません。トークンや配布の操作はリリース運用が行うため、当番インシデント責任者から呼び出してください。",
+        "delaySeconds": 80,
+        "questions": [
+          {
+            "id": "specific",
+            "question": "08:42〜08:44ごろ、リリース定義や本番の配布先を変更しましたか。実施者・予定範囲と停止の連絡先を確認させてください。",
+            "replyId": "hi-ci-reply",
+            "replyTitle": "真田 悠からの回答",
+            "replyText": "今朝の作業は8時40分の定例リリースです。その後の定義編集や手動配布は私も当番2名も行っていません。緊急作業の連絡も受けていません。配布画面に評価待ちの処理が見えますが、端末の状態までは見ていません。トークンや配布の操作はリリース運用が行うため、当番インシデント責任者から呼び出してください。",
+            "delaySeconds": 80
+          },
+          {
+            "id": "vague",
+            "question": "この警報について、何か心当たりはありますか？",
+            "replyId": "hi-ci-reply-vague",
+            "replyTitle": "真田 悠からの回答（追加確認が必要）",
+            "replyText": "朝の定例リリースはありました。どの時間帯の、どの操作を確認する必要がありますか。",
+            "delaySeconds": 80
+          },
+          {
+            "id": "leading",
+            "question": "いつもの作業なので問題ないという理解でよいですか？",
+            "replyId": "hi-ci-reply-leading",
+            "replyTitle": "真田 悠からの回答（追加確認が必要）",
+            "replyText": "定例リリースの予定はあります。ただ、それ以外の操作まで問題ないとは、この質問だけでは答えられません。",
+            "delaySeconds": 80
+          }
+        ]
       },
       "answer": {
         "verdict": "incident",
@@ -252,10 +284,9 @@
           "high"
         ],
         "actions": [
-          "contain",
           "escalate"
         ],
-        "target": "ci-control-01",
+        "target": "svc-release",
         "evidenceGroups": [
           [
             "hi-ci-03",
@@ -273,15 +304,34 @@
             "hi-ci-reply"
           ]
         ],
-        "summary": "REL-T19で未承認の定義wf-78が作成され、CI-641で設定を書き換えたapp-6.4.1（lab-a641）が登録された。同じ成果物がDEP-641として本番カナリア2台へ反映済み。責任者は変更・トークン利用の正当性を否定した。",
-        "nextStep": "ci-control-01のREL-T19失効とDEP-641後続配布停止を責任者へ依頼する。build-worker-02の実行情報、レジストリの成果物、release-agent-01の配布履歴を保全し、反映済み2台の影響と正常版への復旧を確認する。",
-        "explanation": "不審なIPだけではなく、未承認の操作から変更成果物と実配布まで連続した証拠があります。通常の試験成功は追加設定の正当性を保証しません。主対象は制御権限を持つci-control-01ですが、保全と影響調査はビルド・レジストリ・配布先へ広げます。通信先への設定変更は確認できても、実際の外部送信や内容まで断定しません。",
+        "summary": "08:42以降、svc-release のトークンREL-T19による定義変更から、設定を書き換えた成果物app-6.4.1の登録、本番カナリア2台への反映までをIDで追跡できた。承認票の対象はapp-6.4.0で、担当者も定例後の操作を実施していないと回答しているため、未承認の変更として扱う。",
+        "nextStep": "当番インシデント責任者へ緊急エスカレーションし、リリース運用によるsvc-releaseのREL-T19失効とDEP-641後続配布停止を調整してもらう。SOC自身には停止権限・直接依頼経路がない。CI定義・成果物・監査を保全し、反映済みカナリア2台の調査と復旧を依頼する。",
+        "explanation": "同じセッション・実行・ダイジェストを追うと、承認票と異なる変更が本番へ到達したことを確認できます。正解の対象は管理サーバー全体ではなく、トークンを所有するsvc-releaseです。インシデントでもSOCが実施できる対応は権限・連絡経路によって異なり、このケースは緊急エスカレーションを選び、停止すべき範囲を引き継ぎます。実際の外部送信まで断定はできません。",
         "lessons": [
           "アカウントの利用元から、ビルド定義・成果物・配布先まで同じIDで追います。",
           "検証の成功が何を確認し、何を確認していないかを分けます。",
           "封じ込めは制御権限と後続配布を優先し、業務影響を限定します。"
         ]
-      }
+      },
+      "targetType": "account",
+      "targets": [
+        {
+          "value": "svc-release",
+          "label": "アカウント: svc-release"
+        },
+        {
+          "value": "ci-control-01",
+          "label": "端末: ci-control-01"
+        },
+        {
+          "value": "svc-build",
+          "label": "アカウント: svc-build"
+        },
+        {
+          "value": "release-agent-01",
+          "label": "端末: release-agent-01"
+        }
+      ]
     },
     {
       "id": "high-lateral",
@@ -308,7 +358,7 @@
           "host": "finance-app-02",
           "user": "svc-invoice",
           "ip": "10.60.40.22",
-          "event": "定例の請求計算が終了",
+          "event": "job.completed",
           "raw": "2026-10-20T08:35:00Z host=finance-app-02 job=invoice-daily run=INV-288 state=complete rows=912",
           "path": "/var/log/jobs/scheduler.log"
         },
@@ -320,7 +370,7 @@
           "host": "jump-ops-03",
           "user": "svc-finops",
           "ip": "203.0.113.172",
-          "event": "サービスアカウントで鍵認証",
+          "event": "sshd: Accepted publickey",
           "raw": "2026-10-20T08:41:03Z host=jump-ops-03 src=203.0.113.172 account=svc-finops auth=publickey key_id=FIN-K8 session=J-731 result=accepted",
           "path": "/var/log/auth.log"
         },
@@ -332,7 +382,7 @@
           "host": "jump-ops-03",
           "user": "svc-finops",
           "ip": "203.0.113.172",
-          "event": "対話セッションを開始",
+          "event": "sshd: session opened",
           "raw": "2026-10-20T08:41:05Z host=jump-ops-03 session=J-731 tty=pts/3 interactive=true account=svc-finops",
           "path": "/var/log/auth.log"
         },
@@ -344,7 +394,7 @@
           "host": "jump-ops-03",
           "user": "svc-finops",
           "ip": "203.0.113.172",
-          "event": "DB接続情報ファイルの参照",
+          "event": "file.read",
           "raw": "2026-10-20T08:41:18Z host=jump-ops-03 session=J-731 action=file_read path=/etc/finops/db-maint.conf result=success bytes=1840 credential_ref=DB-M12",
           "path": "/var/log/audit/audit.log"
         },
@@ -356,7 +406,7 @@
           "host": "jump-ops-03",
           "user": "svc-finops",
           "ip": "10.60.40.31",
-          "event": "対話セッションからDBクライアント起動",
+          "event": "process.start",
           "raw": "2026-10-20T08:41:22Z host=jump-ops-03 session=J-731 pid=7210 parent=login-shell image=db-client target=finance-db-02 credential_ref=DB-M12",
           "path": "/var/log/security/edr.log"
         },
@@ -366,9 +416,9 @@
           "offset": 0,
           "source": "Flow",
           "host": "jump-ops-03",
-          "user": "svc-finops",
+          "user": "",
           "ip": "10.60.40.12",
-          "event": "会計DBへの内部接続",
+          "event": "flow.established",
           "raw": "2026-10-20T08:41:23Z host=jump-ops-03 flow=F-973 src=10.60.40.31 dst=10.60.40.12 dst_port=5432 process_pid=7210 state=established",
           "path": "/var/log/network/flow.log"
         },
@@ -380,7 +430,7 @@
           "host": "finance-db-02",
           "user": "db-maint",
           "ip": "10.60.40.31",
-          "event": "会計DB側で接続を受理",
+          "event": "database: connection authorized",
           "raw": "2026-10-20T08:41:24Z host=finance-db-02 session=DB-991 src=10.60.40.31 account=db-maint credential_ref=DB-M12 client_tag=J-731 result=success",
           "path": "/var/log/auth.log"
         },
@@ -392,8 +442,8 @@
           "host": "finance-db-02",
           "user": "db-maint",
           "ip": "10.60.40.31",
-          "event": "保守ロールを使った権限変更",
-          "raw": "2026-10-20T08:41:28Z host=finance-db-02 session=DB-991 action=role_grant role=finance.export grantee=svc-finops result=success change_ref=none",
+          "event": "database: GRANT",
+          "raw": "2026-10-20T08:41:28Z host=finance-db-02 session=DB-991 action=role_grant role=finance.export grantee=svc-finops result=success",
           "path": "/var/log/audit/audit.log"
         },
         {
@@ -404,7 +454,7 @@
           "host": "finance-db-02",
           "user": "svc-invoice",
           "ip": "10.60.40.22",
-          "event": "通常のアプリ接続",
+          "event": "database: connection authorized",
           "raw": "2026-10-20T08:41:33Z host=finance-db-02 session=DB-992 account=svc-invoice src=10.60.40.22 purpose=invoice-read result=success",
           "path": "/var/log/auth.log"
         },
@@ -416,7 +466,7 @@
           "host": "finance-db-02",
           "user": "db-maint",
           "ip": "10.60.40.31",
-          "event": "新しい定期処理を登録",
+          "event": "schedule.create",
           "raw": "2026-10-20T08:41:46Z host=finance-db-02 session=DB-991 action=schedule_create schedule=fin-maint-extra owner=svc-finops task=export-summary destination=/srv/exports/adhoc enabled=true result=success",
           "path": "/var/log/audit/audit.log"
         },
@@ -428,7 +478,7 @@
           "host": "finance-db-02",
           "user": "svc-finops",
           "ip": "10.60.40.12",
-          "event": "追加の定期処理が実行",
+          "event": "job.completed",
           "raw": "2026-10-20T08:41:51Z host=finance-db-02 schedule=fin-maint-extra run=ADHOC-91 operation=export-summary rows=42800 output=/srv/exports/adhoc/ADHOC-91.csv result=success",
           "path": "/var/log/jobs/scheduler.log"
         },
@@ -440,8 +490,8 @@
           "host": "finance-db-02",
           "user": "svc-finops",
           "ip": "10.60.40.12",
-          "event": "新規出力ファイルの作成",
-          "raw": "2026-10-20T08:42:00Z host=finance-db-02 schedule=fin-maint-extra run=ADHOC-91 path=/srv/exports/adhoc/ADHOC-91.csv bytes=14572032 network_upload=not_observed",
+          "event": "file.create",
+          "raw": "2026-10-20T08:42:00Z host=finance-db-02 schedule=fin-maint-extra run=ADHOC-91 path=/srv/exports/adhoc/ADHOC-91.csv bytes=14572032",
           "path": "/var/log/security/edr.log"
         },
         {
@@ -452,8 +502,8 @@
           "host": "finance-app-02",
           "user": "svc-finops",
           "ip": "10.60.40.31",
-          "event": "アプリサーバーにも認証を試行",
-          "raw": "2026-10-20T08:42:11Z host=finance-app-02 src=10.60.40.31 auth=publickey key_id=FIN-K8 result=denied reason=account_not_allowed session=none",
+          "event": "sshd: authentication failure",
+          "raw": "2026-10-20T08:42:11Z host=finance-app-02 src=10.60.40.31 auth=publickey key_id=FIN-K8 result=denied reason=account_not_allowed",
           "path": "/var/log/auth.log"
         },
         {
@@ -464,7 +514,7 @@
           "host": "jump-ops-03",
           "user": "m.kishi",
           "ip": "10.60.20.36",
-          "event": "別の運用担当が通常経路で接続",
+          "event": "sshd: Accepted certificate",
           "raw": "2026-10-20T08:42:30Z host=jump-ops-03 src=10.60.20.36 account=m.kishi session=J-732 auth=certificate result=success change_ref=CHG-611",
           "path": "/var/log/auth.log"
         },
@@ -474,21 +524,21 @@
           "offset": 0,
           "source": "収集基盤",
           "host": "finance-db-02",
-          "user": "svc-collector",
+          "user": "",
           "ip": "10.60.0.9",
-          "event": "DB監査の受信状態",
-          "raw": "2026-10-20T08:43:00Z host=finance-db-02 stream=db-role-schedule-audit last_sequence=88192 gaps=0 state=healthy",
+          "event": "collector.checkpoint",
+          "raw": "2026-10-20T08:43:00Z host=finance-db-02 stream=db-role-schedule-audit last_sequence=88192 last_event_time=08:42:30 state=healthy",
           "path": "/var/log/security/collector.log"
         },
         {
           "id": "hi-lm-16",
           "time": "08:43:12",
-          "offset": 0,
+          "offset": 90,
           "source": "認証",
           "host": "jump-ops-03",
           "user": "svc-finops",
           "ip": "203.0.113.172",
-          "event": "最初の対話セッションが継続",
+          "event": "sshd: session status",
           "raw": "2026-10-20T08:43:12Z host=jump-ops-03 session=J-731 state=active remote=203.0.113.172",
           "path": "/var/log/auth.log"
         }
@@ -504,13 +554,19 @@
           "id": "hi-lm-doc-change",
           "title": "会計基盤の当日作業一覧",
           "kind": "変更申請",
-          "body": "CHG-611は岸による08:42〜09:00 UTCの踏み台ディスク使用率確認。対象はjump-ops-03、担当m.kishi。DBの権限付与、定期処理登録、データ出力、svc-finopsの対話操作は含まれない。本日の承認済みDB定期処理はinvoice-dailyのみで、fin-maint-extraという名前は登録されていない。"
+          "body": "CHG-611：08:42〜09:00 UTC、岸（m.kishi）が個人証明書でjump-ops-03へ接続し、ディスク使用率を読み取る。DB定期処理台帳：invoice-daily、実行者svc-invoice、用途は請求計算。追加の権限・定期処理変更は各申請の承認と登録を経て実施する。"
         },
         {
           "id": "hi-lm-doc-scope",
           "title": "会計システムの影響範囲と保全",
           "kind": "対応手順",
           "body": "会計DBは請求情報を持つ。接続拒否が確認できたホストと、操作成功が確認できたホストを区別する。DB監査・追加スケジュール定義・出力ファイル・踏み台セッションを保全する。踏み台の接続制限と疑わしい資格情報の失効を当番責任者へ依頼し、DB全体の停止は業務責任者と判断する。"
+        },
+        {
+          "id": "hi-lm-doc-coverage",
+          "title": "会計基盤の収集範囲",
+          "kind": "収集状況",
+          "body": "踏み台は認証、対話セッション、プロセス起動、対象設定ファイルの読み取りを収集する。DBは認証、権限変更、スケジュール作成、ジョブ結果を記録する。ファイル生成監査は作成先とサイズを記録し、ファイルがどこへ送られたかを追跡する監査ではない。外部通信の調査には出口側の接続・転送記録を別途取得する。"
         }
       ],
       "hints": [
@@ -522,11 +578,37 @@
         "id": "hi-lm-contact",
         "name": "岸 誠",
         "role": "会計基盤の当番責任者",
-        "question": "svc-finopsの利用とDB権限・定期処理の変更を確認する",
+        "question": "08:41〜08:43ごろのサービスアカウントによる対話操作と、会計DBの権限・定期処理変更について、実施内容と担当者を確認させてください。",
         "replyId": "hi-lm-reply",
         "replyTitle": "岸 誠からの回答",
-        "replyText": "私はCHG-611のディスク確認だけを実施しています。J-731、DB-991、finance.exportの付与、fin-maint-extraの登録は担当者にも確認しましたが承認・実施していません。svc-finopsの対話利用もありません。DBを止める前に、対象セッションと認証情報を制限し、追加スケジュールの停止を調整します。ADHOC-91の出力と監査は消さずに保全してください。",
-        "delaySeconds": 85
+        "replyText": "私は8時42分すぎに自分のアカウントで踏み台の空き容量を見ました。会計DBの権限や定期処理は変更していません。もう一人の当番にも聞きましたが、同時間帯の変更はしていないそうです。サービス用アカウントで対話操作をした人には心当たりがありません。業務を止める操作は私に範囲を連絡してください。",
+        "delaySeconds": 85,
+        "questions": [
+          {
+            "id": "specific",
+            "question": "08:41〜08:43ごろのサービスアカウントによる対話操作と、会計DBの権限・定期処理変更について、実施内容と担当者を確認させてください。",
+            "replyId": "hi-lm-reply",
+            "replyTitle": "岸 誠からの回答",
+            "replyText": "私は8時42分すぎに自分のアカウントで踏み台の空き容量を見ました。会計DBの権限や定期処理は変更していません。もう一人の当番にも聞きましたが、同時間帯の変更はしていないそうです。サービス用アカウントで対話操作をした人には心当たりがありません。業務を止める操作は私に範囲を連絡してください。",
+            "delaySeconds": 85
+          },
+          {
+            "id": "vague",
+            "question": "この警報について、何か心当たりはありますか？",
+            "replyId": "hi-lm-reply-vague",
+            "replyTitle": "岸 誠からの回答（追加確認が必要）",
+            "replyText": "今日は踏み台の点検があります。警報がその作業かどうかは、時刻と操作内容を教えてください。",
+            "delaySeconds": 85
+          },
+          {
+            "id": "leading",
+            "question": "いつもの作業なので問題ないという理解でよいですか？",
+            "replyId": "hi-lm-reply-leading",
+            "replyTitle": "岸 誠からの回答（追加確認が必要）",
+            "replyText": "点検作業は承認されていますが、会計DBの変更まで承認したという意味ではありません。該当する操作を確認したいです。",
+            "delaySeconds": 85
+          }
+        ]
       },
       "answer": {
         "verdict": "incident",
@@ -555,7 +637,7 @@
             "hi-lm-reply"
           ]
         ],
-        "summary": "svc-finopsの対話セッションJ-731からfinance-db-02のDB-991へ接続がつながり、未承認の権限付与とfin-maint-extraの登録・実行を確認した。finance-app-02への試行は拒否されている。責任者はこれらの操作を否定した。",
+        "summary": "08:41のsvc-finops対話セッションJ-731からfinance-db-02のDB-991へ接続がつながり、権限付与とfin-maint-extraの登録・実行を確認した。当日の承認範囲は別担当者による踏み台の読み取り点検で、当番はDB変更をしていないと回答した。finance-app-02への認証試行は拒否されている。",
         "nextStep": "jump-ops-03の疑わしいセッション制限、FIN-K8とDB-M12の失効・更新、DB側追加処理の停止を責任者へ依頼する。踏み台・DBの監査とADHOC-91を保全し、権限変更の復旧と他接続先を確認する。外部流出は未確認として切り分ける。",
         "explanation": "踏み台のログインだけでなく、別ホストの受信側監査とDBの実変更がつながるため、侵害後の横展開を確認できます。一方、アプリサーバーでは拒否しか確認できず、そこまで侵害済みとは扱いません。出力ファイル作成は確認できても、外部へ送信された証拠はこの教材にはありません。",
         "lessons": [
@@ -563,7 +645,22 @@
           "複数ホストを一律に侵害済みと扱わず、成功・拒否・未確認を分けます。",
           "封じ込めでは入口だけでなく、到達先の権限と継続実行の設定も扱います。"
         ]
-      }
+      },
+      "targetType": "host",
+      "targets": [
+        {
+          "value": "jump-ops-03",
+          "label": "端末: jump-ops-03"
+        },
+        {
+          "value": "finance-db-02",
+          "label": "端末: finance-db-02"
+        },
+        {
+          "value": "finance-app-02",
+          "label": "端末: finance-app-02"
+        }
+      ]
     },
     {
       "id": "high-recovery",
@@ -590,7 +687,7 @@
           "host": "dr-orchestrator-01",
           "user": "svc-dr-sync",
           "ip": "10.60.70.10",
-          "event": "複製ジョブが開始",
+          "event": "job.started",
           "raw": "2026-10-20T08:30:00Z host=dr-orchestrator-01 job=DR-1020 change=DRILL-88 phase=prepare source=ledger-db-01 target=ledger-dr-01",
           "path": "/var/log/jobs/scheduler.log"
         },
@@ -602,7 +699,7 @@
           "host": "dr-orchestrator-01",
           "user": "svc-dr-sync",
           "ip": "10.60.70.10",
-          "event": "短期サービス認証情報を発行",
+          "event": "credential.issue",
           "raw": "2026-10-20T08:30:02Z host=dr-orchestrator-01 job=DR-1020 credential=DR-88-A scope=snapshot.read source=ledger-db-01 ttl=1800s issuer=vault-dr",
           "path": "/var/log/identity/idp.log"
         },
@@ -614,7 +711,7 @@
           "host": "ledger-db-01",
           "user": "svc-dr-sync",
           "ip": "10.60.70.10",
-          "event": "コピー元への認証を受理",
+          "event": "database: connection authorized",
           "raw": "2026-10-20T08:30:04Z host=ledger-db-01 job=DR-1020 credential=DR-88-A src=10.60.70.10 scope=snapshot.read result=success session=SRC-88",
           "path": "/var/log/auth.log"
         },
@@ -626,7 +723,7 @@
           "host": "ledger-db-01",
           "user": "svc-dr-sync",
           "ip": "10.60.70.10",
-          "event": "指定スナップショットを参照",
+          "event": "snapshot.read",
           "raw": "2026-10-20T08:30:08Z host=ledger-db-01 job=DR-1020 session=SRC-88 snapshot=ledger-snap-20261020T0825Z manifest=M-DR88 mode=read_only",
           "path": "/var/log/audit/audit.log"
         },
@@ -638,7 +735,7 @@
           "host": "dr-orchestrator-01",
           "user": "svc-dr-sync",
           "ip": "10.60.70.10",
-          "event": "書き込み先を限定した認証情報を発行",
+          "event": "credential.issue",
           "raw": "2026-10-20T08:30:10Z host=dr-orchestrator-01 job=DR-1020 credential=DR-88-B scope=restore.write target=ledger-dr-01 path=/restore/DR-1020 ttl=1800s interactive=false",
           "path": "/var/log/identity/idp.log"
         },
@@ -650,7 +747,7 @@
           "host": "ledger-dr-01",
           "user": "svc-dr-sync",
           "ip": "10.60.70.10",
-          "event": "コピー先への認証を受理",
+          "event": "restore: authentication success",
           "raw": "2026-10-20T08:30:12Z host=ledger-dr-01 job=DR-1020 credential=DR-88-B scope=restore.write result=success session=DST-88",
           "path": "/var/log/auth.log"
         },
@@ -660,9 +757,9 @@
           "offset": 0,
           "source": "Flow",
           "host": "dr-orchestrator-01",
-          "user": "svc-dr-sync",
+          "user": "",
           "ip": "10.60.71.11",
-          "event": "復旧拠点への転送を開始",
+          "event": "flow.established",
           "raw": "2026-10-20T08:30:14Z host=dr-orchestrator-01 job=DR-1020 flow=DR-F88 src=10.60.70.11 dst=10.60.71.11 route=private-dr-link port=443 state=established",
           "path": "/var/log/network/flow.log"
         },
@@ -672,9 +769,9 @@
           "offset": 0,
           "source": "Flow",
           "host": "dr-orchestrator-01",
-          "user": "svc-dr-sync",
+          "user": "",
           "ip": "10.60.71.11",
-          "event": "転送量が日常基準を超過",
+          "event": "LARGE_INTERNAL_TRANSFER",
           "raw": "2026-10-20T08:32:00Z host=dr-orchestrator-01 job=DR-1020 flow=DR-F88 bytes_out=21474836480 rule=LARGE_INTERNAL_TRANSFER baseline_daily=1073741824",
           "path": "/var/log/network/flow.log"
         },
@@ -686,8 +783,8 @@
           "host": "ledger-db-01",
           "user": "svc-ledger",
           "ip": "10.60.70.11",
-          "event": "通常の仕訳処理が継続",
-          "raw": "2026-10-20T08:32:30Z host=ledger-db-01 job=ledger-ingest run=LED-884 status=success rows=168 no_relation=DR-1020",
+          "event": "job.completed",
+          "raw": "2026-10-20T08:32:30Z host=ledger-db-01 job=ledger-ingest run=LED-884 status=success rows=168",
           "path": "/var/log/jobs/scheduler.log"
         },
         {
@@ -698,7 +795,7 @@
           "host": "ledger-dr-01",
           "user": "svc-dr-sync",
           "ip": "10.60.71.11",
-          "event": "受信したスナップショットの検証",
+          "event": "restore.verify",
           "raw": "2026-10-20T08:34:10Z host=ledger-dr-01 job=DR-1020 manifest=M-DR88 received_bytes=34359738368 digest=lab-dr88 source_digest=lab-dr88 verify=match destination=/restore/DR-1020",
           "path": "/var/log/jobs/scheduler.log"
         },
@@ -710,31 +807,31 @@
           "host": "ledger-dr-01",
           "user": "svc-dr-sync",
           "ip": "10.60.71.11",
-          "event": "復旧環境の属性を確認",
+          "event": "environment.configuration",
           "raw": "2026-10-20T08:34:12Z host=ledger-dr-01 job=DR-1020 environment=isolated-dr network_profile=no-production-write retention=24h data_class=financial",
           "path": "/var/log/audit/audit.log"
         },
         {
           "id": "hi-dr-12",
           "time": "08:35:00",
-          "offset": 0,
+          "offset": 90,
           "source": "IdP",
           "host": "dr-orchestrator-01",
           "user": "svc-dr-sync",
           "ip": "10.60.70.10",
-          "event": "一時認証情報を失効",
+          "event": "credential.revoke",
           "raw": "2026-10-20T08:35:00Z host=dr-orchestrator-01 job=DR-1020 credentials=DR-88-A,DR-88-B reason=copy_complete state=revoked",
           "path": "/var/log/identity/idp.log"
         },
         {
           "id": "hi-dr-13",
           "time": "08:35:15",
-          "offset": 0,
+          "offset": 120,
           "source": "ジョブ",
           "host": "ledger-dr-01",
           "user": "svc-dr-verify",
           "ip": "10.60.71.11",
-          "event": "復旧検証が完了",
+          "event": "restore.integrity_check",
           "raw": "2026-10-20T08:35:15Z host=ledger-dr-01 job=DR-1020 manifest=M-DR88 table_count=42 integrity=passed verification=read_only",
           "path": "/var/log/jobs/scheduler.log"
         },
@@ -744,9 +841,9 @@
           "offset": 0,
           "source": "Flow",
           "host": "dr-orchestrator-01",
-          "user": "svc-dr-sync",
+          "user": "",
           "ip": "10.60.71.11",
-          "event": "転送セッションが終了",
+          "event": "flow.closed",
           "raw": "2026-10-20T08:35:30Z host=dr-orchestrator-01 job=DR-1020 flow=DR-F88 bytes_out_total=34359738368 path=private-dr-link connection=closed",
           "path": "/var/log/network/flow.log"
         },
@@ -756,9 +853,9 @@
           "offset": 0,
           "source": "Proxy",
           "host": "dr-orchestrator-01",
-          "user": "svc-monitor",
+          "user": "",
           "ip": "10.60.70.10",
-          "event": "通常の監視通知",
+          "event": "HTTP POST",
           "raw": "2026-10-20T08:36:00Z host=dr-orchestrator-01 dst=monitor.internal.example method=POST event=job-complete bytes=881 job=DR-1020",
           "path": "/var/log/network/proxy.log"
         },
@@ -768,10 +865,10 @@
           "offset": 0,
           "source": "収集基盤",
           "host": "dr-orchestrator-01",
-          "user": "svc-collector",
+          "user": "",
           "ip": "10.60.0.9",
-          "event": "演習区間のログ収集状態",
-          "raw": "2026-10-20T08:36:10Z host=dr-orchestrator-01 interval=08:30:00-08:36:00 sources=identity,flow,job streams=complete gaps=0",
+          "event": "collector.checkpoint",
+          "raw": "2026-10-20T08:36:10Z host=dr-orchestrator-01 interval=08:30:00-08:36:00 sources=identity,flow,job checkpoint=6118 last_event_time=08:36:00 received_events=64",
           "path": "/var/log/security/collector.log"
         }
       ],
@@ -804,11 +901,37 @@
         "id": "hi-dr-contact",
         "name": "夏目 理央",
         "role": "復旧運用の責任者",
-        "question": "訓練対象・受信結果・認証情報の終了処理を確認する",
+        "question": "8時半の復旧作業で、コピー元・コピー先・検証内容・作業終了後の処理を教えてください。",
         "replyId": "hi-dr-reply",
         "replyTitle": "夏目 理央からの回答",
-        "replyText": "DRILL-88を実施しました。DR-1020はledger-db-01から隔離されたledger-dr-01へ32GiBをコピーし、M-DR88と受信ダイジェストlab-dr88を照合済みです。DR-88-A/Bはジョブ終了で失効しました。検証は読み取りだけで、本番書き戻しはしていません。24時間後の削除担当も作業票に記録しています。ほかの送信先やデータの追加はありません。",
-        "delaySeconds": 65
+        "replyText": "8時半から台帳DBのスナップショットを復旧拠点へコピーしました。作業票にある隔離環境で読み取り検証をし、検証画面は完了表示でした。認証情報の終了処理はジョブに任せているので、失効時刻は監査で確認をお願いします。明日のデータ削除は当番に引き継ぎました。",
+        "delaySeconds": 65,
+        "questions": [
+          {
+            "id": "specific",
+            "question": "8時半の復旧作業で、コピー元・コピー先・検証内容・作業終了後の処理を教えてください。",
+            "replyId": "hi-dr-reply",
+            "replyTitle": "夏目 理央からの回答",
+            "replyText": "8時半から台帳DBのスナップショットを復旧拠点へコピーしました。作業票にある隔離環境で読み取り検証をし、検証画面は完了表示でした。認証情報の終了処理はジョブに任せているので、失効時刻は監査で確認をお願いします。明日のデータ削除は当番に引き継ぎました。",
+            "delaySeconds": 65
+          },
+          {
+            "id": "vague",
+            "question": "この警報について、何か心当たりはありますか？",
+            "replyId": "hi-dr-reply-vague",
+            "replyTitle": "夏目 理央からの回答（追加確認が必要）",
+            "replyText": "今朝は復旧訓練をしています。どの転送についての確認でしょうか。",
+            "delaySeconds": 65
+          },
+          {
+            "id": "leading",
+            "question": "いつもの作業なので問題ないという理解でよいですか？",
+            "replyId": "hi-dr-reply-leading",
+            "replyTitle": "夏目 理央からの回答（追加確認が必要）",
+            "replyText": "訓練自体は承認済みですが、転送結果や認証情報の状態は記録の確認が必要です。",
+            "delaySeconds": 65
+          }
+        ]
       },
       "answer": {
         "verdict": "benign",
@@ -836,15 +959,30 @@
             "hi-dr-reply"
           ]
         ],
-        "summary": "DRILL-88と一致するDR-1020が、社内専用経路でledger-db-01からledger-dr-01へ32GiBを複製した。受信側のM-DR88とダイジェストが一致し、一時認証情報の範囲・失効も計画どおりで、責任者が実施内容を確認した。",
-        "nextStep": "根拠を添えてクローズし、24時間後の復旧データ削除を運用作業票で確認する。検知調整を行う場合も、対象・時間・ジョブIDを限定し、大容量転送全体は除外しない。",
+        "summary": "08:30からのDR-1020は計画にあるledger-db-01からledger-dr-01への32GiB複製だった。受信結果のマニフェストとダイジェスト、短期認証情報の範囲と失効をログで照合できた。担当者は復旧環境での読み取り検証を実施したと回答している。",
+        "nextStep": "根拠を添えてクローズし、復旧運用担当へ24時間後のデータ削除確認を引き継ぐ。検知調整は対象・時間・ジョブへ限定し、大容量転送全体は除外しない。",
         "explanation": "承認の存在だけでは不十分ですが、今回は計画と実際の受信対象・量・ダイジェストが合い、認証情報の権限と終了処理も確認できています。社内の復旧経路を外部流出と誤認しないことがポイントです。担当者の回答だけに頼らず、両拠点の記録で整合性を確認します。",
         "lessons": [
           "送信量が大きいというだけで情報流出とは判断しません。",
           "コピー元・コピー先・成果物の照合結果を同じジョブで結びます。",
           "認証情報の発行から失効、データの削除予定まで作業範囲を確認します。"
         ]
-      }
+      },
+      "targetType": "host",
+      "targets": [
+        {
+          "value": "dr-orchestrator-01",
+          "label": "端末: dr-orchestrator-01"
+        },
+        {
+          "value": "ledger-db-01",
+          "label": "端末: ledger-db-01"
+        },
+        {
+          "value": "ledger-dr-01",
+          "label": "端末: ledger-dr-01"
+        }
+      ]
     },
     {
       "id": "high-rollout",
@@ -872,7 +1010,7 @@
           "host": "endpoint-mgr-02",
           "user": "svc-endpoint",
           "ip": "10.60.80.20",
-          "event": "端末配布キャンペーンを開始",
+          "event": "campaign.started",
           "raw": "2026-10-20T08:28:00Z host=endpoint-mgr-02 campaign=EDR-730 change=CHG-730 package=sensor-7.3.0 cohort=pilot-three state=started",
           "path": "/var/log/jobs/scheduler.log"
         },
@@ -884,7 +1022,7 @@
           "host": "endpoint-mgr-02",
           "user": "svc-endpoint",
           "ip": "10.60.80.20",
-          "event": "配布マニフェストを読み込み",
+          "event": "manifest.read",
           "raw": "2026-10-20T08:28:05Z host=endpoint-mgr-02 campaign=EDR-730 manifest=PILOT-730 hosts=sales-lt-061,hr-lt-024,design-ws-012 expected_digest=lab-sensor730 expected_signer=Fictional-Sensor-Vendor",
           "path": "/var/log/audit/audit.log"
         },
@@ -896,7 +1034,7 @@
           "host": "sales-lt-061",
           "user": "svc-endpoint",
           "ip": "10.60.80.20",
-          "event": "端末管理サーバーから管理認証",
+          "event": "management: authentication success",
           "raw": "2026-10-20T08:28:10Z host=sales-lt-061 campaign=EDR-730 src=10.60.80.20 auth=device_certificate channel=management result=success",
           "path": "/var/log/auth.log"
         },
@@ -908,7 +1046,7 @@
           "host": "sales-lt-061",
           "user": "svc-endpoint",
           "ip": "10.60.81.61",
-          "event": "新しいサービスの登録",
+          "event": "service.install",
           "raw": "2026-10-20T08:28:14Z host=sales-lt-061 campaign=EDR-730 action=service_install service=SensorGuard image=/opt/sensorguard/agent version=7.3.0 result=success",
           "path": "/var/log/audit/audit.log"
         },
@@ -920,7 +1058,7 @@
           "host": "sales-lt-061",
           "user": "SYSTEM",
           "ip": "10.60.81.61",
-          "event": "サービス登録に対する検知",
+          "event": "REMOTE_SERVICE_INSTALL",
           "raw": "2026-10-20T08:28:15Z host=sales-lt-061 campaign=EDR-730 rule=REMOTE_SERVICE_INSTALL parent=endpoint-deployer service=SensorGuard alert=true",
           "path": "/var/log/security/edr.log"
         },
@@ -932,7 +1070,7 @@
           "host": "sales-lt-061",
           "user": "SYSTEM",
           "ip": "10.60.81.61",
-          "event": "実行ファイルの検証結果",
+          "event": "file.signature_check",
           "raw": "2026-10-20T08:28:18Z host=sales-lt-061 campaign=EDR-730 image=/opt/sensorguard/agent digest=lab-sensor730 signer=Fictional-Sensor-Vendor signature=valid attestation=local-measurement",
           "path": "/var/log/security/edr.log"
         },
@@ -944,7 +1082,7 @@
           "host": "sales-lt-061",
           "user": "SYSTEM",
           "ip": "10.60.81.61",
-          "event": "旧エージェントから監視を引き継ぎ",
+          "event": "service.state_change",
           "raw": "2026-10-20T08:28:22Z host=sales-lt-061 campaign=EDR-730 old_sensor=7.2.4 old_state=stopped new_sensor=7.3.0 new_state=healthy gap_seconds=2",
           "path": "/var/log/audit/audit.log"
         },
@@ -956,7 +1094,7 @@
           "host": "hr-lt-024",
           "user": "svc-endpoint",
           "ip": "10.60.80.20",
-          "event": "別端末への管理認証",
+          "event": "management: authentication success",
           "raw": "2026-10-20T08:29:00Z host=hr-lt-024 campaign=EDR-730 src=10.60.80.20 auth=device_certificate channel=management result=success",
           "path": "/var/log/auth.log"
         },
@@ -968,7 +1106,7 @@
           "host": "hr-lt-024",
           "user": "SYSTEM",
           "ip": "10.60.82.24",
-          "event": "同じサービスを登録",
+          "event": "service.install",
           "raw": "2026-10-20T08:29:10Z host=hr-lt-024 campaign=EDR-730 action=service_install service=SensorGuard image=/opt/sensorguard/agent digest=lab-sensor730 signer=Fictional-Sensor-Vendor result=success",
           "path": "/var/log/audit/audit.log"
         },
@@ -980,7 +1118,7 @@
           "host": "hr-lt-024",
           "user": "SYSTEM",
           "ip": "10.60.82.24",
-          "event": "監視の引き継ぎ結果",
+          "event": "sensor.status",
           "raw": "2026-10-20T08:29:13Z host=hr-lt-024 campaign=EDR-730 sensor=7.3.0 state=healthy old_sensor=removed gap_seconds=3",
           "path": "/var/log/security/edr.log"
         },
@@ -992,7 +1130,7 @@
           "host": "design-ws-012",
           "user": "svc-endpoint",
           "ip": "10.60.80.20",
-          "event": "3台目への管理認証",
+          "event": "management: authentication success",
           "raw": "2026-10-20T08:29:45Z host=design-ws-012 campaign=EDR-730 src=10.60.80.20 auth=device_certificate channel=management result=success",
           "path": "/var/log/auth.log"
         },
@@ -1004,7 +1142,7 @@
           "host": "design-ws-012",
           "user": "SYSTEM",
           "ip": "10.60.83.12",
-          "event": "配布した実体と監視状態",
+          "event": "service.install",
           "raw": "2026-10-20T08:29:55Z host=design-ws-012 campaign=EDR-730 action=service_install image=/opt/sensorguard/agent digest=lab-sensor730 signer=Fictional-Sensor-Vendor result=success sensor_state=healthy",
           "path": "/var/log/audit/audit.log"
         },
@@ -1016,8 +1154,8 @@
           "host": "endpoint-mgr-02",
           "user": "svc-endpoint",
           "ip": "10.60.80.20",
-          "event": "対象一覧と完了一覧を照合",
-          "raw": "2026-10-20T08:30:10Z host=endpoint-mgr-02 campaign=EDR-730 manifest=PILOT-730 requested=3 completed=3 extra_hosts=0 hosts=sales-lt-061,hr-lt-024,design-ws-012 result=match",
+          "event": "campaign.completed_hosts",
+          "raw": "2026-10-20T08:30:10Z host=endpoint-mgr-02 campaign=EDR-730 manifest=PILOT-730 requested=3 completed=3 hosts=sales-lt-061,hr-lt-024,design-ws-012 result=match",
           "path": "/var/log/jobs/scheduler.log"
         },
         {
@@ -1026,9 +1164,9 @@
           "offset": 0,
           "source": "Proxy",
           "host": "hr-lt-024",
-          "user": "SYSTEM",
+          "user": "",
           "ip": "10.60.82.24",
-          "event": "新エージェントの収集先通信",
+          "event": "TLS connection",
           "raw": "2026-10-20T08:30:15Z host=hr-lt-024 process=/opt/sensorguard/agent dst=sensor-collector.internal.example certificate=internal-pki bytes_out=8024 result=success",
           "path": "/var/log/network/proxy.log"
         },
@@ -1040,31 +1178,31 @@
           "host": "design-ws-012",
           "user": "k.nagata",
           "ip": "10.60.83.12",
-          "event": "利用者の通常アプリ更新",
-          "raw": "2026-10-20T08:30:25Z host=design-ws-012 action=application_update package=design-viewer version=5.8.2 manager=user-app-store campaign=none",
+          "event": "application.update",
+          "raw": "2026-10-20T08:30:25Z host=design-ws-012 action=application_update package=design-viewer version=5.8.2 manager=user-app-store",
           "path": "/var/log/audit/audit.log"
         },
         {
           "id": "hi-ed-16",
           "time": "08:31:00",
-          "offset": 0,
+          "offset": 180,
           "source": "収集基盤",
           "host": "endpoint-mgr-02",
-          "user": "svc-collector",
+          "user": "",
           "ip": "10.60.0.9",
-          "event": "配布後の監視受信状況",
-          "raw": "2026-10-20T08:31:00Z host=endpoint-mgr-02 campaign=EDR-730 sensors=3 streams=3 all_healthy=true coverage=process,file,network last_event_delay_seconds=4",
+          "event": "collector.checkpoint",
+          "raw": "2026-10-20T08:31:00Z host=endpoint-mgr-02 campaign=EDR-730 sensors=3 streams=3 all_healthy=true last_event_delay_seconds=4",
           "path": "/var/log/security/collector.log"
         },
         {
           "id": "hi-ed-17",
           "time": "08:31:05",
-          "offset": 0,
+          "offset": 180,
           "source": "ジョブ",
           "host": "endpoint-mgr-02",
           "user": "svc-endpoint",
           "ip": "10.60.80.20",
-          "event": "パイロット配布が終了",
+          "event": "campaign.completed",
           "raw": "2026-10-20T08:31:05Z host=endpoint-mgr-02 campaign=EDR-730 state=complete next_cohort=disabled awaiting=pilot_review",
           "path": "/var/log/jobs/scheduler.log"
         }
@@ -1074,7 +1212,7 @@
           "id": "hi-ed-doc-change",
           "title": "端末監視更新 CHG-730",
           "kind": "変更申請",
-          "body": "承認済み。10月20日08:28〜08:40 UTC、endpoint-mgr-02からsales-lt-061、hr-lt-024、design-ws-012の3台だけへSensorGuard 7.3.0を配布する。マニフェストPILOT-730。/opt/sensorguard/agent、署名Fictional-Sensor-Vendor、教材用ダイジェストlab-sensor730。最大5秒の監視引き継ぎを許容。次の配布は評価後に別承認。"
+          "body": "承認済み。10月20日08:28〜08:40 UTC、endpoint-mgr-02からsales-lt-061、hr-lt-024、design-ws-012へSensorGuard 7.3.0を配布する。マニフェストPILOT-730。実体は/opt/sensorguard/agent、署名Fictional-Sensor-Vendor、教材用ダイジェストlab-sensor730。最大5秒の監視引き継ぎを許容する。担当は矢島。"
         },
         {
           "id": "hi-ed-doc-architecture",
@@ -1098,11 +1236,37 @@
         "id": "hi-ed-contact",
         "name": "矢島 菜月",
         "role": "端末管理の変更担当",
-        "question": "配布した実体と対象3台、監視復旧を確認する",
+        "question": "8時28分ごろの配布について、実施した端末とパッケージ、完了後に確認したことを教えてください。",
         "replyId": "hi-ed-reply",
         "replyTitle": "矢島 菜月からの回答",
-        "replyText": "CHG-730の実施者です。PILOT-730の3台に7.3.0を配布し、それぞれの端末測定値がlab-sensor730であることを確認しました。旧サービスからの引き継ぎは2〜3秒で、全台の監視受信は復旧しています。対象外配布はなく、次コホートは無効のままです。design-viewerの更新は利用者の通常作業で、このキャンペーンには含まれません。",
-        "delaySeconds": 60
+        "replyText": "営業・人事・設計の各1台に朝のパイロット配布を実施しました。管理画面では3台とも完了です。利用者から起動できないという連絡は届いていません。端末上の測定値と監視の受信状況は、今回転送された記録で確認をお願いします。次のグループへの配布はまだ操作していません。",
+        "delaySeconds": 60,
+        "questions": [
+          {
+            "id": "specific",
+            "question": "8時28分ごろの配布について、実施した端末とパッケージ、完了後に確認したことを教えてください。",
+            "replyId": "hi-ed-reply",
+            "replyTitle": "矢島 菜月からの回答",
+            "replyText": "営業・人事・設計の各1台に朝のパイロット配布を実施しました。管理画面では3台とも完了です。利用者から起動できないという連絡は届いていません。端末上の測定値と監視の受信状況は、今回転送された記録で確認をお願いします。次のグループへの配布はまだ操作していません。",
+            "delaySeconds": 60
+          },
+          {
+            "id": "vague",
+            "question": "この警報について、何か心当たりはありますか？",
+            "replyId": "hi-ed-reply-vague",
+            "replyTitle": "矢島 菜月からの回答（追加確認が必要）",
+            "replyText": "朝のエージェント更新は実施しました。どの端末の何を確認したいですか。",
+            "delaySeconds": 60
+          },
+          {
+            "id": "leading",
+            "question": "いつもの作業なので問題ないという理解でよいですか？",
+            "replyId": "hi-ed-reply-leading",
+            "replyTitle": "矢島 菜月からの回答（追加確認が必要）",
+            "replyText": "承認された更新はありますが、サービス名だけでその更新と同じものだとは判断できません。端末と実体を確認してください。",
+            "delaySeconds": 60
+          }
+        ]
       },
       "answer": {
         "verdict": "benign",
@@ -1131,7 +1295,7 @@
             "hi-ed-reply"
           ]
         ],
-        "summary": "EDR-730はCHG-730で承認された3台へのパイロット更新だった。各端末の実体と署名・ダイジェストはマニフェストに一致し、対象外配布はなく、監視の引き継ぎ後に全台の受信が復旧している。担当者も同じ作業を確認した。",
+        "summary": "08:28からのEDR-730はCHG-730の3台と一致し、端末測定値の署名・ダイジェストもマニフェストに合っていた。完了一覧と監視受信記録で配布範囲・復旧を確認し、担当者は同時間帯のパイロット配布を実施したと回答した。",
         "nextStep": "証拠を添えてクローズし、3台の評価結果を変更担当へ返す。検知除外を検討する場合は承認された配布元・実体・キャンペーン期間へ限定し、次コホートは別途承認する。",
         "explanation": "複数端末へのサービス登録や旧監視の停止は横展開や防御回避にも見えますが、今回は承認、端末実体、配布範囲、監視復旧が整合しています。署名だけ、担当者の説明だけで判断せず、各端末と制御側の記録をつなぎます。",
         "lessons": [
@@ -1139,7 +1303,26 @@
           "監視の停止と正常な引き継ぎを、復旧状況と観測の連続性で区別します。",
           "一部の正当な端末だけで、全ホストへの操作を正当化しません。"
         ]
-      }
+      },
+      "targetType": "host",
+      "targets": [
+        {
+          "value": "endpoint-mgr-02",
+          "label": "端末: endpoint-mgr-02"
+        },
+        {
+          "value": "sales-lt-061",
+          "label": "端末: sales-lt-061"
+        },
+        {
+          "value": "hr-lt-024",
+          "label": "端末: hr-lt-024"
+        },
+        {
+          "value": "design-ws-012",
+          "label": "端末: design-ws-012"
+        }
+      ]
     },
     {
       "id": "high-export",
@@ -1166,7 +1349,7 @@
           "host": "export-worker-03",
           "user": "svc-analytics-export",
           "ip": "10.60.90.23",
-          "event": "通常の集計ジョブが完了",
+          "event": "job.completed",
           "raw": "2026-10-20T08:25:00Z host=export-worker-03 run=AGG-201 dataset=aggregate-daily rows=24 output_bytes=4812 result=success",
           "path": "/var/log/jobs/scheduler.log"
         },
@@ -1178,8 +1361,8 @@
           "host": "analytics-db-02",
           "user": "svc-analytics-export",
           "ip": "10.60.90.23",
-          "event": "抽出ワーカーからDB認証",
-          "raw": "2026-10-20T08:39:40Z host=analytics-db-02 session=DB-E772 src=10.60.90.23 auth=service_certificate result=success requester_identity=not_in_db_session",
+          "event": "database: connection authorized",
+          "raw": "2026-10-20T08:39:40Z host=analytics-db-02 session=DB-E772 src=10.60.90.23 auth=service_certificate result=success",
           "path": "/var/log/auth.log"
         },
         {
@@ -1190,7 +1373,7 @@
           "host": "analytics-db-02",
           "user": "svc-analytics-export",
           "ip": "10.60.90.23",
-          "event": "顧客分析用ビューの読み取り",
+          "event": "database: SELECT",
           "raw": "2026-10-20T08:39:42Z host=analytics-db-02 session=DB-E772 run=EXP-772 action=query view=customer-detail-v rows_returned=184200 columns=customer_ref,region,purchase_history result=success",
           "path": "/var/log/audit/audit.log"
         },
@@ -1202,7 +1385,7 @@
           "host": "export-worker-03",
           "user": "svc-analytics-export",
           "ip": "10.60.90.23",
-          "event": "抽出ファイルをローカルへ生成",
+          "event": "export.completed",
           "raw": "2026-10-20T08:39:47Z host=export-worker-03 run=EXP-772 db_session=DB-E772 path=/srv/export/EXP-772.bin encryption=enabled bytes=805306368 digest=lab-exp772 state=complete",
           "path": "/var/log/jobs/scheduler.log"
         },
@@ -1214,8 +1397,8 @@
           "host": "export-worker-03",
           "user": "svc-analytics-export",
           "ip": "10.60.90.23",
-          "event": "依頼メタデータの参照が失敗",
-          "raw": "2026-10-20T08:39:48Z host=export-worker-03 run=EXP-772 action=read_request_metadata request_ref=REQ-772 result=unavailable reason=request-index-timeout",
+          "event": "request_metadata.read",
+          "raw": "2026-10-20T08:39:48Z host=export-worker-03 run=EXP-772 action=read_request_metadata request_ref=REQ-772 result=failure error=ETIMEDOUT duration_ms=30000",
           "path": "/var/log/audit/audit.log"
         },
         {
@@ -1224,9 +1407,9 @@
           "offset": 0,
           "source": "Proxy",
           "host": "egress-gw-02",
-          "user": "proxy-service",
+          "user": "",
           "ip": "192.0.2.221",
-          "event": "ストレージゲートウェイへの暗号化接続",
+          "event": "TLS connection",
           "raw": "2026-10-20T08:40:02Z host=egress-gw-02 gateway_session=GX-440 upstream=storage-relay.example dst_ip=192.0.2.221 tls=1.3 client_identity=multiplexed inspection=excluded",
           "path": "/var/log/network/proxy.log"
         },
@@ -1236,9 +1419,9 @@
           "offset": 0,
           "source": "Flow",
           "host": "export-worker-03",
-          "user": "svc-analytics-export",
+          "user": "",
           "ip": "10.60.90.2",
-          "event": "共有出口への接続を確認",
+          "event": "flow.established",
           "raw": "2026-10-20T08:40:10Z host=export-worker-03 flow=EF-772 src=10.60.90.23 dst=10.60.90.2 dst_port=443 bytes_out=67108864 process=export-worker state=established",
           "path": "/var/log/network/flow.log"
         },
@@ -1248,9 +1431,9 @@
           "offset": 0,
           "source": "Flow",
           "host": "egress-gw-02",
-          "user": "proxy-service",
+          "user": "",
           "ip": "192.0.2.221",
-          "event": "外向き転送が検知閾値を超過",
+          "event": "HIGH_EGRESS_VOLUME",
           "raw": "2026-10-20T08:40:12Z host=egress-gw-02 gateway_session=GX-440 bytes_out_interval=268435456 aggregation=multiple_clients rule=HIGH_EGRESS_VOLUME",
           "path": "/var/log/network/flow.log"
         },
@@ -1262,7 +1445,7 @@
           "host": "export-worker-03",
           "user": "svc-media-sync",
           "ip": "10.60.90.23",
-          "event": "別ワーカー処理が共有出口を使用",
+          "event": "job.queued",
           "raw": "2026-10-20T08:40:20Z host=export-worker-03 run=MEDIA-219 task=approved-catalog-images route=egress-gw-02 queued_bytes=3221225472",
           "path": "/var/log/jobs/scheduler.log"
         },
@@ -1272,22 +1455,22 @@
           "offset": 0,
           "source": "Proxy",
           "host": "egress-gw-02",
-          "user": "proxy-service",
+          "user": "",
           "ip": "192.0.2.221",
-          "event": "同じゲートウェイセッションが継続",
-          "raw": "2026-10-20T08:40:45Z host=egress-gw-02 gateway_session=GX-440 bytes_out_total=1073741824 active_clients=4 object_key=not_logged destination_tenant=not_logged",
+          "event": "gateway.session_stats",
+          "raw": "2026-10-20T08:40:45Z host=egress-gw-02 gateway_session=GX-440 bytes_out_total=1073741824 active_clients=4",
           "path": "/var/log/network/proxy.log"
         },
         {
           "id": "hi-ex-11",
           "time": "08:41:00",
-          "offset": 0,
+          "offset": 180,
           "source": "収集基盤",
           "host": "egress-gw-02",
-          "user": "svc-collector",
+          "user": "",
           "ip": "10.60.0.9",
-          "event": "クライアント対応表が未収集",
-          "raw": "2026-10-20T08:41:00Z host=egress-gw-02 stream=egress-client-map last_received=08:10:00 state=buffering gateway_session_mapping=unavailable local_buffer=recoverable",
+          "event": "collector.checkpoint",
+          "raw": "2026-10-20T08:41:00Z host=egress-gw-02 stream=egress-client-map last_received=08:10:00 state=buffering local_buffer_bytes=851072",
           "path": "/var/log/security/collector.log"
         },
         {
@@ -1298,7 +1481,7 @@
           "host": "analytics-db-02",
           "user": "svc-analytics-export",
           "ip": "10.60.90.23",
-          "event": "DB接続の終了",
+          "event": "database: session closed",
           "raw": "2026-10-20T08:41:10Z host=analytics-db-02 session=DB-E772 run=EXP-772 state=closed queried_view=customer-detail-v rows_returned_total=184200",
           "path": "/var/log/audit/audit.log"
         },
@@ -1310,20 +1493,20 @@
           "host": "export-worker-03",
           "user": "svc-analytics-export",
           "ip": "10.60.90.23",
-          "event": "抽出ファイルの状態",
-          "raw": "2026-10-20T08:41:20Z host=export-worker-03 run=EXP-772 path=/srv/export/EXP-772.bin digest=lab-exp772 local_state=present upload_receipt=not_collected file_read_audit=disabled",
+          "event": "file.inventory",
+          "raw": "2026-10-20T08:41:20Z host=export-worker-03 run=EXP-772 path=/srv/export/EXP-772.bin digest=lab-exp772 local_state=present",
           "path": "/var/log/security/edr.log"
         },
         {
           "id": "hi-ex-14",
           "time": "08:41:35",
-          "offset": 0,
+          "offset": 120,
           "source": "ジョブ",
           "host": "export-worker-03",
           "user": "svc-analytics-export",
           "ip": "10.60.90.23",
-          "event": "依頼一覧取得が再度失敗",
-          "raw": "2026-10-20T08:41:35Z host=export-worker-03 request_ref=REQ-772 request_service=export-request-index result=timeout requester=unknown approval=unknown",
+          "event": "request_index.query",
+          "raw": "2026-10-20T08:41:35Z host=export-worker-03 request_ref=REQ-772 request_service=export-request-index result=timeout",
           "path": "/var/log/jobs/scheduler.log"
         },
         {
@@ -1332,9 +1515,9 @@
           "offset": 0,
           "source": "Proxy",
           "host": "egress-gw-02",
-          "user": "proxy-service",
+          "user": "",
           "ip": "192.0.2.221",
-          "event": "共有出口の通信が継続",
+          "event": "gateway.session_stats",
           "raw": "2026-10-20T08:42:00Z host=egress-gw-02 gateway_session=GX-440 state=active bytes_out_total=1342177280 clients=4",
           "path": "/var/log/network/proxy.log"
         },
@@ -1346,7 +1529,7 @@
           "host": "analytics-db-02",
           "user": "svc-health",
           "ip": "10.60.0.8",
-          "event": "通常の監視クエリ",
+          "event": "database: SELECT",
           "raw": "2026-10-20T08:42:10Z host=analytics-db-02 session=DB-H773 view=health_check rows_returned=1 result=success",
           "path": "/var/log/audit/audit.log"
         },
@@ -1356,10 +1539,10 @@
           "offset": 0,
           "source": "収集基盤",
           "host": "analytics-db-02",
-          "user": "svc-collector",
+          "user": "",
           "ip": "10.60.0.9",
-          "event": "DB読み取り監査は収集済み",
-          "raw": "2026-10-20T08:42:30Z host=analytics-db-02 stream=db-read-audit interval=08:35:00-08:42:00 sequence=complete gaps=0 coverage=query_view,row_count",
+          "event": "collector.checkpoint",
+          "raw": "2026-10-20T08:42:30Z host=analytics-db-02 stream=db-read-audit checkpoint=171091 last_event_time=08:42:10 received_events=92",
           "path": "/var/log/security/collector.log"
         }
       ],
@@ -1374,7 +1557,7 @@
           "id": "hi-ex-doc-visibility",
           "title": "DBから出口までの観測範囲",
           "kind": "収集状況",
-          "body": "analytics-db-02（10.60.90.12）はDBセッションと参照ビュー・返却行数を監査する。export-worker-03（10.60.90.23）は抽出ファイルを生成するが、アプリの依頼インデックスが不調でREQ-772の依頼者と承認を取得できない。egress-gw-02（10.60.90.2）は複数クライアントの通信を一つの上流セッションへ多重化する。TLS内容、オブジェクトキー、テナントは収集されず、クライアント対応表の転送も停止中。時刻・バイト数の近さだけでは外向き通信とEXP-772を結びつけられない。"
+          "body": "analytics-db-02（10.60.90.12）はDBセッション、サービス証明書、参照ビューと返却行数を記録する。実際の分析依頼者と承認は別の依頼インデックスで管理する。export-worker-03（10.60.90.23）は生成ファイルのパス・サイズ・ダイジェストを記録するが、ファイル読み取り監査とアップロード受領証の転送は有効にしていない。egress-gw-02（10.60.90.2）は複数クライアントを一つの上流セッションへ多重化する。TLS検査は対象外で、オブジェクトキーとテナントは収集項目にない。クライアント対応表はローカルバッファから転送し、last_receivedが中央側の受信済み時刻を表す。"
         },
         {
           "id": "hi-ex-doc-workflow",
@@ -1392,11 +1575,37 @@
         "id": "hi-ex-contact",
         "name": "桐山 蓮",
         "role": "分析基盤とデータ取扱の当番",
-        "question": "REQ-772の依頼承認と、受信先・内容の回収状況を確認する",
+        "question": "8時40分ごろの顧客分析抽出について、依頼承認の確認先と、ワーカー・出口・受信先で取得可能な記録を教えてください。",
         "replyId": "hi-ex-reply",
         "replyTitle": "桐山 蓮からの回答",
-        "replyText": "DB-E772が18万4200行を読み、EXP-772.binを作成したところまでは確認しました。REQ-772の依頼者と承認はインデックス復旧待ちです。共有出口では画像配信など別業務も同時に動いており、GX-440の量だけでEXP-772が送信されたとは言えません。出口の対応表とストレージ受領履歴は取得依頼中です。顧客情報のため高優先度で責任者へ引き継ぎ、対象ジョブの保留可否を相談してください。",
-        "delaySeconds": 90
+        "replyText": "分析の個別依頼は毎日ありますが、いま依頼台帳がタイムアウトしていて該当時刻の依頼を開けません。画像同期も同じ出口を利用しています。出口担当はローカルの対応表を回収できるそうです。ストレージ管理者には受領履歴の取得を頼んでいますが、まだ返答はありません。依頼台帳が戻ったらデータ所有者に承認内容を確認します。",
+        "delaySeconds": 90,
+        "questions": [
+          {
+            "id": "specific",
+            "question": "8時40分ごろの顧客分析抽出について、依頼承認の確認先と、ワーカー・出口・受信先で取得可能な記録を教えてください。",
+            "replyId": "hi-ex-reply",
+            "replyTitle": "桐山 蓮からの回答",
+            "replyText": "分析の個別依頼は毎日ありますが、いま依頼台帳がタイムアウトしていて該当時刻の依頼を開けません。画像同期も同じ出口を利用しています。出口担当はローカルの対応表を回収できるそうです。ストレージ管理者には受領履歴の取得を頼んでいますが、まだ返答はありません。依頼台帳が戻ったらデータ所有者に承認内容を確認します。",
+            "delaySeconds": 90
+          },
+          {
+            "id": "vague",
+            "question": "この警報について、何か心当たりはありますか？",
+            "replyId": "hi-ex-reply-vague",
+            "replyTitle": "桐山 蓮からの回答（追加確認が必要）",
+            "replyText": "抽出と画像同期の仕事は日常的にあります。対象時刻と、どの記録が必要かを教えてください。",
+            "delaySeconds": 90
+          },
+          {
+            "id": "leading",
+            "question": "いつもの作業なので問題ないという理解でよいですか？",
+            "replyId": "hi-ex-reply-leading",
+            "replyTitle": "桐山 蓮からの回答（追加確認が必要）",
+            "replyText": "普段使う接続先でも、今回どのデータを誰に渡したかは確認が必要です。現時点では安全とは回答できません。",
+            "delaySeconds": 90
+          }
+        ]
       },
       "answer": {
         "verdict": "unknown",
@@ -1413,8 +1622,6 @@
             "hi-ex-04"
           ],
           [
-            "hi-ex-10",
-            "hi-ex-11",
             "hi-ex-doc-visibility"
           ],
           [
@@ -1433,7 +1640,22 @@
           "多重化された通信では時間や合計量だけでファイルを対応付けられません。",
           "断定できなくてもデータの重要性に応じて優先し、必要な証拠を具体的に依頼します。"
         ]
-      }
+      },
+      "targetType": "host",
+      "targets": [
+        {
+          "value": "analytics-db-02",
+          "label": "端末: analytics-db-02"
+        },
+        {
+          "value": "export-worker-03",
+          "label": "端末: export-worker-03"
+        },
+        {
+          "value": "egress-gw-02",
+          "label": "端末: egress-gw-02"
+        }
+      ]
     }
   ],
   "assets": [

@@ -24,7 +24,7 @@ const E = sandbox.SocEngine;
 function solve(session, id, engine = E, data = DATA) {
   const c = data.cases.find(item => item.id === id);
   const r = session.records[id];
-  r.draft = { verdict: c.answer.verdict, priority: c.answer.priorities[0], action: c.answer.actions[0], target: c.answer.target, summary: '記録を照合した。影響を継続調査する。', nextStep: '担当者へ引き継ぎ、未確認の操作を調べる。' };
+  r.draft = { verdict: c.answer.verdict, priority: c.answer.priorities[0], action: c.answer.actions[0], target: c.answer.target, summary: c.answer.target + ' の記録を照合した。影響を継続調査する。', nextStep: '担当者へ引き継ぎ、未確認の操作を調べる。' };
   for (const group of c.answer.evidenceGroups) {
     const id = group.find(ref => engine.evidenceAvailable(session, ref));
     assert.ok(id, 'available evidence for ' + c.id + ': ' + group.join(', '));
@@ -137,7 +137,7 @@ test('noncritical lateness reduces score without ending the shift', () => {
 
 test('missing independent evidence and unsupported decisions cannot pass', () => {
   const s = E.createSession('shift', 'medium', 'a');
-  s.records.a.draft = { verdict: 'incident', priority: 'high', action: 'contain', target: 'host-a', summary: '内容', nextStep: '次へ' };
+  s.records.a.draft = { verdict: 'incident', priority: 'high', action: 'contain', target: 'host-a', summary: 'host-a の内容', nextStep: '担当者へ連絡' };
   E.addEvidence(s, 'a', 'a-early');
   let result = E.submitCase(s, 'a');
   assert.equal(result.passed, false);

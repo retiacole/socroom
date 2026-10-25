@@ -82,7 +82,7 @@ for (const command of deniedCommands) {
     const terminal = create(FILES);
     const result = terminal.run(command);
     assert.notEqual(result.code, 0, 'attempt should fail');
-    assert.match(result.stderr, /読み取り専用/);
+    assert.match(result.stderr, /読み取り専用|Permission denied/);
     assert.equal(result.gameOver, undefined);
     assert.equal(terminal.run('cat /var/log/auth.log').stdout, LOG);
     assert.equal(terminal.run('cat /docs/asset.txt').stdout, FILES['/docs/asset.txt']);
@@ -100,7 +100,7 @@ test('read-only protection applies before the next command and to all command co
   ]) {
     const result = terminal.run(command);
     assert.equal(result.stdout, LOG);
-    assert.match(result.stderr, /読み取り専用/);
+    assert.match(result.stderr, /読み取り専用|Permission denied/);
   }
   assert.equal(terminal.run('cat moved.log').code, 1);
 });
@@ -180,11 +180,103 @@ test('unsupported UI commands and real system commands cannot run', () => {
     assert.equal(result.editor, undefined);
     assert.equal(result.train, undefined);
   }
-  for (const command of ['curl https://example.com', 'sh', 'python3', 'node', 'sudo', 'fetch']) assert.equal(terminal.run(command).code, 127);
+  for (const command of ['curl https://example.com', 'sh', 'python3', 'node', 'sudo sh', 'fetch']) assert.equal(terminal.run(command).code, 127);
+  assert.equal(terminal.run('sudo').code, 2);
   for (const command of ['echo $(cat /var/log/auth.log)', 'echo `pwd`', 'echo $HOME']) assert.equal(terminal.run(command).code, 2);
   assert.equal(terminal.run('less /var/log/auth.log').stdout, LOG);
   assert.equal(terminal.run('more /var/log/auth.log').pager, undefined);
   assert.doesNotMatch(terminal.run('help rm').stdout, /Easter egg|GAME OVER|reset current case/);
   assert.match(terminal.run('help').stdout, /読み取り専用/);
   assert.match(terminal.run('help sl').stdout, /未対応/);
+});
+
+test('tilde paths, awk concatenation and stderr redirection support a complete investigation pipeline', () => {
+  const terminal = create(FILES);
+  assert.equal(terminal.run('mkdir -p ~/notes; cp /var/log/auth.log ~/notes/auth.log; cd ~/notes; pwd').stdout, '/home/analyst/notes\n');
+  assert.equal(terminal.run("awk '/failed/ {print $2 \":\" $NF}' auth.log | sort | uniq -c").stdout, '      2 bastion-01:ip=203.0.113.21\n');
+  assert.equal(terminal.run('cd ~; pwd').stdout, '/home/analyst\n');
+  const suppressed = terminal.run('grep failed /var/log/missing.log /var/log/auth.log 2>/dev/null');
+  assert.equal(suppressed.code, 2, 'suppression must not turn a failed read into success');
+  assert.equal(suppressed.stderr, '');
+  assert.match(suppressed.stdout, /result=failed/);
+  assert.doesNotMatch(suppressed.stdout, /result=accepted/);
+  assert.deepEqual(terminal.run('echo discarded > /dev/null'), {stdout: '', stderr: '', code: 0});
+  assert.equal(terminal.run('cat /dev/null').stdout, '');
+  assert.equal(terminal.getWorkspace().files['/dev/null'], undefined);
+});
+
+test('grep ERE rejects PCRE digit escapes and supports POSIX digit classes', () => {
+  const terminal = create({'/var/log/sample.log': '123\nabc\nd\n'});
+  for (const pattern of ['\\d', '\\D']) {
+    const result = terminal.run("grep -E '" + pattern + "' /var/log/sample.log");
+    assert.equal(result.code, 2);
+    assert.equal(result.stdout, '');
+    assert.match(result.stderr, /PCRE|unsupported|not supported/);
+  }
+  assert.equal(terminal.run("grep -E '[[:digit:]]+' /var/log/sample.log").stdout, '123\n');
+  assert.equal(terminal.run("grep -E '[^[:digit:]]+' /var/log/sample.log").stdout, 'abc\nd\n');
+});
+
+test('simulated sudo cannot bypass the immutable source boundary or alter the next command identity', () => {
+  const terminal = create(FILES);
+  assert.equal(terminal.run('sudo whoami; whoami').stdout, 'root\nanalyst\n');
+  for (const command of [
+    'sudo echo ALTERED > /var/log/auth.log',
+    'sudo echo ALTERED >> /var/log/auth.log',
+    'echo ALTERED | sudo tee /var/log/auth.log',
+    "sudo sed -i.bak 's/failed/ALTERED/g' /var/log/auth.log",
+    'sudo cp /docs/asset.txt /var/log/auth.log',
+    'sudo rm /var/log/auth.log',
+    'sudo mv /var/log /home/analyst/moved',
+    'sudo mkdir /var/log/new-directory',
+    'sudo touch /var/log/auth.log',
+    'echo /var/log/auth.log | xargs sudo rm'
+  ]) {
+    const result = terminal.run(command);
+    assert.notEqual(result.code, 0, command);
+    assert.match(result.stderr, /読み取り専用|Permission denied/, command);
+    assert.equal(terminal.run('cat /var/log/auth.log').stdout, LOG, command);
+    assert.equal(terminal.run('cat /docs/asset.txt').stdout, FILES['/docs/asset.txt'], command);
+    assert.equal(terminal.getWorkspace().files['/home/analyst/moved'], undefined);
+  }
+  assert.equal(terminal.run('whoami').stdout, 'analyst\n');
+  assert.equal(terminal.run('cat /var/log/auth.log.bak').code, 1);
+});
+
+test('evidence uses original source line numbers and permits only available original rows', () => {
+  const calls = [];
+  const terminal = create(FILES, {onEvidence(path, line) { calls.push([path, line]); return 'case-log-' + line; }});
+  const result = terminal.run('evidence /var/log/auth.log:3');
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /case-log-3/);
+  assert.deepEqual(calls, [['/var/log/auth.log', 3]]);
+  assert.equal(terminal.run('cd /var/log; evidence ./auth.log:4').code, 0);
+  assert.equal(terminal.run('evidence /docs/asset.txt:1').code, 0);
+  terminal.run('cp /var/log/auth.log /home/analyst/copy.log');
+  for (const invalid of [
+    '/home/analyst/copy.log:1', '/var/log/missing.log:1', '/var/log/auth.log:0',
+    '/var/log/auth.log:-1', '/var/log/auth.log:1.5', '/var/log/auth.log:5',
+    '/var/log/auth.log:9007199254740992'
+  ]) {
+    const before = calls.length;
+    assert.notEqual(terminal.run('evidence ' + invalid).code, 0, invalid);
+    assert.equal(calls.length, before, 'invalid source must not reach the registration callback');
+  }
+  terminal.updateFiles({...FILES, '/var/log/auth.log': LOG + '09:00:05 later event\n'});
+  assert.equal(terminal.run('evidence /var/log/auth.log:5').code, 0);
+  assert.deepEqual(calls.at(-1), ['/var/log/auth.log', 5]);
+  assert.equal(terminal.run('cat /var/log/auth.log').stdout, LOG + '09:00:05 later event\n');
+});
+
+test('evidence cannot register an empty source, a disconnected session or a rejected source row', () => {
+  let called = false;
+  const empty = create({'/var/log/empty.log': ''}, {onEvidence() { called = true; return 'invalid'; }});
+  assert.notEqual(empty.run('evidence /var/log/empty.log:1').code, 0);
+  assert.equal(called, false);
+  assert.match(create(FILES).run('evidence /var/log/auth.log:1').stderr, /案件が接続されていません/);
+  const rejecting = create(FILES, {onEvidence() { throw new Error('別案件の証拠です'); }});
+  assert.match(rejecting.run('evidence /var/log/auth.log:1').stderr, /別案件の証拠/);
+  rejecting.setEvidenceHandler(() => 'accepted-log');
+  assert.equal(rejecting.run('evidence /var/log/auth.log:1').code, 0);
+  assert.match(rejecting.run('help evidence').stdout, /作業用コピーは登録できません/);
 });

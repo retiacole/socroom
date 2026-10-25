@@ -21,7 +21,7 @@
           "host": "support-12",
           "user": "svc-appdeploy",
           "ip": "10.28.10.12",
-          "event": "配布管理の事前確認",
+          "event": "deployment.precheck",
           "raw": "2026-10-20T09:09:50Z host=support-12 run=DEP-421 request=CHG-421 package=DeskHelp-7.4 operation=precheck result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -33,7 +33,7 @@
           "host": "support-12",
           "user": "svc-appdeploy",
           "ip": "10.28.10.12",
-          "event": "更新ジョブを開始",
+          "event": "deployment.start",
           "raw": "2026-10-20T09:10:00Z host=support-12 user=svc-appdeploy run=DEP-421 request=CHG-421 package=DeskHelp-7.4 action=start",
           "path": "/var/log/audit/events.log"
         },
@@ -45,7 +45,7 @@
           "host": "support-12",
           "user": "svc-appdeploy",
           "ip": "10.28.10.12",
-          "event": "サービスの実行ファイル変更を検知",
+          "event": "SERVICE_BINARY_CHANGED",
           "raw": "2026-10-20T09:10:08Z host=support-12 user=svc-appdeploy run=DEP-421 service=DeskHelpAgent operation=service_binary_change old=DeskHelp-7.3 new=DeskHelp-7.4 rule=SERVICE_BINARY_CHANGED",
           "path": "/var/log/audit/events.log"
         },
@@ -57,7 +57,7 @@
           "host": "support-12",
           "user": "svc-appdeploy",
           "ip": "10.28.10.12",
-          "event": "新しいバージョンのサービスが起動",
+          "event": "service.start",
           "raw": "2026-10-20T09:10:12Z host=support-12 user=svc-appdeploy run=DEP-421 service=DeskHelpAgent version=7.4 operation=service_start result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -69,8 +69,8 @@
           "host": "support-12",
           "user": "svc-appdeploy",
           "ip": "10.28.10.12",
-          "event": "更新の実施内容と完了を記録",
-          "raw": "2026-10-20T09:10:20Z host=support-12 user=svc-appdeploy run=DEP-421 request=CHG-421 package=DeskHelp-7.4 publisher=DeskHelpLtd signature=valid target=support-12 changed_service=DeskHelpAgent other_service_changes=0 result=success audit_coverage=complete",
+          "event": "deployment.complete（更新完了）",
+          "raw": "2026-10-20T09:10:20Z host=support-12 user=svc-appdeploy run=DEP-421 request=CHG-421 package=DeskHelp-7.4 publisher=DeskHelpLtd signature=valid target=support-12 changed_service=DeskHelpAgent result=success",
           "path": "/var/log/audit/events.log"
         },
         {
@@ -81,7 +81,7 @@
           "host": "support-12",
           "user": "support-user",
           "ip": "10.28.10.12",
-          "event": "問い合わせ画面の起動確認",
+          "event": "application.healthcheck",
           "raw": "2026-10-20T09:11:00Z host=support-12 user=support-user app=DeskHelp version=7.4 operation=healthcheck result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -93,7 +93,7 @@
           "host": "support-12",
           "user": "svc-appdeploy",
           "ip": "10.28.10.12",
-          "event": "定期ヘルスチェック",
+          "event": "agent.heartbeat",
           "raw": "2026-10-20T09:12:00Z host=support-12 agent=healthy heartbeat=success",
           "path": "/var/log/audit/events.log"
         }
@@ -103,24 +103,34 @@
           "id": "bg1-doc-asset",
           "title": "サポート端末の配布管理",
           "kind": "資産・運用",
-          "body": "support-12 は問い合わせ対応用端末。DeskHelpAgent は業務アプリのサービスで、svc-appdeploy が更新する。配布管理ログは今回のジョブが変更したサービスと完了結果を記録している。サービス変更は更新でも発生するが、申請外の変更は担当者確認が必要。"
+          "body": "support-12は問い合わせ対応用端末。DeskHelpAgentは業務アプリのサービスで、svc-appdeployが更新する。配布管理はジョブが変更したサービスごとに完了イベントを記録する。今回の出力には09:00〜09:30の配布管理イベントを収録している。端末で人が直接行った変更はOS監査・EDRで別途確認する。"
         },
         {
           "id": "bg1-doc-change",
           "title": "更新申請 CHG-421",
           "kind": "作業申請",
-          "body": "承認済み。10月20日09:00〜09:30 UTC、support-12 の DeskHelp を7.3から7.4へ更新する。アカウント svc-appdeploy、実行ID DEP-421 を使用。DeskHelp Ltd の署名が有効な DeskHelp-7.4 パッケージで DeskHelpAgent を更新し、再起動する。他のサービス変更は申請に含まれない。担当は大野。"
+          "body": "承認済み。10月20日09:00〜09:30 UTC、support-12のDeskHelpを7.3から7.4へ更新する。アカウントsvc-appdeploy、実行ID DEP-421を使用。DeskHelp Ltdの署名が有効なDeskHelp-7.4パッケージでDeskHelpAgentを更新し、再起動する。担当は大野。"
         }
       ],
       "contact": {
         "id": "bg1-contact",
         "name": "大野 蓮",
         "role": "配布管理担当",
-        "question": "CHG-421 の実施内容と完了結果を確認する",
+        "question": "9時10分ごろのsupport-12更新について、実施したアプリ・更新後の確認内容を教えてください。",
         "replyId": "bg1-reply",
         "replyTitle": "大野からの回答：更新結果",
         "delaySeconds": 0,
-        "replyText": "CHG-421 に従って DEP-421 を09:10に実行しました。support-12 の DeskHelpAgent を7.4へ更新し、再起動と動作確認が完了しています。配布管理の結果一覧でも変更したサービスは DeskHelpAgent だけでした。申請外の端末や別のサービスにこの申請を適用しないでください。"
+        "replyText": "9時10分ごろサポート端末のDeskHelpを7.4に更新しました。サービスが再起動した後、問い合わせ画面を開いて一覧が表示されることを確認しました。私がその時間に行ったのは、このアプリの更新です。",
+        "questions": [
+          {
+            "id": "specific",
+            "question": "9時10分ごろのsupport-12更新について、実施したアプリ・更新後の確認内容を教えてください。",
+            "replyId": "bg1-reply",
+            "replyTitle": "大野からの回答：更新結果",
+            "replyText": "9時10分ごろサポート端末のDeskHelpを7.4に更新しました。サービスが再起動した後、問い合わせ画面を開いて一覧が表示されることを確認しました。私がその時間に行ったのは、このアプリの更新です。",
+            "delaySeconds": 0
+          }
+        ]
       },
       "hints": [
         "サービス名と更新ジョブが実際に変更した対象を比べます。",
@@ -147,8 +157,8 @@
             "bg1-reply"
           ]
         ],
-        "summary": "support-12 のサービス変更は承認済みの更新 CHG-421 に対応する。DEP-421 の完了ログで、時間帯・端末・アカウント・パッケージと変更サービスが申請範囲に一致し、他サービスの変更がないことを確認した。担当者から更新と動作確認の完了回答も得たため、正当な業務と判断した。",
-        "nextStep": "完了ログ、CHG-421、担当者回答を添えてクローズする。今回の確認を根拠に、別端末・別サービスの変更まで一括して許可しない。",
+        "summary": "09:10のsupport-12サービス変更は、DEP-421の実施記録とCHG-421の端末・時間帯・アカウント・パッケージ・サービスが一致した。担当者も同時刻の更新と画面確認を実施したと回答したため、確認した更新操作を正当な業務と判断した。",
+        "nextStep": "完了ログ、CHG-421、担当者回答を添えてクローズし、配布管理担当へ確認結果を返す。今回確認したサービス更新の範囲を記録する。",
         "explanation": "サービス変更は更新でも発生します。今回は実施内容と承認範囲が一致し、完了も確認できています。申請があるだけでなく、実際の変更がその範囲内かを照合します。",
         "lessons": [
           "警報名ではなく実際の変更内容を確認する。",
@@ -173,7 +183,7 @@
           {
             "id": "logs",
             "title": "実際に起きた操作を生ログで確認する",
-            "instruction": "「ログ検索」で「更新の実施内容と完了を記録」の「生ログを表示」を押します。DEP-421 を手がかりに、サービス・パッケージ・結果を読み取ります。",
+            "instruction": "「ログ検索」で「deployment.complete（更新完了）」の「生ログを表示」を押します。DEP-421 を手がかりに、サービス・パッケージ・結果を読み取ります。",
             "why": "短いイベント名だけで結論を出さず、実行した主体・対象・結果を元の記録で確かめます。",
             "target": "[data-log-details=\"bg1-04\"] > summary",
             "tab": "logs",
@@ -183,7 +193,7 @@
           {
             "id": "log-evidence",
             "title": "判断の根拠になるログを登録する",
-            "instruction": "同じ「更新の実施内容と完了を記録」の「証拠に追加」を押します。警報だけでなく実際の変更内容が分かる記録を選びます。",
+            "instruction": "同じ「deployment.complete（更新完了）」の「証拠に追加」を押します。警報だけでなく実際の変更内容が分かる記録を選びます。",
             "why": "報告を受ける人が同じ事実をたどれるよう、判断を支える具体的な記録を残します。",
             "target": "[data-evidence=\"bg1-04\"]",
             "kind": "evidence",
@@ -254,7 +264,18 @@
             "kind": "submitted"
           }
         ]
-      }
+      },
+      "targetType": "host",
+      "targets": [
+        {
+          "value": "support-12",
+          "label": "端末: support-12"
+        },
+        {
+          "value": "svc-appdeploy",
+          "label": "アカウント: svc-appdeploy"
+        }
+      ]
     },
     {
       "id": "bridge-usb-copy",
@@ -277,7 +298,7 @@
           "host": "legal-08",
           "user": "y.izumi",
           "ip": "10.28.20.8",
-          "event": "契約資料フォルダを開く",
+          "event": "folder.open",
           "raw": "2026-10-20T10:14:40Z host=legal-08 user=y.izumi operation=folder_open path=C:/legal/contracts result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -289,8 +310,8 @@
           "host": "legal-08",
           "user": "y.izumi",
           "ip": "10.28.20.8",
-          "event": "USB媒体を接続",
-          "raw": "2026-10-20T10:15:00Z host=legal-08 user=y.izumi operation=usb_attach device_serial=HOME-882 volume=E encryption=none result=success",
+          "event": "device.attach",
+          "raw": "2026-10-20T10:15:00Z host=legal-08 user=y.izumi operation=usb_attach device_serial=HOME-882 volume=E encryption=disabled result=success",
           "path": "/var/log/audit/events.log"
         },
         {
@@ -301,7 +322,7 @@
           "host": "legal-08",
           "user": "y.izumi",
           "ip": "10.28.20.8",
-          "event": "機密資料の媒体コピーを検知",
+          "event": "MEDIA_EXPORT",
           "raw": "2026-10-20T10:15:24Z host=legal-08 user=y.izumi operation=file_copy device_serial=HOME-882 classification=restricted policy=MEDIA_EXPORT mode=detect_only action=alert transfer_id=COPY-882",
           "path": "/var/log/audit/events.log"
         },
@@ -313,7 +334,7 @@
           "host": "legal-08",
           "user": "y.izumi",
           "ip": "10.28.20.8",
-          "event": "媒体へのコピー完了を記録",
+          "event": "file.copy.completed（コピー完了）",
           "raw": "2026-10-20T10:15:25Z host=legal-08 user=y.izumi transfer_id=COPY-882 destination=usb:HOME-882 files=contract-A.pdf,contract-B.pdf,contract-C.pdf file_count=3 classification=restricted bytes=146320 result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -325,7 +346,7 @@
           "host": "legal-08",
           "user": "y.izumi",
           "ip": "10.28.20.8",
-          "event": "警報を監視基盤へ配送",
+          "event": "alert.delivery",
           "raw": "2026-10-20T10:15:26Z host=legal-08 transfer_id=COPY-882 operation=alert_delivery result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -337,7 +358,7 @@
           "host": "legal-08",
           "user": "y.izumi",
           "ip": "10.28.20.8",
-          "event": "USB媒体の取り外しを記録",
+          "event": "device.detach",
           "raw": "2026-10-20T10:16:00Z host=legal-08 user=y.izumi operation=usb_detach device_serial=HOME-882 result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -349,7 +370,7 @@
           "host": "legal-08",
           "user": "y.izumi",
           "ip": "10.28.20.8",
-          "event": "端末の管理通信は正常",
+          "event": "agent.heartbeat",
           "raw": "2026-10-20T10:17:00Z host=legal-08 agent=healthy heartbeat=success",
           "path": "/var/log/audit/events.log"
         }
@@ -359,7 +380,7 @@
           "id": "bg2-doc-media",
           "title": "法務部の媒体持ち出しルールと今回の申請",
           "kind": "持ち出し申請",
-          "body": "契約資料（restricted）の持ち出しは承認された社給暗号化USBに限る。個人媒体へのコピーは禁止。申請 OUT-882 は10月20日の契約打合せ用として、泉が legal-08 から契約書 contract-A.pdf、contract-B.pdf、contract-C.pdf の3件を社給暗号化USB CORP-114 へコピーすることを承認した。承認対象の媒体識別番号は CORP-114 のみ。"
+          "body": "契約資料（restricted）の持ち出しは、承認された社給暗号化USBで実施する。申請OUT-882：10月20日の契約打合せ用として、泉がlegal-08からcontract-A.pdf、contract-B.pdf、contract-C.pdfの3件を社給暗号化USB CORP-114へコピーする。承認者は法務部長。"
         },
         {
           "id": "bg2-doc-response",
@@ -372,11 +393,21 @@
         "id": "bg2-contact",
         "name": "泉 優",
         "role": "法務部・端末利用者",
-        "question": "使用したUSB媒体とコピー後の状況を確認する",
+        "question": "10時15分ごろに使ったUSBは社給品ですか。コピーした資料、媒体の現在地、その後の利用を教えてください。",
         "replyId": "bg2-reply",
         "replyTitle": "泉からの回答：使った媒体",
         "delaySeconds": 0,
-        "replyText": "社給の CORP-114 が見つからず、私物USBの HOME-882 に契約書3件をコピーしました。個人媒体の使用申請はしていません。USBはいま自分の机にあり、別の端末にはまだ挿していません。これ以上操作せず回収の指示を待ちます。"
+        "replyText": "打合せ用に契約書を3つコピーしました。社給USBが見当たらず、自宅から持ってきたUSBを使いました。いま机の上にあり、別の端末にはまだ挿していません。私物を使うことは上司に相談していません。",
+        "questions": [
+          {
+            "id": "specific",
+            "question": "10時15分ごろに使ったUSBは社給品ですか。コピーした資料、媒体の現在地、その後の利用を教えてください。",
+            "replyId": "bg2-reply",
+            "replyTitle": "泉からの回答：使った媒体",
+            "replyText": "打合せ用に契約書を3つコピーしました。社給USBが見当たらず、自宅から持ってきたUSBを使いました。いま机の上にあり、別の端末にはまだ挿していません。私物を使うことは上司に相談していません。",
+            "delaySeconds": 0
+          }
+        ]
       },
       "hints": [
         "DLP通知だけでは遮断されたと判断できません。コピー結果を確認します。",
@@ -430,7 +461,7 @@
           {
             "id": "logs",
             "title": "実際に起きた操作を生ログで確認する",
-            "instruction": "「ログ検索」で「媒体へのコピー完了を記録」の「生ログを表示」を押します。COPY-882 を追い、DLPの mode とファイル監査の result・媒体を比べます。",
+            "instruction": "「ログ検索」で「file.copy.completed（コピー完了）」の「生ログを表示」を押します。COPY-882 を追い、DLPの mode とファイル監査の result・媒体を比べます。",
             "why": "短いイベント名だけで結論を出さず、実行した主体・対象・結果を元の記録で確かめます。",
             "target": "[data-log-details=\"bg2-03\"] > summary",
             "tab": "logs",
@@ -440,7 +471,7 @@
           {
             "id": "log-evidence",
             "title": "判断の根拠になるログを登録する",
-            "instruction": "同じ「媒体へのコピー完了を記録」の「証拠に追加」を押します。コピー成否と、どの媒体へ何件コピーされたか分かる記録を選びます。",
+            "instruction": "同じ「file.copy.completed（コピー完了）」の「証拠に追加」を押します。コピー成否と、どの媒体へ何件コピーされたか分かる記録を選びます。",
             "why": "報告を受ける人が同じ事実をたどれるよう、判断を支える具体的な記録を残します。",
             "target": "[data-evidence=\"bg2-03\"]",
             "kind": "evidence",
@@ -511,7 +542,18 @@
             "kind": "submitted"
           }
         ]
-      }
+      },
+      "targetType": "host",
+      "targets": [
+        {
+          "value": "legal-08",
+          "label": "端末: legal-08"
+        },
+        {
+          "value": "y.izumi",
+          "label": "アカウント: y.izumi"
+        }
+      ]
     },
     {
       "id": "bridge-service-auth",
@@ -534,7 +576,7 @@
           "host": "metrics-03",
           "user": "svc-metrics",
           "ip": "10.28.30.3",
-          "event": "サービス用パスワードが更新された",
+          "event": "credential.rotate",
           "raw": "2026-10-20T11:00:00Z host=metrics-03 user=svc-metrics actor=secret-rotation request=ROT-203 credential_version=32 operation=password_rotate result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -546,7 +588,7 @@
           "host": "metrics-03",
           "user": "svc-metrics",
           "ip": "10.28.30.3",
-          "event": "集計ジョブの認証が失敗",
+          "event": "Sign-in: failure",
           "raw": "2026-10-20T11:00:05Z host=metrics-03 user=svc-metrics src=10.28.30.3 client=metrics-collector job=MET-203 credential_version=31 result=failed reason=old_credential",
           "path": "/var/log/audit/events.log"
         },
@@ -558,7 +600,7 @@
           "host": "metrics-03",
           "user": "svc-metrics",
           "ip": "10.28.30.3",
-          "event": "同じジョブの再試行で失敗が継続",
+          "event": "Sign-in: failure",
           "raw": "2026-10-20T11:00:35Z host=metrics-03 user=svc-metrics src=10.28.30.3 client=metrics-collector job=MET-203 credential_version=31 result=failed reason=old_credential attempts=6",
           "path": "/var/log/audit/events.log"
         },
@@ -570,7 +612,7 @@
           "host": "metrics-03",
           "user": "svc-metrics",
           "ip": "10.28.30.3",
-          "event": "サービスに更新済み資格情報を反映",
+          "event": "service.reload",
           "raw": "2026-10-20T11:01:00Z host=metrics-03 user=svc-metrics actor=ops-secret request=ROT-203 service=metrics-collector credential_version=32 operation=reload result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -582,7 +624,7 @@
           "host": "metrics-03",
           "user": "svc-metrics",
           "ip": "10.28.30.3",
-          "event": "更新後の集計ジョブが認証に成功",
+          "event": "Sign-in: success",
           "raw": "2026-10-20T11:01:10Z host=metrics-03 user=svc-metrics src=10.28.30.3 client=metrics-collector job=MET-203 credential_version=32 result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -594,7 +636,7 @@
           "host": "metrics-03",
           "user": "svc-metrics",
           "ip": "10.28.30.3",
-          "event": "メトリクス集計結果を更新",
+          "event": "aggregate.publish",
           "raw": "2026-10-20T11:02:00Z host=metrics-03 user=svc-metrics job=MET-203 operation=aggregate_publish result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -606,8 +648,8 @@
           "host": "metrics-03",
           "user": "svc-metrics",
           "ip": "10.28.30.3",
-          "event": "警報対象要求の出所と終息を集計",
-          "raw": "2026-10-20T11:05:00Z host=metrics-03 user=svc-metrics alert=AUTH-203 window=11:00:00-11:05:00 failed_requests=6 failed_src=10.28.30.3 failed_client=metrics-collector failed_job=MET-203 reason=old_credential last_failure=11:00:35 success_after_reload=4 unexpected_sources=0 audit_coverage=complete",
+          "event": "authentication.summary",
+          "raw": "2026-10-20T11:05:00Z host=metrics-03 user=svc-metrics alert=AUTH-203 window=11:00:00-11:05:00 failed_requests=6 failed_src=10.28.30.3 failed_client=metrics-collector failed_job=MET-203 reason=old_credential last_failure=11:00:35 successful_requests=4",
           "path": "/var/log/audit/events.log"
         }
       ],
@@ -616,24 +658,50 @@
           "id": "bg3-doc-rotation",
           "title": "資格情報更新 ROT-203 とサービス構成",
           "kind": "作業申請",
-          "body": "承認済み。10月20日11:00〜11:05 UTC、svc-metrics の資格情報を31から32へ更新する。利用元は metrics-03（10.28.30.3）の metrics-collector。実行中の集計ジョブ MET-203 が古い資格情報で再試行する場合は、11:01に設定を再読込して新しい資格情報を反映する。今回の対象はこのサービスのみ。"
+          "body": "承認済み。10月20日11:00〜11:05 UTC、svc-metricsの資格情報を31から32へ更新する。利用元はmetrics-03（10.28.30.3）のmetrics-collector。11:01にサービス設定を再読込する。次の定例更新は12:00。手順改善の変更申請は作成中で、次回も同じ再読込順序を用いる。担当は監視基盤チーム。"
         },
         {
           "id": "bg3-doc-coverage",
-          "title": "認証監査の見方",
+          "title": "認証監査の収集範囲と追加監視基準",
           "kind": "監査仕様",
-          "body": "AUTH-203 の集計は11:00〜11:05 UTCの警報対象要求を網羅する。failed_src、failed_client、failed_job は失敗要求の送信元・クライアント・実行ID。success_after_reload は再読込後に同じサービスで成功した要求数。audit_coverage=complete はこの時間帯・集計範囲の収集に欠落がない意味であり、将来の操作まで安全だという保証ではない。"
+          "body": "この出力は11:00〜11:05 UTCの認証要求を対象に、送信元・クライアント・実行ID別に件数を集計する。失敗と成功の時刻は個別ログでも確認できる。業務サービスの再試行に起因する警報は、復旧後も次回の設定更新で再発する可能性があれば追加監視を継続する。監視終了は担当者が次回更新と集計結果を確認した後に判断する。"
         }
       ],
       "contact": {
         "id": "bg3-contact",
         "name": "小林 真",
         "role": "監視基盤担当",
-        "question": "資格情報更新と集計サービスの復旧を確認する",
+        "question": "11時の資格情報更新後、集計は復旧しましたか。手順修正の反映状況と次回更新の予定も教えてください。",
         "replyId": "bg3-reply",
         "replyTitle": "小林からの回答：更新後の確認",
         "delaySeconds": 0,
-        "replyText": "ROT-203 を実施しました。MET-203 が古い資格情報を使って再試行したため11:01に再読込しました。以後の認証と集計は成功し、監視画面への反映も確認済みです。今回の警報の6回の失敗は同じジョブからの要求でした。次回は再読込のタイミングを見直します。"
+        "replyText": "11時すぎに設定を読み直したら、止まっていた集計画面が更新されました。次は正午の更新です。再読込の順序を直す変更はまだ入っておらず、正午も手作業で確認する予定です。監視側でも失敗が続かないか見ていただきたいです。",
+        "questions": [
+          {
+            "id": "specific",
+            "question": "11時の資格情報更新後、集計は復旧しましたか。手順修正の反映状況と次回更新の予定も教えてください。",
+            "replyId": "bg3-reply",
+            "replyTitle": "小林からの回答：更新後の確認",
+            "replyText": "11時すぎに設定を読み直したら、止まっていた集計画面が更新されました。次は正午の更新です。再読込の順序を直す変更はまだ入っておらず、正午も手作業で確認する予定です。監視側でも失敗が続かないか見ていただきたいです。",
+            "delaySeconds": 0
+          },
+          {
+            "id": "vague",
+            "question": "この警報について、何か心当たりはありますか？",
+            "replyId": "bg3-reply-vague",
+            "replyTitle": "小林からの回答：更新後の確認（追加確認が必要）",
+            "replyText": "パスワード更新は今日の予定にあります。どのサービスのどの時刻を調べますか。",
+            "delaySeconds": 0
+          },
+          {
+            "id": "leading",
+            "question": "いつもの作業なので問題ないという理解でよいですか？",
+            "replyId": "bg3-reply-leading",
+            "replyTitle": "小林からの回答：更新後の確認（追加確認が必要）",
+            "replyText": "いま画面は更新されていますが、次の更新でも同じ失敗が起こらないとはまだ言えません。",
+            "delaySeconds": 0
+          }
+        ]
       },
       "hints": [
         "失敗件数だけでなく src・client・job を確認します。",
@@ -643,12 +711,12 @@
       "answer": {
         "verdict": "benign",
         "priorities": [
-          "low"
+          "medium"
         ],
         "actions": [
-          "close"
+          "monitor"
         ],
-        "target": "metrics-03",
+        "target": "svc-metrics",
         "evidenceGroups": [
           [
             "bg3-06"
@@ -660,19 +728,19 @@
             "bg3-reply"
           ]
         ],
-        "summary": "認証失敗6回は metrics-03 の metrics-collector、MET-203 が古い資格情報を使った要求に限定されていた。ROT-203 の予定と更新・再読込の時系列が一致し、再読込後の成功を確認した。担当者も集計の復旧を確認しているため、承認された更新に伴う警報として扱う。",
-        "nextStep": "監査集計、ROT-203、担当者回答を添えてクローズする。次回の再読込順序を運用担当に見直してもらう。別の送信元や実行IDの失敗を今回と同一原因として扱わない。",
-        "explanation": "失敗回数だけで攻撃とは決められません。今回は対象要求が既知のジョブに限定され、資格情報更新と復旧につながっています。予定があるだけでなく、警報の要求の出所と復旧を確認します。",
+        "summary": "11:00のsvc-metrics認証失敗6回はmetrics-collectorの古い資格情報によるもので、承認された更新と再読込後の成功が時系列で対応した。集計復旧は担当者も確認している。一方、再読込順序は未修正で12:00にも更新があるため、正当な作業と判断した上で追加監視を続ける。",
+        "nextStep": "監視基盤担当へsvc-metricsの12:00の更新と集計成功確認を依頼し、同アカウントの失敗率・発生元を追加監視する。失敗が継続した場合は担当へ連絡し、手順修正と次回更新での復旧を確認して監視終了を判断する。",
+        "explanation": "承認作業に伴う失敗と復旧が確認できても、次回の更新で再発する条件は残っています。判定は正当な業務、優先度は再発を追う中、対応は追加監視です。判定だけで機械的にクローズを選ばず、現在の状態と次の予定を区別します。",
         "lessons": [
           "件数だけでなく要求の主体と実行IDを見る。",
           "予定・失敗原因・復旧を時系列でつなぐ。",
-          "クローズの判断と運用改善の引き継ぎを両立する。"
+          "正当な業務でも再発条件が残れば追加監視を選ぶ。"
         ]
       },
       "bridge": {
         "stage": "checklist",
         "objective": "認証失敗の発生元・設定更新・その後の結果をつなぎ、警報への対応を提出する。",
-        "focus": "時系列と実行元から原因と復旧範囲を判断する。",
+        "focus": "時系列から原因と復旧を確かめ、再発条件に応じて対応を選ぶ。",
         "steps": [
           {
             "id": "context",
@@ -725,7 +793,7 @@
           {
             "id": "request",
             "title": "集計処理の復旧を担当者に確認する",
-            "instruction": "「照会」タブの「確認を依頼する」を押して回答を読みます。本来の集計処理が復旧したかも確認します。",
+            "instruction": "「照会」で、復旧だけでなく次回更新と再発条件を確かめられる質問を選びます。回答が曖昧なら質問を具体化します。",
             "why": "予定だけで実施結果を決めつけず、担当者が確認した範囲も調べます。",
             "target": "[data-tab=\"contact\"]",
             "tab": "contact",
@@ -766,7 +834,22 @@
             "kind": "submitted"
           }
         ]
-      }
+      },
+      "targetType": "account",
+      "targets": [
+        {
+          "value": "svc-metrics",
+          "label": "アカウント: svc-metrics"
+        },
+        {
+          "value": "metrics-03",
+          "label": "端末: metrics-03"
+        },
+        {
+          "value": "ops-secret",
+          "label": "アカウント: ops-secret"
+        }
+      ]
     },
     {
       "id": "bridge-link-followup",
@@ -789,7 +872,7 @@
           "host": "sales-14",
           "user": "n.endo",
           "ip": "10.28.40.14",
-          "event": "URL操作前の端末状態を受信",
+          "event": "agent.heartbeat",
           "raw": "2026-10-20T12:19:40Z host=sales-14 user=n.endo agent=healthy last_event_received=2026-10-20T12:19:40Z process_audit_watermark=2026-10-20T12:19:40Z",
           "path": "/var/log/audit/events.log"
         },
@@ -799,9 +882,9 @@
           "offset": 0,
           "source": "Proxy",
           "host": "sales-14",
-          "user": "n.endo",
+          "user": "",
           "ip": "10.28.40.14",
-          "event": "メール内URLへの接続要求を受信",
+          "event": "HTTP GET",
           "raw": "2026-10-20T12:20:00Z host=sales-14 user=n.endo request_id=WEB-614 method=GET url=https://delivery-notice.example/view/new domain_age_category=newly_observed operation=request_received",
           "path": "/var/log/audit/events.log"
         },
@@ -811,10 +894,10 @@
           "offset": 0,
           "source": "Proxy",
           "host": "sales-14",
-          "user": "n.endo",
+          "user": "",
           "ip": "10.28.40.14",
-          "event": "接続要求に許可判定を記録",
-          "raw": "2026-10-20T12:20:00Z host=sales-14 user=n.endo request_id=WEB-614 destination=delivery-notice.example policy_decision=allow stage=request_policy response_status=not_recorded response_bytes=not_recorded",
+          "event": "request.policy_decision",
+          "raw": "2026-10-20T12:20:00Z host=sales-14 user=n.endo request_id=WEB-614 destination=delivery-notice.example policy_decision=allow stage=request_policy",
           "path": "/var/log/audit/events.log"
         },
         {
@@ -823,9 +906,9 @@
           "offset": 0,
           "source": "Proxy",
           "host": "sales-14",
-          "user": "n.endo",
+          "user": "",
           "ip": "10.28.40.14",
-          "event": "新しく観測した宛先の通知",
+          "event": "NEWLY_OBSERVED_DOMAIN",
           "raw": "2026-10-20T12:20:01Z host=sales-14 request_id=WEB-614 destination=delivery-notice.example category=newly_observed threat_verdict=unclassified action=notify",
           "path": "/var/log/audit/events.log"
         },
@@ -833,12 +916,12 @@
           "id": "bg4-03",
           "time": "12:20:02",
           "offset": 0,
-          "source": "Proxy",
-          "host": "sales-14",
-          "user": "n.endo",
-          "ip": "10.28.40.14",
-          "event": "応答側の記録が未収集と判明",
-          "raw": "2026-10-20T12:20:02Z host=sales-14 user=n.endo request_id=WEB-614 operation=response_audit status=unavailable reason=collector_restart coverage=request_only",
+          "source": "収集基盤",
+          "host": "proxy-collector-02",
+          "user": "",
+          "ip": "10.28.0.22",
+          "event": "collector.service.start",
+          "raw": "2026-10-20T12:20:02Z host=proxy-collector-02 service=response-collector operation=service_start pid=4312 startup_reason=automatic_restart input=proxy-response",
           "path": "/var/log/audit/events.log"
         },
         {
@@ -849,8 +932,8 @@
           "host": "sales-14",
           "user": "n.endo",
           "ip": "10.28.40.14",
-          "event": "現在は端末へ照会できない",
-          "raw": "2026-10-20T12:22:00Z host=sales-14 user=n.endo connection=offline remote_query=unavailable last_contact=2026-10-20T12:19:40Z",
+          "event": "agent.connection_status",
+          "raw": "2026-10-20T12:22:00Z host=sales-14 connection=offline last_contact=2026-10-20T12:19:40Z",
           "path": "/var/log/audit/events.log"
         },
         {
@@ -861,17 +944,17 @@
           "host": "sales-14",
           "user": "n.endo",
           "ip": "10.28.40.14",
-          "event": "端末の追加照会は保留中",
-          "raw": "2026-10-20T12:23:00Z host=sales-14 operation=remote_inventory status=pending reason=device_offline query_scope=post_12:20",
+          "event": "remote_inventory.queued",
+          "raw": "2026-10-20T12:23:00Z host=sales-14 operation=remote_inventory status=pending requested_at=2026-10-20T12:23:00Z",
           "path": "/var/log/audit/events.log"
         }
       ],
       "documents": [
         {
           "id": "bg4-doc-meaning",
-          "title": "Proxyの判定段階と端末確認",
-          "kind": "記録の仕様",
-          "body": "policy_decision=allow は要求時点で接続を止めない判断であり、応答・取得の完了や取得物の実行を保証しない。WEB-614 の応答記録は収集器再起動で未取得。EDRの process_audit_watermark より後の端末操作は、この画面の記録では確認できない。newly_observed は初観測の分類であり、悪性の確定ではない。"
+          "title": "Proxy・EDRの収集方式",
+          "kind": "収集状況",
+          "body": "Proxyは要求ポリシーと応答の監査を別の収集器へ送る。response-collectorは再起動時に直前2分のメモリバッファを破棄し、対象区間を中央へ再送する機能はない。要求時点のpolicy_decision=allowは接続を止めない決定を記録する。応答ステータス・転送量は別の応答監査が対象。EDRのprocess_audit_watermarkは中央に届いたプロセス監査の最終時刻を表す。newly_observedは初観測の分類。"
         },
         {
           "id": "bg4-doc-procedure",
@@ -884,11 +967,37 @@
         "id": "bg4-contact",
         "name": "遠藤 奈央",
         "role": "営業部・端末利用者",
-        "question": "URL操作時の表示と現在の端末状態を確認する",
+        "question": "12時20分ごろリンクを押した後、何が表示されましたか。保存・入力の操作、端末とメールの現在の状態を教えてください。",
         "replyId": "bg4-reply",
         "replyTitle": "遠藤からの回答：操作時の記憶",
         "delaySeconds": 0,
-        "replyText": "12:20ごろリンクを押しました。読み込みが続き、何の画面か分からないまま閉じました。ダウンロードしたかは確認していません。移動のため端末を閉じ、現在はネットワークにつながっていません。メールは残っています。リンクはもう開かず、調査方法の案内を待ちます。"
+        "replyText": "昼休み前にリンクを押しました。読み込みが続いていて、よく見ないまま閉じました。何か保存されたかは見ていません。移動でノートPCを閉じたので、いまはネットワークにつながっていません。メールは残しています。",
+        "questions": [
+          {
+            "id": "specific",
+            "question": "12時20分ごろリンクを押した後、何が表示されましたか。保存・入力の操作、端末とメールの現在の状態を教えてください。",
+            "replyId": "bg4-reply",
+            "replyTitle": "遠藤からの回答：操作時の記憶",
+            "replyText": "昼休み前にリンクを押しました。読み込みが続いていて、よく見ないまま閉じました。何か保存されたかは見ていません。移動でノートPCを閉じたので、いまはネットワークにつながっていません。メールは残しています。",
+            "delaySeconds": 0
+          },
+          {
+            "id": "vague",
+            "question": "この警報について、何か心当たりはありますか？",
+            "replyId": "bg4-reply-vague",
+            "replyTitle": "遠藤からの回答：操作時の記憶（追加確認が必要）",
+            "replyText": "メールのリンクを一度押した覚えはあります。どの操作について確認すればよいですか。",
+            "delaySeconds": 0
+          },
+          {
+            "id": "leading",
+            "question": "いつもの作業なので問題ないという理解でよいですか？",
+            "replyId": "bg4-reply-leading",
+            "replyTitle": "遠藤からの回答：操作時の記憶（追加確認が必要）",
+            "replyText": "怪しい画面は見た覚えがありませんが、読み込み中に閉じたので、問題がなかったかは分かりません。",
+            "delaySeconds": 0
+          }
+        ]
       },
       "hints": [
         "allow はどの段階の判定か資料で確かめます。",
@@ -915,7 +1024,7 @@
             "bg4-reply"
           ]
         ],
-        "summary": "sales-14 から12:20に delivery-notice.example への要求があり、Proxyは要求時点で許可していた。ただしWEB-614 の応答記録は未収集で、取得の成否は不明。EDRの確認済み時刻も操作より前で、その後の実行有無を確認できない。利用者も取得結果を確認していないため、悪性や端末への影響を確定せず追加調査とする。",
+        "summary": "sales-14では12:20にURLへの要求が許可されていた。同時刻に応答収集器の再起動があり、資料によると直前2分の応答記録は再送されない。EDRの受信済み時刻も操作より前で、利用者は取得結果を確認していない。取得・実行と悪性の有無は確定せず、追加調査が必要。",
         "nextStep": "調査担当へ WEB-614 の応答記録復元可否と、sales-14 の12:20前後のブラウザ履歴・ダウンロード記録・プロセス履歴の確認を依頼する。メールを保全し、再アクセスしないよう伝える。担当者と安全な端末調査方法を調整し、取得・実行や認証情報入力など追加事実が分かり次第、判定と優先度を見直す。",
         "explanation": "接続許可は取得完了の証明ではなく、記録に実行がないことも実行しなかった証明にはなりません。確認範囲が操作時刻に届かないため、悪性とも無害とも確定できません。不足する証拠と収集方法を具体的に引き継ぎます。",
         "lessons": [
@@ -980,7 +1089,7 @@
           {
             "id": "request",
             "title": "操作時の様子と端末の状況を照会する",
-            "instruction": "「照会」タブの「確認を依頼する」を押して回答を読みます。利用者が確認したことと不明なことを分けます。",
+            "instruction": "「照会」で、利用者自身が見た表示や行った操作を確かめられる質問を選びます。ログの推測を回答に混ぜないようにします。",
             "why": "予定だけで実施結果を決めつけず、担当者が確認した範囲も調べます。",
             "target": "[data-tab=\"contact\"]",
             "tab": "contact",
@@ -1021,7 +1130,25 @@
             "kind": "submitted"
           }
         ]
-      }
+      },
+      "relatedHosts": [
+        "proxy-collector-02"
+      ],
+      "targetType": "host",
+      "targets": [
+        {
+          "value": "sales-14",
+          "label": "端末: sales-14"
+        },
+        {
+          "value": "proxy-collector-02",
+          "label": "端末: proxy-collector-02"
+        },
+        {
+          "value": "n.endo",
+          "label": "アカウント: n.endo"
+        }
+      ]
     },
     {
       "id": "bridge-local-admin",
@@ -1044,7 +1171,7 @@
           "host": "design-06",
           "user": "a.nishi",
           "ip": "10.28.50.6",
-          "event": "業務アカウントが端末にログオン",
+          "event": "4624: An account was successfully logged on",
           "raw": "2026-10-20T13:30:00Z host=design-06 user=a.nishi session_id=SES-906 operation=interactive_logon result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -1056,7 +1183,7 @@
           "host": "design-06",
           "user": "a.nishi",
           "ip": "10.28.50.6",
-          "event": "ローカルアカウントを作成",
+          "event": "4720: A user account was created",
           "raw": "2026-10-20T13:32:10Z host=design-06 actor=a.nishi session_id=SES-906 operation=local_user_create target_user=help-cache target_sid=S-1-5-21-906-1051 result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -1068,7 +1195,7 @@
           "host": "design-06",
           "user": "a.nishi",
           "ip": "10.28.50.6",
-          "event": "新規アカウントを管理者グループへ追加",
+          "event": "4732: A member was added to a security-enabled local group",
           "raw": "2026-10-20T13:32:12Z host=design-06 actor=a.nishi session_id=SES-906 operation=local_group_add target_sid=S-1-5-21-906-1051 target_user=help-cache group=Administrators result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -1080,7 +1207,7 @@
           "host": "design-06",
           "user": "a.nishi",
           "ip": "10.28.50.6",
-          "event": "権限変更の通知を転送",
+          "event": "alert.forward",
           "raw": "2026-10-20T13:32:13Z host=design-06 target_user=help-cache target_sid=S-1-5-21-906-1051 operation=alert_forward result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -1092,7 +1219,7 @@
           "host": "design-06",
           "user": "help-cache",
           "ip": "10.28.50.6",
-          "event": "追加されたアカウントでログオン",
+          "event": "4624: An account was successfully logged on",
           "raw": "2026-10-20T13:33:00Z host=design-06 user=help-cache user_sid=S-1-5-21-906-1051 session_id=SES-907 operation=interactive_logon result=success",
           "path": "/var/log/audit/events.log"
         },
@@ -1104,7 +1231,7 @@
           "host": "design-06",
           "user": "system",
           "ip": "10.28.50.6",
-          "event": "追加された管理者権限が現在も有効",
+          "event": "account.inventory",
           "raw": "2026-10-20T13:34:00Z host=design-06 operation=account_inventory target_user=help-cache target_sid=S-1-5-21-906-1051 enabled=true local_group=Administrators collected=success",
           "path": "/var/log/audit/events.log"
         },
@@ -1116,7 +1243,7 @@
           "host": "design-06",
           "user": "system",
           "ip": "10.28.50.6",
-          "event": "端末の管理通信は継続中",
+          "event": "agent.heartbeat",
           "raw": "2026-10-20T13:35:00Z host=design-06 agent=healthy heartbeat=success",
           "path": "/var/log/audit/events.log"
         }
@@ -1126,7 +1253,7 @@
           "id": "bg5-doc-policy",
           "title": "設計端末のアカウント管理と当日の作業申請",
           "kind": "権限・申請",
-          "body": "design-06 の利用者は西。管理アカウントは端末管理担当が管理し、利用者判断による新規ローカル管理者作成は禁止。10月20日のこの端末に対するアカウント追加・権限付与の承認申請はない。a.nishi には旧設定により管理者操作権限が残っており是正対象だが、技術的に操作できることは操作の承認を意味しない。"
+          "body": "design-06の利用者は西。管理アカウントは端末管理担当が変更申請を承認して管理する。利用者a.nishiには旧設定による管理者権限が残っており、是正作業を計画している。当日の承認済み作業：APP-906、14:00〜14:30に端末管理担当がdesign-viewerを5.8.2へ更新する。標準ローカル管理者はDeskSupportAdmin。"
         },
         {
           "id": "bg5-doc-response",
@@ -1139,11 +1266,37 @@
         "id": "bg5-contact",
         "name": "西 明",
         "role": "設計部・端末利用者",
-        "question": "新規アカウント作成と管理者追加の意図を確認する",
+        "question": "13時32分ごろに行ったアカウント・権限操作と、その目的、社内での相談先を教えてください。",
         "replyId": "bg5-reply",
         "replyTitle": "西からの回答：操作の経緯",
         "delaySeconds": 0,
-        "replyText": "社外の掲示板で見つけたアプリ改善手順を見て、13:32ごろ help-cache を作り管理者グループへ追加し、そのアカウントでログオンしました。社内申請も端末管理担当への相談もしていません。いまは操作を止めています。参照した手順と実施内容を共有できます。"
+        "replyText": "アプリを速くするという掲示板の手順を見て、新しいローカルユーザーを作り、管理者のグループへ入れました。名前は手順にあったものを使い、続いてそのユーザーで入り直しました。昼の作業で、申請や端末管理への相談はしていません。いまは操作を止めていて、見たページを共有できます。",
+        "questions": [
+          {
+            "id": "specific",
+            "question": "13時32分ごろに行ったアカウント・権限操作と、その目的、社内での相談先を教えてください。",
+            "replyId": "bg5-reply",
+            "replyTitle": "西からの回答：操作の経緯",
+            "replyText": "アプリを速くするという掲示板の手順を見て、新しいローカルユーザーを作り、管理者のグループへ入れました。名前は手順にあったものを使い、続いてそのユーザーで入り直しました。昼の作業で、申請や端末管理への相談はしていません。いまは操作を止めていて、見たページを共有できます。",
+            "delaySeconds": 0
+          },
+          {
+            "id": "vague",
+            "question": "この警報について、何か心当たりはありますか？",
+            "replyId": "bg5-reply-vague",
+            "replyTitle": "西からの回答：操作の経緯（追加確認が必要）",
+            "replyText": "アプリの調子が悪く、昼に設定を少し変えました。どの設定の話でしょうか。",
+            "delaySeconds": 0
+          },
+          {
+            "id": "leading",
+            "question": "いつもの作業なので問題ないという理解でよいですか？",
+            "replyId": "bg5-reply-leading",
+            "replyTitle": "西からの回答：操作の経緯（追加確認が必要）",
+            "replyText": "手順には改善すると書いてありましたが、社内で許可された手順かは確認していません。",
+            "delaySeconds": 0
+          }
+        ]
       },
       "hints": [
         "名前とSIDを使い、作成・権限付与・利用の記録を照合します。",
@@ -1159,7 +1312,7 @@
           "contain",
           "escalate"
         ],
-        "target": "design-06",
+        "target": "design-06\\help-cache",
         "evidenceGroups": [
           [
             "bg5-03",
@@ -1172,9 +1325,9 @@
             "bg5-reply"
           ]
         ],
-        "summary": "design-06 で help-cache（SID S-1-5-21-906-1051）が作成され、Administrators への追加に成功した。追加後のログオンと現在も有効な権限を確認した。承認申請はなく、利用者も社外手順に従い未申請で作成したと回答しているため、未承認の管理者権限付与として対応する。他端末や情報持ち出しへの影響は未確認。",
+        "summary": "13:32のdesign-06でhelp-cache（SID S-1-5-21-906-1051）が作成され、Administratorsへの追加、その後のログオンと有効な権限を確認した。承認票は端末管理担当のアプリ更新で、利用者は未申請でアカウントと権限を追加したと回答した。未承認の権限付与として対応する。",
         "nextStep": "端末管理担当と対応担当へ連絡し、help-cache の利用抑止、design-06 の追加操作抑止、作成・権限付与・ログオン記録の保全を依頼する。参照した手順と実施内容を取得し、追加ログオン後の操作と他の変更有無を確認する。a.nishi の過剰な権限も管理担当へ是正を引き継ぐ。",
-        "explanation": "操作できることは業務上の承認を意味しません。今回は権限追加の成功、現在の状態、承認状況、回答が一致しています。攻撃者による侵入と断定する必要はありませんが、残存する権限を抑止し、実施操作を調べる必要があります。",
+        "explanation": "技術的に操作できることと業務上の承認は別です。作成から権限付与、ログオンまでSIDで関連付け、承認票と利用者の部分的な説明を突き合わせます。対象には端末内の追加アカウントdesign-06\\help-cacheを選び、その権限の利用抑止と端末の調査を依頼します。攻撃者の侵入や他端末への影響まで断定しません。",
         "lessons": [
           "操作権限と承認を区別する。",
           "名前だけでなくSIDで操作を結び付ける。",
@@ -1186,7 +1339,26 @@
         "objective": "自分で調査の順序を決め、判定・優先度・対象・対応と、証拠付きの調査要約・次の対応を提出する。",
         "focus": "根拠を自分で選び、引き継げる報告を完成させる。",
         "steps": []
-      }
+      },
+      "targetType": "account",
+      "targets": [
+        {
+          "value": "design-06\\help-cache",
+          "label": "ローカルアカウント: design-06\\help-cache"
+        },
+        {
+          "value": "a.nishi",
+          "label": "アカウント: a.nishi"
+        },
+        {
+          "value": "design-06",
+          "label": "端末: design-06"
+        },
+        {
+          "value": "design-06\\DeskSupportAdmin",
+          "label": "ローカルアカウント: design-06\\DeskSupportAdmin"
+        }
+      ]
     }
   ],
   "assets": [
@@ -1224,6 +1396,13 @@
       "owner": "設計部",
       "importance": "高",
       "description": "設計資料を扱う業務端末。利用者判断による新規ローカル管理者追加は禁止。"
+    },
+    {
+      "id": "asset-proxy-collector-02",
+      "name": "proxy-collector-02",
+      "owner": "監視基盤担当",
+      "importance": "中",
+      "description": "Proxyの応答監査を受信する収集器。10.28.0.22。要求ポリシーの収集器とは独立して稼働する。"
     }
   ]
 }

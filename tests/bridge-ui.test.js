@@ -115,7 +115,7 @@ function bridgeCase(h) {
 }
 function collectAndReport(h, c) {
   h.click('[data-tab="contact"]');
-  if (h.document.querySelector('[data-action="contact"]')) h.click('[data-action="contact"]');
+  if (h.document.querySelector('[data-action="contact"]')) h.click('[data-action="contact"][data-question="specific"]');
   for (const group of c.answer.evidenceGroups) {
     let saved = saveSnapshot(h);
     let id = group.find(ref => h.window.SocEngine.evidenceAvailable(saved.session, ref));
@@ -129,7 +129,7 @@ function collectAndReport(h, c) {
     h.click(`[data-tab="${tab}"]`);
     if (!saved.session.records[c.id].evidenceIds.includes(id)) h.click(`[data-evidence="${id}"]`);
   }
-  for (const [name, value] of Object.entries({ verdict: c.answer.verdict, priority: c.answer.priorities[0], action: c.answer.actions[0], target: c.answer.target, summary: '複数の根拠を時刻と対象に照らして確認した。確認できた事実と残る不明点を区別する。', nextStep: '根拠を添えて担当者へ引き継ぎ、未確認事項の確認方法を伝える。' })) h.input('#draft-' + name, value);
+  for (const [name, value] of Object.entries({ verdict: c.answer.verdict, priority: c.answer.priorities[0], action: c.answer.actions[0], target: c.answer.target, summary: `${c.answer.target} の根拠を時刻と対象に照らして確認した。確認できた事実と残る不明点を区別する。`, nextStep: '根拠を添えて担当者へ引き継ぎ、未確認事項の確認方法を伝える。' })) h.input('#draft-' + name, value);
   h.submit('#case-form');
 }
 function reflectAndAdvance(h) {
@@ -341,7 +341,7 @@ function performGuidedOperation(h, c, step) {
     } else h.click(`[data-tab="${step.flag}"]`);
   } else if (step.kind === 'request') {
     h.click('[data-tab="contact"]');
-    h.click('[data-action="contact"]');
+    h.click('[data-action="contact"][data-question="specific"]');
   } else if (step.kind === 'evidence') {
     const candidates = step.source === 'log' ? c.logs.map(x => x.id) : step.source === 'document' ? c.documents.map(x => x.id) : [c.contact.replyId];
     const id = c.answer.evidenceGroups.flat().find(ref => candidates.includes(ref)) || candidates[0];
@@ -349,7 +349,7 @@ function performGuidedOperation(h, c, step) {
     h.click(`[data-evidence="${id}"]`);
     return id;
   } else if (step.kind === 'draft') {
-    const values = { verdict: c.answer.verdict, priority: c.answer.priorities[0], target: c.answer.target, action: c.answer.actions[0], summary: '確認した事実とその根拠を記録する。', nextStep: '未確認事項と次の確認先を引き継ぐ。' };
+    const values = { verdict: c.answer.verdict, priority: c.answer.priorities[0], target: c.answer.target, action: c.answer.actions[0], summary: `${c.answer.target} で確認した事実とその根拠を記録する。`, nextStep: '担当者へ未確認事項と次の確認先を引き継ぐ。' };
     step.fields.forEach(field => h.input('#draft-' + field, values[field]));
   } else assert.fail('unexpected early guide operation: ' + step.kind);
 }
@@ -469,4 +469,28 @@ test('bridge remains resumable and exportable when browser storage is unavailabl
   h.click('[data-action="continue"]');
   h.click('[data-action="resume"]');
   assert.equal(h.get('#draft-summary').value, '保存不可でも保持する通常勤務');
+});
+
+test('optional reflection separates facts, limits and next actions and survives a save round trip', t => {
+  const h = harness(t);
+  h.click('[data-action="bridge-start"]');
+  const c = bridgeCase(h);
+  collectAndReport(h,c);
+  const reflection = {
+    facts:'09:10のsupport-12更新は完了ログと申請の対象が一致した。',
+    limits:'別の時間帯や利用者による直接操作までは確認していない。',
+    next:'配布管理担当へ確認した更新範囲を引き継ぐ。'
+  };
+  assert.equal(h.document.querySelectorAll('[data-reflection]').length,3);
+  for(const [key,value] of Object.entries(reflection))h.input(`[data-reflection="${key}"]`,value);
+  const saved = saveSnapshot(h);
+  assert.deepEqual(saved.bridge.reflections[c.id],reflection);
+  h.click('[data-action="report"]');
+  for(const value of Object.values(reflection))assert.ok(h.downloads.at(-1).content.includes(value));
+  const restored = harness(t,null,{bridgeSaved:saved});
+  restored.click('[data-action="bridge-resume"]');
+  assert.equal(restored.get('#dialog').open,true);
+  for(const [key,value] of Object.entries(reflection))assert.equal(restored.get(`[data-reflection="${key}"]`).value,value);
+  reflectAndAdvance(restored);
+  assert.equal(saveSnapshot(restored).bridge.index,1);
 });

@@ -1,8 +1,8 @@
 /* A separate, untimed learning course whose support fades between cases. */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./data.js'), require('./engine.js'));
-  else root.SocBridge = factory(root.SOC_DATA, root.SocEngine);
-}(typeof globalThis !== 'undefined' ? globalThis : this, function (DATA, ENGINE) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./data.js'), require('./engine.js'), require('./terminal.js'));
+  else root.SocBridge = factory(root.SOC_DATA, root.SocEngine, root.SocTerminal);
+}(typeof globalThis !== 'undefined' ? globalThis : this, function (DATA, ENGINE, TERMINAL) {
   'use strict';
 
   const CASE_IDS = Object.freeze((DATA.scenarios.find(item => item.id === 'bridge')?.caseIds || []).slice());
@@ -14,7 +14,7 @@
 
   function create() {
     if (CASE_IDS.length !== 5) throw new Error('ガイド付き実務演習の教材を読み込めません。');
-    return { version: 1, index: 0, guide: { step: 0, seen: [] }, completed: [] };
+    return { version: 1, index: 0, guide: { step: 0, seen: [] }, completed: [], reflections: {}, reviewArchive: {}, reviewWorkspaces: {} };
   }
   function currentCase(course) {
     return Number.isInteger(course?.index) && course.index >= 0 && course.index < CASE_IDS.length ? ENGINE.getCase(CASE_IDS[course.index]) : null;
@@ -72,6 +72,44 @@
     course.guide = { step: 0, seen: [] };
     return true;
   }
+  function resumeArchived(course) {
+    const c = currentCase(course);
+    if (!c || !plain(course.reviewArchive) || !Object.hasOwn(course.reviewArchive, c.id)) return null;
+    const session = ENGINE.hydrate(course.reviewArchive[c.id]);
+    if (!matches(session, c.id)) throw error();
+    delete course.reviewArchive[c.id];
+    if (session.phase === 'completed') finish(course, session);
+    return session;
+  }
+  function restoreReflections(raw) {
+    if (raw === undefined) return {};
+    if (!plain(raw) || Object.keys(raw).some(id => !CASE_IDS.includes(id))) throw error();
+    const reflections = {};
+    for (const [id, value] of Object.entries(raw)) {
+      if (!plain(value) || Object.keys(value).some(key => !['facts', 'limits', 'next'].includes(key))) throw error();
+      reflections[id] = {};
+      for (const key of ['facts', 'limits', 'next']) {
+        if (value[key] !== undefined && (typeof value[key] !== 'string' || value[key].length > 1400)) throw error();
+        reflections[id][key] = value[key] || '';
+      }
+    }
+    return reflections;
+  }
+  function restoreWorkspaces(raw) {
+    if (raw === undefined) return {};
+    if (!plain(raw) || Object.keys(raw).some(id => !CASE_IDS.includes(id))) throw error();
+    let serialized;
+    try { serialized = JSON.stringify(raw); } catch (_) { throw error(); }
+    if (!serialized || serialized.length > Math.ceil(4.3 * 1024 * 1024)) throw error();
+    const workspaces = {};
+    for (const [id, value] of Object.entries(raw)) {
+      if (!TERMINAL?.create) throw error();
+      const terminal = TERMINAL.create({});
+      terminal.setWorkspace(value);
+      workspaces[id] = terminal.getWorkspace();
+    }
+    return workspaces;
+  }
   function hydrate(raw, session) {
     if (!plain(raw) || raw.version !== 1 || !Number.isInteger(raw.index) || raw.index < 0 || raw.index >= CASE_IDS.length || !plain(raw.guide)) throw error();
     const c = ENGINE.getCase(CASE_IDS[raw.index]);
@@ -79,10 +117,35 @@
     const maximumStep = Math.max(0, c.bridge.steps.length - 1);
     if (!Number.isInteger(raw.guide.step) || raw.guide.step < 0 || raw.guide.step > maximumStep || !Array.isArray(raw.guide.seen) || raw.guide.seen.length > FLAGS.size || raw.guide.seen.some(flag => !FLAGS.has(flag))) throw error();
     if (!Array.isArray(raw.completed) || ![raw.index, raw.index + 1].includes(raw.completed.length)) throw error();
-    const completed = raw.completed.map((value, index) => validCompletion(value, CASE_IDS[index]));
+    const completed = raw.completed.map((value, index) => {
+      if (!matches(value, CASE_IDS[index]) || value.phase !== 'completed') throw error();
+      const restored = ENGINE.hydrate(value);
+      if (restored.phase !== 'completed' && !restored.migration?.untimedReview) throw error();
+      return restored;
+    });
+    const reviewArchive = {};
+    if (raw.reviewArchive !== undefined) {
+      if (!plain(raw.reviewArchive) || Object.keys(raw.reviewArchive).length > CASE_IDS.length) throw error();
+      for (const [id, value] of Object.entries(raw.reviewArchive)) {
+        if (!CASE_IDS.includes(id) || CASE_IDS.indexOf(id) <= raw.index || !matches(value, id)) throw error();
+        reviewArchive[id] = ENGINE.hydrate(value);
+      }
+    }
+    const reflections = restoreReflections(raw.reflections);
+    const reviewWorkspaces = restoreWorkspaces(raw.reviewWorkspaces);
+    const reopenedIndex = completed.findIndex(value => value.phase !== 'completed');
+    if (reopenedIndex >= 0) {
+      // Revisit the first affected lesson, retaining all later notes and proof.
+      // The app consumes resumeSession once; reviewArchive survives exports.
+      completed.forEach((value, index) => { if (index > reopenedIndex) reviewArchive[CASE_IDS[index]] = value; });
+      if (raw.index > reopenedIndex) reviewArchive[c.id] = clone(session);
+      const restored = reopenedIndex === raw.index ? session : completed[reopenedIndex];
+      const course = { version: 1, index: reopenedIndex, guide: { step: 0, seen: [] }, completed: completed.slice(0, reopenedIndex), reflections, reviewArchive, reviewWorkspaces, resumeSession: restored };
+      return normalize(course, restored);
+    }
     if (completed.length === raw.index + 1) validCompletion(session, c.id);
-    const course = { version: 1, index: raw.index, guide: { step: raw.guide.step, seen: [...new Set(raw.guide.seen)] }, completed };
+    const course = { version: 1, index: raw.index, guide: { step: raw.guide.step, seen: [...new Set(raw.guide.seen)] }, completed, reflections, reviewArchive, reviewWorkspaces };
     return normalize(course, session);
   }
-  return Object.freeze({ CASE_IDS, create, currentCase, stepComplete, mark, normalize, finish, advance, hydrate });
+  return Object.freeze({ CASE_IDS, create, currentCase, stepComplete, mark, normalize, finish, advance, resumeArchived, hydrate });
 }));

@@ -84,16 +84,18 @@
     return next;
   }
 
-  function create(initialFiles = {}) {
+  function create(initialFiles = {}, options = {}) {
     let sources = normalizeSources(initialFiles), workspace = emptyWorkspace();
 
     function makeShell() {
-      const shell = new Shell(Object.assign(Object.create(null), workspace.files, sources));
+      const metadata = Object.fromEntries(Object.keys(sources).map(path => [path, {mode: 0o444, owner: 'root', group: 'adm'}]));
+      const shell = new Shell(Object.assign(Object.create(null), workspace.files, sources), {metadata});
       for (const dir of workspace.dirs) { shell.directories.add(dir); shell.addParents(dir + '/.'); }
       shell.cwd = shell.isDir(workspace.cwd) ? workspace.cwd : HOME;
       shell.oldcwd = shell.isDir(workspace.oldcwd) ? workspace.oldcwd : HOME;
       shell.history = workspace.history.slice();
       shell.supportedCommands = shell.supportedCommands.filter(command => !UNSUPPORTED.has(command));
+      shell.supportedCommands.push('evidence');
 
       const sourceParents = new Set();
       for (const source of Object.keys(sources)) {
@@ -143,12 +145,25 @@
         }
       });
       const baseWrite = shell.write.bind(shell);
-      shell.write = (name, text, append) => { writable(name); return baseWrite(name, text, append); };
+      shell.write = (name, text, append) => { if (shell.resolve(name) !== '/dev/null') writable(name); return baseWrite(name, text, append); };
       // Remove Logroom's rm -rf / reset Easter egg; SOCroom evidence never resets
       // because of a terminal command.
       shell.isRootResetCommand = () => false;
       const baseExecute = shell.execute.bind(shell);
       shell.execute = (command, args, stdin, context) => {
+        if (command === 'evidence') {
+          if (args.length === 1 && args[0] === '--help') return {stdout: 'evidence /path/to/log:line\n原本の行を現在の案件の主証拠に登録します。grep -n で行番号を確認できます。\n', stderr: '', code: 0};
+          const match = args.length === 1 && args[0].match(/^(.+):(\d+)$/);
+          if (!match || !Number.isSafeInteger(Number(match[2])) || Number(match[2]) < 1) fail('evidence: evidence /path/to/log:line の形式で指定してください。');
+          const path = shell.resolve(match[1]), line = Number(match[2]);
+          const lines = has(sources,path) ? sources[path].split('\n') : [];
+          if (lines.at(-1) === '') lines.pop();
+          if (!has(sources, path) || line > lines.length) fail('evidence: 公開済みの原本ログ・資料の行を指定してください。');
+          if (typeof options.onEvidence !== 'function') fail('evidence: この端末には案件が接続されていません。');
+          let id;
+          try { id = options.onEvidence(path, line); } catch (error) { fail('evidence: ' + error.message); }
+          return {stdout: '主証拠に登録: ' + id + '\n', stderr: '', code: 0};
+        }
         if (UNSUPPORTED.has(command)) return { stdout: '', stderr: command + ': SOCroomの端末では未対応です。テキストの確認には cat / less を使ってください。\n', code: 2 };
         const helpAt = args.indexOf('--help'), endOptionsAt = args.indexOf('--');
         const wantsHelp = helpAt >= 0 && (endOptionsAt < 0 || helpAt < endOptionsAt);
@@ -174,6 +189,7 @@
       };
       const baseHelp = shell.getHelp.bind(shell);
       shell.getHelp = command => {
+        if (command === 'evidence') return 'evidence /path/to/log:line\ngrep -n で確認した原本の行を、現在の案件の主証拠に登録します。作業用コピーは登録できません。\n';
         if (UNSUPPORTED.has(command)) return command + ': SOCroomでは未対応です。\n';
         if (!command) return [
           'SOCroom 仮想端末 — ブラウザ内だけで動くログ調査用シェル',
@@ -182,6 +198,7 @@
           '原本ログと資料は読み取り専用です。作業ファイルは /home/analyst 配下に作成できます。',
           '例: grep -i failed /var/log/* | head -n 20',
           '例: cp /var/log/auth.log /home/analyst/auth-copy.log',
+          '例: evidence /var/log/auth.log:12（grep -n の行番号を指定）',
           'less / more はテキストをそのまま表示します。vi / view / sl は未対応です。',
           '実OS、ネットワーク、プログラム実行には接続しません。ログは実行時点の画面と同じ範囲です。',
           ''
@@ -194,6 +211,7 @@
     }
 
     return {
+      setEvidenceHandler(handler) { options.onEvidence = handler; },
       run(command) {
         const shell = makeShell();
         const result = shell.run(command);
