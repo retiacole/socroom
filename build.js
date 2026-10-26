@@ -16,4 +16,13 @@ html=html.replace('<!doctype html>','<!doctype html>\n<!--\n'+license+'\n-->');
 const target=process.argv[2] ? path.resolve(process.argv[2]) : path.join(root,'socroom.html');
 fs.mkdirSync(path.dirname(target),{recursive:true});
 fs.writeFileSync(target,html);
+// A normal build also updates the GitHub Pages site. An explicit output path
+// stays isolated, so release checks can build into a temporary directory.
+if(!process.argv[2]){
+  const docs=path.join(__dirname,'docs');
+  fs.mkdirSync(docs,{recursive:true});
+  fs.writeFileSync(path.join(docs,'index.html'),html);
+  fs.writeFileSync(path.join(docs,'socroom.html'),html);
+  fs.writeFileSync(path.join(docs,'.nojekyll'),'');
+}
 console.log(`Built ${target} (${Math.round(Buffer.byteLength(html)/1024)} KiB)`);

@@ -4,6 +4,8 @@
 
 # SOCroom v0.5
 
+[すぐにやってみる / Play Now](https://retiacole.github.io/socroom/) · [オフライン用HTML / Offline HTML](https://github.com/retiacole/socroom/blob/main/socroom.html)
+
 <img src="docs/images/socroom-character.png" align="right" width="120" alt="青い盾と剣を持つSOCroomのキャラクター">
 
 **証拠を見極め、次の一手を選ぶ。**<br>
@@ -21,11 +23,20 @@
 
 ## 開く
 
-1. このGitHubページの **Code → Download ZIP** から一式をダウンロードします。
-2. ZIPファイルを展開します。
-3. 展開したフォルダー内の **`socroom.html`** をChrome、Edge、Firefox、SafariなどのJavaScriptを実行できるブラウザで開きます。
+**オンライン**なら [Play Now](https://retiacole.github.io/socroom/) を開くと、そのまま練習できます。
 
-ダウンロード後は、ブラウザだけでローカルに完結します。アプリの利用にインストール、Node.js、ローカルサーバー、アカウント、インターネット接続は不要です。GitHub上でHTMLのソースを表示するのではなく、展開したファイルを開いてください。ブラウザごとの実画面・互換性は未検証です。
+**オフライン**で使う場合：
+
+1. [socroom.html](https://github.com/retiacole/socroom/blob/main/socroom.html) を開き、右上の **Download raw file** で保存します。リポジトリ全体を **Code → Download ZIP** で保存して展開する方法も使えます。
+2. 保存した **`socroom.html`** をChrome、Edge、Firefox、SafariなどのJavaScriptを実行できるブラウザで開きます。
+
+ダウンロード後は、ブラウザだけでローカルに完結します。インストール、Node.js、ローカルサーバー、アカウントは不要です。オンライン版を開くときにはインターネット接続が必要ですが、ダウンロードしたHTMLはオフラインで使えます。GitHub上でHTMLのソースを表示するのではなく、保存したファイルを開いてください。ブラウザごとの実画面・互換性は未検証です。
+
+Choose **Play Now** to start in your browser, or download the HTML file with **Download raw file** for offline use.
+
+オンライン版と保存したHTMLでは、自動保存の領域が異なります。進捗を移すときは、元の画面で「保存」からJSONを書き出し、移動先の「読込」で読み込んでください。
+
+Online and local files use separate browser saves. To transfer progress, export a JSON save in the original app and import it in the other one.
 
 ## はじめての操作チュートリアル
 
@@ -133,6 +144,8 @@ v0.3では問題構成を変更したため、v0.2 とは別の保存領域を�
 自動保存にはlocalStorageを使いますが、ローカルHTMLの保存挙動はブラウザや設定に依存します。重要な進捗はJSONファイルに保存してください。ブラウザデータの消去やファイルの移動では自動保存が引き継がれない場合があります。保存ファイルのバージョン・ケース・証拠・時刻は読み込み時に検証します。
 
 ## 開発
+
+通常のビルドはルートの配布HTMLと、GitHub Pages用の `docs/index.html`・`docs/socroom.html` を同じ内容で生成します。公開元は `main` ブランチの `/docs` です。
 
 利用者には不要ですが、ソースからのビルドとエンジン・端末テストにはNode.js 22以降を使います。HTMLを含まないソース専用ZIPから始める場合も、次の `node build.js` で `socroom.html` を生成できます。
 
