@@ -159,12 +159,12 @@
           const lines = has(sources,path) ? sources[path].split('\n') : [];
           if (lines.at(-1) === '') lines.pop();
           if (!has(sources, path) || line > lines.length) fail('evidence: 公開済みの原本ログ・資料の行を指定してください。');
-          if (typeof options.onEvidence !== 'function') fail('evidence: この端末には案件が接続されていません。');
+          if (typeof options.onEvidence !== 'function') fail('evidence: このターミナルには案件が接続されていません。');
           let id;
           try { id = options.onEvidence(path, line); } catch (error) { fail('evidence: ' + error.message); }
           return {stdout: '主証拠に登録: ' + id + '\n', stderr: '', code: 0};
         }
-        if (UNSUPPORTED.has(command)) return { stdout: '', stderr: command + ': SOCroomの端末では未対応です。テキストの確認には cat / less を使ってください。\n', code: 2 };
+        if (UNSUPPORTED.has(command)) return { stdout: '', stderr: command + ': SOCroomのターミナルでは未対応です。テキストの確認には cat / less を使ってください。\n', code: 2 };
         const helpAt = args.indexOf('--help'), endOptionsAt = args.indexOf('--');
         const wantsHelp = helpAt >= 0 && (endOptionsAt < 0 || helpAt < endOptionsAt);
         if (['mkdir', 'touch', 'rm', 'rmdir', 'mv'].includes(command) && !wantsHelp) {
@@ -192,7 +192,7 @@
         if (command === 'evidence') return 'evidence /path/to/log:line\ngrep -n で確認した原本の行を、現在の案件の主証拠に登録します。作業用コピーは登録できません。\n';
         if (UNSUPPORTED.has(command)) return command + ': SOCroomでは未対応です。\n';
         if (!command) return [
-          'SOCroom 仮想端末 — ブラウザ内だけで動くログ調査用シェル',
+          'SOCroom ターミナル — ブラウザ内だけで動くログ調査用シェル',
           'コマンド: ' + shell.supportedCommands.join(', '),
           '構文: 引用符、|、<、>、>>、;、&&、||、*、?。help コマンド名 で使用方法を確認できます。',
           '原本ログと資料は読み取り専用です。作業ファイルは /home/analyst 配下に作成できます。',
@@ -204,7 +204,7 @@
           ''
         ].join('\n');
         if (command === 'rm') return 'rm [-f] file ...\n/home/analyst 配下の作業ファイルだけを削除します。再帰削除・原本削除・演習のリセットはできません。\n';
-        if (command === 'less' || command === 'more') return command + ' [file ...]\nテキストを端末に表示します。ページャー操作はありません。\n';
+        if (command === 'less' || command === 'more') return command + ' [file ...]\nテキストをターミナルに表示します。ページャー操作はありません。\n';
         return baseHelp(command) + '\nSOCroom: 変更は /home/analyst 配下の作業用コピーだけに許可されます。\n';
       };
       return shell;
