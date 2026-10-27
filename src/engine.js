@@ -9,13 +9,13 @@
   const MAX_TIME = 2592000;
   const MAX_HISTORY = 400;
   const MAX_JSON_LENGTH = 1000000;
+  const LABELS = Object.freeze({ incident: 'セキュリティインシデントを確認', benign: '正当な操作・業務', unknown: '判定保留・追加調査が必要', high: '高', medium: '中', low: '低', escalate: '追加調査・上位担当へ引き継ぐ', contain: '封じ込めを依頼する', close: '根拠を添えてクローズ', monitor: '継続監視・経過観察', open: '未着手', investigating: '調査中', resolved: '対応済み', running: '勤務中', paused: '一時停止', gameover: '時間切れ', completed: '勤務完了' });
   const DIFFICULTIES = Object.freeze({
-    low: Object.freeze({ label: '低・研修', limitSeconds: null, replyMultiplier: 0 }),
-    medium: Object.freeze({ label: '中・通常勤務', limitSeconds: 1200, replyMultiplier: 1 }),
-    high: Object.freeze({ label: '高・繁忙シフト', limitSeconds: 900, replyMultiplier: 1.5 })
+    low: Object.freeze({ label: LABELS.low, limitSeconds: null, replyMultiplier: 0 }),
+    medium: Object.freeze({ label: LABELS.medium, limitSeconds: 1200, replyMultiplier: 1 }),
+    high: Object.freeze({ label: LABELS.high, limitSeconds: 900, replyMultiplier: 1.5 })
   });
   const ENUMS = { verdict: ['', 'incident', 'benign', 'unknown'], priority: ['', 'high', 'medium', 'low'], action: ['', 'escalate', 'contain', 'close', 'monitor'] };
-  const LABELS = { incident: 'インシデント', benign: '正当な活動', unknown: '追加調査が必要', high: '高', medium: '中', low: '低', escalate: 'エスカレーション', contain: '封じ込め依頼', close: 'クローズ', monitor: '追加監視', open: '未着手', investigating: '調査中', resolved: '対応済み', running: '勤務中', paused: '一時停止', gameover: '時間切れ', completed: '勤務完了' };
   const caseMap = new Map(DATA.cases.map(c => [c.id, c]));
   const legacyVersion = VERSION === 'socroom-3' ? 'socroom-2' : null;
   const contactMap = new Map(DATA.cases.map(c => [c.id, c.contact ? (Array.isArray(c.contact.questions) && c.contact.questions.length ? c.contact.questions : [{ ...c.contact, id: 'specific' }]).map(question => ({ ...question })) : []]));
@@ -470,7 +470,7 @@
   function clock(seconds) { const whole = Math.floor(seconds); return String(Math.floor(whole / 60)).padStart(2, '0') + ':' + String(whole % 60).padStart(2, '0'); }
   function report(session) {
     const scenario = DATA.scenarios.find(s => s.id === session.scenarioId);
-    const lines = ['SOCroom 調査・引き継ぎレポート', '架空の教材環境 / ' + DATA.company.name, 'シフト: ' + scenario.title, '難易度: ' + DIFFICULTIES[session.difficulty].label, '経過: ' + clock(session.elapsed), '状態: ' + LABELS[session.phase], '自由記述は識別子・時刻や依頼先の有無だけを確認し、意味・正確性は自動採点していません。', ''];
+    const lines = ['SOCroom 調査・引き継ぎレポート', '架空の教材環境 / ' + DATA.company.name, '勤務: ' + scenario.title, '難易度: ' + DIFFICULTIES[session.difficulty].label, '経過: ' + clock(session.elapsed), '状態: ' + LABELS[session.phase], '自由記述は識別子・時刻や依頼先の有無だけを確認し、意味・正確性は自動採点していません。', ''];
     if (session.trainingAfterFailure) lines.push('時間切れ後の練習モード', '');
     if (session.migration?.untimedReview) lines.push('旧版データの見直し（時間制限なし）', '');
     for (const c of activeCases(session)) {

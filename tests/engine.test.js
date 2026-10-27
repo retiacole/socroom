@@ -309,6 +309,23 @@ test('report contains analyst evidence and no model answer or unreleased log', (
   assert.doesNotMatch(report, /模範要約|模範対応|privilege operation|調査 b/);
 });
 
+test('report uses the shared UI labels for each difficulty, verdict and action', () => {
+  for (const difficulty of ['low', 'medium', 'high']) {
+    const s = E.createSession('shift', difficulty);
+    for (const verdict of ['incident', 'benign', 'unknown']) {
+      for (const action of ['escalate', 'contain', 'close', 'monitor']) {
+        s.records.a.draft = { ...s.records.a.draft, verdict, priority: difficulty, action };
+        const lines = E.report(s).split('\n');
+        assert.ok(lines.includes('勤務: 監視勤務'));
+        assert.ok(lines.includes('難易度: ' + E.LABELS[difficulty]));
+        assert.ok(lines.includes('判定: ' + E.LABELS[verdict]));
+        assert.ok(lines.includes('優先度: ' + E.LABELS[difficulty]));
+        assert.ok(lines.includes('対応: ' + E.LABELS[action]));
+      }
+    }
+  }
+});
+
 test('ticks do not create endless history and negative time is rejected', () => {
   const s = E.createSession('shift', 'low', 'a');
   const length = s.history.length;

@@ -30,6 +30,8 @@ Current weights: verdict 15, priority 10, action 20, target 10, evidence coverag
 
 The summary must include a case target/host, visible case or evidence identifier, or an HH:MM time. The next step must name a recipient category such as a responsible person, administrator, SOC, CSIRT or operational contact. These are structural presence checks only: they do not verify prose meaning, truth, reasoning quality, or the suitability of the requested action. The UI must state this limitation and offer the authored report for comparison. Middle-level hints stop at two stages and must not disclose the number or contents of evidence groups. High cases have no hints.
 
+`SocEngine.LABELS` is the shared source for Japanese verdict, priority, action and difficulty labels in the UI and exported report. Use 勤務 for a training session and ターミナル for the shell UI; 端末 refers to an investigated device. A game-over debrief keeps model answers hidden until the learner chooses 解答を見る, so retry and unlimited review are available before seeing them.
+
 ## Engine, availability and timing
 
 The public engine supports session creation, active cases, visible logs, evidence availability, question requests/replies, evidence selection, assessment/submission, deadlines, pause/resume, unlimited review, checkpoint retry, hydration and report export. Current helper APIs include `evidenceLimit`, `getContactQuestions` and `availableReplies`.
@@ -37,6 +39,8 @@ The public engine supports session creation, active cases, visible logs, evidenc
 Low: sequential arrivals, no deadline, instant replies. Medium: all five arrive at zero, each has a 1,200-second deadline. High: arrivals at 0/45/90/135/180 seconds, each has a 900-second deadline; reply delays are multiplied by 1.5. Individual practice begins at zero. High cases include later-released logs; their offsets are measured from case arrival. An unreleased log or reply is unavailable to GUI search, timeline, terminal source files and evidence registration. Normal event timestamps and active session time are separate concepts.
 
 Critical unresolved cases end the game at their deadline. Paused, hidden and modal time is excluded. Advancing to the next update consumes active time and can cross a deadline. Retry rewinds to three minutes before the failed deadline and pauses. Unlimited review retains failure history. Late responses to noncritical cases may complete work but retain the late penalty. These are training rules, not a representation of real SOC service-level commitments.
+
+Returning from a hidden tab automatically resumes only an untimed session that was running before the automatic pause. Timed sessions show the pause dialog and require manual resume. A learner's explicit pause remains paused in every mode. Deadline messages must apply only to timed sessions. Screen transitions into a new or resumed investigation begin at the page top without resetting scroll during ordinary workbench updates.
 
 ## Investigation UI and terminal
 
@@ -58,11 +62,13 @@ Engine hydration accepts current `socroom-3` and previous `socroom-2` sessions (
 
 Bridge migration reopens the first affected lesson while preserving later case records in `reviewArchive`. Advancing through the course restores these archived sessions rather than starting them empty. Preserve optional reflections and working files. Do not discard later notes when an earlier lesson needs new evidence.
 
-v0.2 storage remains untouched. Its `socroom-1` sessions describe different questions and must not be silently imported into this dataset. The home page may export that legacy progress for the preserved v0.2 HTML. Local file localStorage behavior is browser-dependent; explicit JSON export is the portable backup.
+v0.2 storage remains untouched. Its `socroom-1` sessions describe different questions and must not be silently imported into this dataset. The home page may export that legacy progress as a backup. The current repository does not bundle a v0.2 HTML, so do not direct learners to a nonexistent legacy file. Local file localStorage behavior is browser-dependent; explicit JSON export is the portable backup.
 
 ## Tutorial and guided practice
 
 The 21-step tutorial uses `SocTutorial.CASE_ID`, `SEARCH_QUERY`, `PRIMARY_LOG_ID`; UI logic must not duplicate these constants. Next becomes available after the real operation. Pulse the current actionable control slowly and respect reduced-motion settings. Preserve focus, Japanese IME composition, evidence state, resume position and normal-session isolation. Examples are scoped to the tutorial and never fill a normal report automatically.
+
+The home page offers tutorial resume only for an unfinished tutorial; completed progress is identified as completed and can be restarted with the normal start control.
 
 Bridge has five dedicated cases: two guided, two checklist, one independent. Every case is untimed, single-case and uses immediate replies. `SocBridge` manages a course with `index`, `guide`, `completed`, optional `reflections` and `reviewArchive`. Evidence, actual requests and draft state determine guide completion; viewed-step flags alone are not proof of correctness. Completed sessions are revalidated before import or advance.
 

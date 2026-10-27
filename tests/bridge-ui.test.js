@@ -52,6 +52,10 @@ function harness(t, saved = null, options = {}) {
         removeItem(key) { storage.delete(key); }
       } });
       Object.defineProperty(window.performance, 'now', { value: () => now });
+      window.scrollTo = (x, y) => {
+        window.scrollX = typeof x === 'object' ? x.left || 0 : x;
+        window.scrollY = typeof x === 'object' ? x.top || 0 : y;
+      };
       Object.defineProperty(window.document, 'hidden', { configurable: true, get: () => hidden });
       Object.defineProperty(window.document, 'visibilityState', { configurable: true, get: () => hidden ? 'hidden' : 'visible' });
       window.setInterval = (fn, delay) => { const id = ++nextId; intervals.set(id, { fn, delay }); return id; };
@@ -206,14 +210,19 @@ test('bridge time has no deadline, and pause or a hidden document stops elapsed 
   assert.equal(h.window.SocEngine.getDeadline(saved.session, saved.session.selectedCaseId), null);
   assert.equal(h.get('#dialog').open, false);
   h.click('[data-action="pause"]');
+  h.visible(false);
   h.tick(30);
+  h.visible(true);
+  assert.equal(h.get('#dialog').open, true, 'a manual pause remains paused after changing tabs');
+  assert.equal(saveSnapshot(h).session.phase, 'paused');
   assert.equal(saveSnapshot(h).session.elapsed, 1300);
   h.click('[data-action="resume"]');
   h.visible(false);
   h.tick(30);
   assert.equal(saveSnapshot(h).session.elapsed, 1300);
   h.visible(true);
-  h.click('[data-action="resume"]');
+  assert.equal(h.get('#dialog').open, false, 'untimed practice resumes without a pause dialog');
+  assert.equal(saveSnapshot(h).session.phase, 'running');
   h.tick(1);
   saved = saveSnapshot(h);
   assert.equal(saved.session.elapsed, 1301);

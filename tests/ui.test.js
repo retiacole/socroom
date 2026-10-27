@@ -44,7 +44,7 @@ function harness(t, saved = null, options = {}) {
   if (options.tutorialSaved) storage.set(TUTORIAL_STORE, typeof options.tutorialSaved === 'string' ? options.tutorialSaved : JSON.stringify(options.tutorialSaved));
   for (const [kind,value] of Object.entries(options.legacySaves || {})) storage.set(kind === 'normal' ? 'socroom.offline.v1' : 'socroom.tutorial.v1', JSON.stringify(value));
   const errors = [], downloads = [], blobs = new Map(), intervals = new Map(), timeouts = new Map();
-  let now = 0, nextId = 0, hidden = false, networkCalls = 0;
+  let now = 0, nextId = 0, hidden = false, networkCalls = 0, scrollY = 0;
   const console = new VirtualConsole();
   console.on('jsdomError', error => errors.push(error));
   const dom = new JSDOM(assembledHTML(), {
@@ -58,6 +58,8 @@ function harness(t, saved = null, options = {}) {
         removeItem(key) { storage.delete(key); }
       } });
       Object.defineProperty(window.performance, 'now', { value: () => now });
+      Object.defineProperty(window, 'scrollY', { configurable: true, get: () => scrollY });
+      window.scrollTo = (x, y) => { scrollY = typeof x === 'object' ? x.top ?? scrollY : y; };
       Object.defineProperty(window.document, 'hidden', { configurable: true, get: () => hidden });
       Object.defineProperty(window.document, 'visibilityState', { configurable: true, get: () => hidden ? 'hidden' : 'visible' });
       window.setInterval = (fn, delay) => { const id = ++nextId; intervals.set(id, { fn, delay }); return id; };
@@ -502,7 +504,8 @@ test('tutorial guides all 21 real operations and completes without showing the n
   h.click('[data-action="tutorial-exit"]');
   assert.ok(h.document.querySelector('.home'));
   assert.equal(h.document.querySelector('.saved-strip'), null);
-  assert.ok(h.document.querySelector('[data-action="tutorial-resume"]'));
+  assert.match(h.get('.tutorial-entry').textContent, /完了済み/);
+  assert.doesNotMatch(h.get('.tutorial-entry').textContent, /チュートリアルの続きから/);
 });
 
 test('tutorial locate restores the required view and focus while back retains collected progress', t => {
@@ -725,6 +728,7 @@ test('normal-save import from tutorial offers the preserved normal save and keep
   await h.importFile(exported);
   assert.match(h.get('#dialog').textContent, /通常勤務を置き換え/);
   h.click('[data-action="export-before-import"]');
+  assert.equal(h.downloads.at(-1).name, 'socroom-medium.json');
   const oldNormal = JSON.parse(h.downloads.at(-1).content);
   assert.equal(oldNormal.tutorial, undefined);
   assert.equal(oldNormal.session.scenarioId, 'medium');
@@ -829,7 +833,8 @@ test('legacy progress remains untouched and can be exported separately from the 
   assert.equal(h.storage.get('socroom.offline.v1'),JSON.stringify(old));
   assert.equal(h.storage.get('socroom.tutorial.v1'),JSON.stringify(oldTutorial));
   await h.importFile(JSON.stringify(old));
-  assert.match(h.get('#toast').textContent,/旧版HTML/);
+  assert.match(h.get('#toast').textContent,/旧版|v0\.2/);
+  assert.doesNotMatch(h.get('#toast').textContent,/socroom-v0\.2\.html/);
   h.click('[data-action="export"]');
   assert.equal(JSON.parse(h.downloads.at(-1).content).session.scenarioId,'high');
 });
@@ -1078,4 +1083,141 @@ test('queue waiting state includes every requested question and the contact tab 
   assert.equal(h.get('.alert-card.active .case-state').textContent, '回答待ち', 'the default reply does not hide a later non-default request');
   while (!E.replyAvailable(h.session, c.id, third.id)) h.click('[data-action="step"]');
   assert.equal(h.get('.alert-card.active .case-state').textContent, '調査中');
+});
+
+
+function visibleText(element) {
+  const copy = element.cloneNode(true);
+  copy.querySelectorAll('[hidden]').forEach(node => node.remove());
+  copy.querySelectorAll('details:not([open])').forEach(details => {
+    const summary = details.querySelector(':scope > summary');
+    details.replaceChildren(...(summary ? [summary] : []));
+  });
+  return copy.textContent;
+}
+
+test('failed shifts reveal model answers only on request and retries start without them', t => {
+  const h = harness(t);
+  start(h, 'medium');
+  h.tick(1200);
+  assert.equal(h.session.phase, 'gameover');
+  const summaries = Object.keys(h.session.records).map(id => h.window.SocEngine.getCase(id).answer.summary);
+  for (const summary of summaries) assert.equal(visibleText(h.get('#dialog')).includes(summary), false);
+  assert.ok(h.get('[data-action="retry"]'));
+  assert.ok(h.get('[data-action="training"]'));
+  const reveal = [...h.get('#dialog').querySelectorAll('button, summary')].find(node => /解答を見る/.test(node.textContent));
+  assert.ok(reveal, 'answers have an explicit reveal control');
+  reveal.dispatchEvent(new h.window.MouseEvent('click', { bubbles: true, cancelable: true }));
+  for (const summary of summaries) assert.ok(visibleText(h.get('#dialog')).includes(summary));
+  h.click('[data-action="retry"]');
+  h.click('[data-action="resume"]');
+  assert.equal(h.get('#dialog').open, false);
+  assert.equal(h.document.querySelector('.result-case'), null);
+  h.tick(180);
+  assert.equal(h.session.phase, 'gameover');
+  for (const summary of summaries) assert.equal(visibleText(h.get('#dialog')).includes(summary), false, 'a later failure does not carry reveal state');
+  h.click('[data-action="training"]');
+  assert.equal(h.get('#dialog').open, false);
+  assert.equal(h.document.querySelector('.result-case'), null);
+});
+
+test('initial game-over rendering marks expired queue deadlines without waiting for a timer tick', t => {
+  const h = harness(t);
+  start(h, 'medium');
+  h.tick(1200);
+  assert.equal(h.session.phase, 'gameover');
+  for (const el of h.document.querySelectorAll('[data-deadline]')) assert.equal(el.textContent, '期限超過');
+  assert.doesNotMatch(h.get('.queue').textContent, /初動期限まで 00:00/);
+});
+
+for (const mode of ['low', 'tutorial', 'bridge']) {
+  test(`${mode} returns silently from a hidden tab and keeps a manual pause intact`, t => {
+    const h = harness(t);
+    if (mode === 'low') start(h);
+    else h.click(`[data-action="${mode}-start"]`);
+    h.tick(3);
+    const elapsed = h.session.elapsed;
+    h.visible(false);
+    assert.equal(h.session.phase, 'paused');
+    h.tick(60);
+    h.visible(true);
+    assert.equal(h.session.phase, 'running');
+    assert.equal(h.session.elapsed, elapsed, 'hidden time is excluded');
+    assert.equal(h.get('#dialog').open, false, 'automatic pause does not require a resume dialog');
+    h.tick(2);
+    assert.equal(h.session.elapsed, elapsed + 2);
+    h.click('[data-action="pause"]');
+    assert.equal(h.session.phase, 'paused');
+    assert.doesNotMatch(h.get('#dialog').textContent, /対応期限は止まっています/);
+    h.visible(false);
+    h.tick(60);
+    h.visible(true);
+    assert.equal(h.session.phase, 'paused', 'a deliberate pause never resumes automatically');
+    assert.equal(h.get('#dialog').open, true);
+  });
+
+  test(`${mode} starts at the top and preserves page position during ordinary workspace updates`, t => {
+    const h = harness(t);
+    h.window.scrollTo(0, 1170);
+    if (mode === 'low') start(h);
+    else h.click(`[data-action="${mode}-start"]`);
+    assert.equal(h.window.scrollY, 0, 'home position must not carry into the workspace');
+    h.window.scrollTo(0, 640);
+    h.click('[data-tab="resources"]');
+    assert.equal(h.window.scrollY, 640, 'same-screen updates retain page position');
+    h.click('[data-action="home"]');
+    h.window.scrollTo(0, 1170);
+    h.click(`[data-action="${mode === 'low' ? 'continue' : mode + '-resume'}"]`);
+    assert.equal(h.window.scrollY, 0, 'resuming from home also starts at the top');
+  });
+
+  test(`${mode} progress and inquiry messages do not claim to consume a deadline`, t => {
+    const h = harness(t);
+    if (mode === 'low') start(h);
+    else h.click(`[data-action="${mode}-start"]`);
+    assert.doesNotMatch(h.get('.queue-footer').textContent, /進めた時間も期限に含まれます/);
+    h.click('[data-action="step"]');
+    assert.doesNotMatch(h.get('#toast').textContent, /対応期限にも加算/);
+    h.click('[data-tab="contact"]');
+    assert.doesNotMatch(h.get('#investigation-view').textContent, /待機時間も対応期限に含まれます/);
+  });
+}
+
+test('unlimited review after a timed failure also resumes silently with no deadline wording', t => {
+  const h = harness(t);
+  start(h, 'medium');
+  h.tick(1200);
+  h.click('[data-action="training"]');
+  const elapsed = h.session.elapsed;
+  h.visible(false);
+  h.tick(60);
+  h.visible(true);
+  assert.equal(h.session.phase, 'running');
+  assert.equal(h.session.elapsed, elapsed);
+  assert.equal(h.get('#dialog').open, false);
+  assert.doesNotMatch(h.get('.queue-footer').textContent, /進めた時間も期限に含まれます/);
+  h.click('[data-action="step"]');
+  assert.doesNotMatch(h.get('#toast').textContent, /対応期限にも加算/);
+});
+
+test('normal save filenames use the difficulty once and imports reset the home scroll position', async t => {
+  const author = harness(t);
+  start(author);
+  author.click('[data-action="export"]');
+  assert.equal(author.downloads.at(-1).name, 'socroom-low.json');
+  const h = harness(t);
+  h.window.scrollTo(0, 1170);
+  await h.importFile(author.downloads.at(-1).content);
+  assert.ok(h.document.querySelector('.workbench'));
+  assert.equal(h.window.scrollY, 0);
+});
+
+test('completed tutorial stays marked complete after leaving and reloading the app', t => {
+  const h = harness(t);
+  h.click('[data-action="tutorial-start"]');
+  tutorialTo(h, 'finish');
+  h.click('[data-action="tutorial-exit"]');
+  const restored = harness(t, null, { tutorialSaved: h.storage.get(TUTORIAL_STORE) });
+  assert.match(restored.get('.tutorial-entry').textContent, /完了済み/);
+  assert.doesNotMatch(restored.get('.tutorial-entry').textContent, /チュートリアルの続きから/);
 });
