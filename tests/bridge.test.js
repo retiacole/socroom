@@ -24,6 +24,11 @@ function prepare(session) {
     verdict: c.answer.verdict, priority: c.answer.priorities[0], action: c.answer.actions[0],
     target: c.answer.target, summary: c.answer.summary, nextStep: c.answer.nextStep
   };
+  if (c.response && E.isolationState(session, c.id).confirmedAt === null) {
+    E.requestIsolation(session, c.id, { target: c.response.target, authorizationId: c.response.authorizationId, reason: c.host + ' の継続通信と承認範囲を確認したため隔離する。', impactAcknowledged: true });
+    E.advance(session, c.response.delaySeconds);
+    E.confirmIsolation(session, c.id);
+  }
   assert.equal(E.assessCase(session, c.id).passed, true, c.id);
 }
 function resolve(session) {
@@ -47,13 +52,15 @@ function completeStep(step, course, session) {
   if (step.kind === 'submitted') resolve(session);
 }
 
-test('five exclusive cases fade from action guidance to checklist to independent practice', () => {
+test('six exclusive cases fade from action guidance to checklist and independent investigation and response', () => {
   const scenario = D.scenarios.find(item => item.id === 'bridge');
   assert.equal(scenario.hidden, true);
   assert.equal(scenario.difficulty, 'low');
-  assert.equal(B.CASE_IDS.length, 5);
-  assert.equal(new Set(B.CASE_IDS).size, 5);
-  assert.deepEqual(B.CASE_IDS.map(id => E.getCase(id).bridge.stage), ['guided', 'guided', 'checklist', 'checklist', 'independent']);
+  assert.equal(B.CASE_IDS.length, 6);
+  assert.equal(new Set(B.CASE_IDS).size, 6);
+  assert.deepEqual(B.CASE_IDS.map(id => E.getCase(id).bridge.stage), ['guided', 'guided', 'checklist', 'checklist', 'independent', 'independent']);
+  assert.equal(B.CASE_IDS.at(-1), 'response-endpoint-isolation');
+  assert.equal(E.getCase(B.CASE_IDS.at(-1)).response.kind, 'endpoint-isolation');
   const otherIds = D.scenarios.filter(item => item.id !== 'bridge').flatMap(item => item.caseIds);
   const evidenceIds = new Set();
   for (const id of B.CASE_IDS) {
@@ -182,7 +189,7 @@ test('a passing draft or failed submission cannot finish the course case', () =>
   assert.notEqual(course.completed[0].records[c.id].draft.summary, session.records[c.id].draft.summary);
 });
 
-test('the complete course advances in order with fresh guidance and stops after case five', () => {
+test('the complete course advances in order with fresh guidance and stops after case six', () => {
   const course = B.create();
   for (let index = 0; index < B.CASE_IDS.length; index += 1) {
     const { c, session } = fixture(course);
@@ -196,8 +203,43 @@ test('the complete course advances in order with fresh guidance and stops after 
     assert.equal(B.advance(course), index < B.CASE_IDS.length - 1);
     if (index < B.CASE_IDS.length - 1) assert.deepEqual(course.guide, { step: 0, seen: [] });
   }
-  assert.equal(course.index, 4);
-  assert.equal(course.completed.length, 5);
+  assert.equal(course.index, 5);
+  assert.equal(course.completed.length, 6);
+});
+
+test('a former five-case completion resumes at its review and continues to case six without losing reports or reflections', () => {
+  const previous = B.create();
+  let lastSession;
+  for (let index = 0; index < 5; index += 1) {
+    const { c, session } = fixture(previous);
+    prepare(session);
+    session.records[c.id].draft.summary += ' 以前の第' + (index + 1) + '問の調査メモ。';
+    previous.reflections[c.id] = { facts: '保存済みの事実 ' + index, limits: '未確認事項 ' + index, next: '引き継ぎ先 ' + index };
+    assert.equal(E.submitCase(session, c.id).passed, true);
+    B.finish(previous, session);
+    if (index < 4) B.advance(previous);
+    lastSession = session;
+  }
+  const formerSave = copy(previous);
+  assert.equal(formerSave.version, 1);
+  assert.equal(formerSave.index, 4);
+  assert.equal(formerSave.completed.length, 5);
+  const restored = B.hydrate(formerSave, E.hydrate(copy(lastSession)));
+  assert.equal(restored.index, 4, 'the earlier completed fifth case remains reviewable');
+  assert.deepEqual(restored.reflections, previous.reflections);
+  assert.deepEqual(restored.completed.map(s => s.records[s.individualCaseId].draft), previous.completed.map(s => s.records[s.individualCaseId].draft));
+  assert.equal(B.advance(restored), true);
+  assert.equal(restored.index, 5);
+  const { c, session } = fixture(restored);
+  assert.equal(c.id, 'response-endpoint-isolation');
+  assert.equal(session.records[c.id].draft.summary, '');
+  assert.equal(E.isolationState(session, c.id).status, 'not-requested');
+  assert.throws(() => B.finish(restored, session));
+  resolve(session);
+  B.finish(restored, session);
+  assert.equal(B.advance(restored), false);
+  assert.equal(B.hydrate(copy(restored), E.hydrate(copy(session))).completed.length, 6);
+  assert.deepEqual(restored.reflections, previous.reflections);
 });
 
 test('bridge progress is separate from both normal shifts and the operation tutorial', () => {
@@ -233,7 +275,7 @@ test('hydrate rejects invalid course fields, mismatched current cases and skippe
   const { course, c, session } = fixture();
   const invalid = [
     null, [], {}, { ...course, version: 0 }, { ...course, version: '1' },
-    ...[-1, 5, 0.5, '0', NaN, Infinity].map(index => ({ ...course, index })),
+    ...[-1, 6, 0.5, '0', NaN, Infinity].map(index => ({ ...course, index })),
     { ...course, guide: null },
     ...[-1, c.bridge.steps.length, 0.5, '0', NaN].map(step => ({ ...course, guide: { step, seen: [] } })),
     { ...course, guide: { step: 0, seen: ['unknown'] } },

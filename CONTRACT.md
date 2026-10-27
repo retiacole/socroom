@@ -1,16 +1,16 @@
-# SOCroom v0.6.0 implementation contract
+# SOCroom v0.7.0 implementation contract
 
 The product is one offline HTML. Runtime: vanilla JavaScript, embedded CSS and data, no network/API/framework. Source modules are UMD/CommonJS for tests. User-facing language is Japanese. Build with `node build.js`; develop and test with Node.js 22 or later. The bundled file must not request external CSS, fonts, scripts or data; retain `connect-src 'none'`.
 
 ## Dataset and build
 
-`SOC_DATA.version = 'socroom-3'`. There are 21 unique cases: five in each fixed-difficulty normal pack (`low`, `medium`, `high`), one in hidden pack `tutorial`, and five in hidden pack `bridge`. Difficulty selects different questions. `createSession` rejects a difficulty that does not match its scenario. Tutorial and bridge run as untimed individual sessions.
+`SOC_DATA.version = 'socroom-3'`. There are 22 unique cases in five scenarios: five in each fixed-difficulty normal pack (`low`, `medium`, `high`), one in hidden pack `tutorial`, and six in hidden pack `bridge`. The final bridge case is `response-endpoint-isolation` (difficulty `low`, `bridge.stage:independent`). The original fifteen normal cases and their pack order remain unchanged. Difficulty selects different questions. `createSession` rejects a difficulty that does not match its scenario. Tutorial and bridge run as untimed individual sessions. Endpoint isolation is reached as the sixth bridge lesson after the existing five investigations; it has no separate home entry or scenario.
 
 Canonical authored content lives in `content/*.json`. `assemble-data.js` invokes `prepare-data.js` to normalize source names and observed fields, render illustrative source formats, and add deterministic background events before generating `src/data.js`. Do not manually edit generated data. `build.js` assembles the sources and generated data into `socroom.html`.
 
-Background events per normal case: low 50, medium 100, high 180. Bridge stages: guided 0, checklist 50, independent 75. Tutorial adds none. Generated background IDs are stable and distinct from authored IDs, and are not members of answer evidence groups. Adding background must not change the ground truth or reveal a conclusion. Include multiple sources and relevant peer assets so filters and shell pipelines have useful work to do.
+Background events per normal case: low 50, medium 100, high 180. Bridge stages: guided 0, checklist 50, independent 75. Tutorial adds none. The sixth bridge isolation case uses the independent-stage count of 75 background events. Generated background IDs are stable and distinct from authored IDs, and are not members of answer evidence groups. Adding background must not change the ground truth or reveal a conclusion. Include multiple sources and relevant peer assets so filters and shell pipelines have useful work to do.
 
-Case fields include `id, scenarioId, difficulty, title, subtitle, host, relatedHosts?, user, source, severity, critical, context, logs, documents, contact, hints, answer, targets, targetType`. `targetType` is `host`, `account` or `application`. `targets` contains `{value,label}` choices including the intended target and plausible alternatives. A case's primary `host` locates the investigation; it does not require `answer.target` to be that host. Identity cases may target an account or application. Related-host impact belongs in the narrative. Missing user/host data is an empty string, not an invented identity or the word `unknown`.
+Case fields include `id, scenarioId, difficulty, title, subtitle, host, relatedHosts?, user, source, severity, critical, context, logs, documents, contact, hints, answer, targets, targetType, response?`. `targetType` is `host`, `account` or `application`. `targets` contains `{value,label}` choices including the intended target and plausible alternatives. A case's primary `host` locates the investigation; it does not require `answer.target` to be that host. Identity cases may target an account or application. Related-host impact belongs in the narrative. Missing user/host data is an empty string, not an invented identity or the word `unknown`.
 
 Each log has globally unique `id`, UTC event `time`, nonnegative numeric release `offset`, `source`, observed `host/user/ip`, factual `event`, illustrative `raw`, and virtual `/var/log/...` path. Event labels describe product operations, not the analyst's inference. The source cannot report facts outside its collection capability. Raw absence/unknown assertions that reveal missing evidence belong in collection documentation instead. Real failed requests, returned status codes and checkpoint timestamps are observations and can be recorded.
 
@@ -34,7 +34,7 @@ The summary must include a case target/host, visible case or evidence identifier
 
 ## Engine, availability and timing
 
-The public engine supports session creation, active cases, visible logs, evidence availability, question requests/replies, evidence selection, assessment/submission, deadlines, pause/resume, unlimited review, checkpoint retry, hydration and report export. Current helper APIs include `evidenceLimit`, `getContactQuestions` and `availableReplies`.
+The public engine supports session creation, active cases, visible logs, evidence availability, question requests/replies, evidence selection, assessment/submission, deadlines, pause/resume, unlimited review, checkpoint retry, hydration and report export. Current helper APIs include `evidenceLimit`, `getContactQuestions`, `availableReplies`, `requestIsolation`, `isolationState` and `confirmIsolation`.
 
 Low: sequential arrivals, no deadline, instant replies. Medium: all five arrive at zero, each has a 1,200-second deadline. High: arrivals at 0/45/90/135/180 seconds, each has a 900-second deadline; reply delays are multiplied by 1.5. Individual practice begins at zero. High cases include later-released logs; their offsets are measured from case arrival. An unreleased log or reply is unavailable to GUI search, timeline, terminal source files and evidence registration. Normal event timestamps and active session time are separate concepts.
 
@@ -54,6 +54,20 @@ The shell is a training subset, not a real OS or a fully GNU-compatible shell. T
 
 `src/vendor-shell.js` comes from Logroom commit `6d54626138261b9756d959050bca8fe29d1d9181`. `scripts/logroom-source.json` records repository, path, commit and upstream SHA-256. `scripts/sync-logroom.js` takes a downloaded upstream source file and a full commit SHA, verifies expected integration markers including upstream's separate grep/rg digit-class handling, adds exports, and refreshes the vendor header and manifest. Keep the pinned download and sync arguments identical. Review upstream changes and run terminal plus full tests after every sync; the wrapper remains the authority for immutability.
 
+## Endpoint response in the sixth bridge lesson (v0.7)
+
+The response case models a product-neutral endpoint-isolation workflow, not the Microsoft Defender UI/API or a real device operation. `case.response` contains `kind:'endpoint-isolation'`, `target`, `authorizationId`, `delaySeconds:45`, and `requiredEvidenceGroups`. These groups identify the selected asset, execution, current communication and response authorization; each must be supported by available selected evidence before an action is requested. A generic software change authorization does not authorize isolation.
+
+`requestIsolation(session,caseId,{target,authorizationId,reason,impactAcknowledged:true})` validates the exact target and authorization, a trimmed reason of 10–500 characters, acknowledgement of business impact, and the required evidence. It snapshots the evidence and request time. The reason is checked structurally, not for semantic correctness. `isolationState(session,caseId,at=session.elapsed)` reports `not-requested`, `pending`, or `succeeded`; a request becomes successful after 45 seconds of active exercise time. Pause and resume retain the request. Repeated requests do not create a second action.
+
+The learner must call `confirmIsolation(session,caseId)` after success to acknowledge the result. Before that confirmation, an otherwise correct report must remain unresolved, even if its ordinary rubric totals 100 points. This is an additional completion requirement only for `case.response`; original cases keep their existing grading. A result cannot be confirmed before it is successful, and repeated confirmations do not create new actions. Save import must validate request evidence, authorization, impact acknowledgement, reason and chronology, and must recompute success from request time rather than trust a saved status.
+
+Response submissions snapshot `responseConfirmedAt` at submission time. A later confirmation in the same timer tick cannot retroactively pass an earlier submission. Ordinary cases keep their existing submission format.
+
+Successful isolation is containment, not eradication, recovery or investigation completion. The report must hand off further investigation, recovery and responsible-owner checks before any release decision. No release action is implemented. The simulation's continuing management connectivity is a stated condition of this authored environment, not a promise about every endpoint product.
+
+The isolation case uses the existing bridge course/session/workspace storage and `reviewArchive`, preserving the separate normal session and tutorial. It follows the fifth lesson and its report reflection. Importing a previously completed five-lesson bridge course preserves those records and continues at the new sixth lesson; it must not reset earlier reports, reflections or workspaces.
+
 ## Saves and migration
 
 Normal storage key remains `socroom.offline.v2`, tutorial `socroom.tutorial.v2`, bridge `socroom.bridge.v1`. JSON envelope remains `{format:'socroom-save',version:1,session,workspace,tutorial?,bridge?}`. Tutorial state is version 2; bridge course state is version 1. Mode, scenario and envelope metadata must agree before import mutates any state. Start/exit of tutorial or bridge preserves and pauses the separate normal session and workspace.
@@ -70,13 +84,13 @@ The 21-step tutorial uses `SocTutorial.CASE_ID`, `SEARCH_QUERY`, `PRIMARY_LOG_ID
 
 The home page offers tutorial resume only for an unfinished tutorial; completed progress is identified as completed and can be restarted with the normal start control.
 
-Bridge has five dedicated cases: two guided, two checklist, one independent. Every case is untimed, single-case and uses immediate replies. `SocBridge` manages a course with `index`, `guide`, `completed`, optional `reflections` and `reviewArchive`. Evidence, actual requests and draft state determine guide completion; viewed-step flags alone are not proof of correctness. Completed sessions are revalidated before import or advance.
+Bridge has six dedicated cases: two guided, two checklist, two independent. The first five IDs/order remain unchanged, and the sixth adds endpoint-isolation execution and result confirmation after investigation and reporting skills. Every case is untimed, single-case and uses immediate replies. `SocBridge` manages a course with `index`, `guide`, `completed`, optional `reflections` and `reviewArchive`. Evidence, actual requests and draft state determine guide completion; viewed-step flags alone are not proof of correctness. Completed sessions are revalidated before import or advance.
 
 Reflection compares the learner report with the authored facts, limits and next step, and requires acknowledgement before advancing. Optional learner entries `{facts,limits,next}` are saved per case and restored; each is limited to 1,400 characters. These reflection entries are not semantically graded.
 
 ## Verification
 
-Use node:test and jsdom 26.1.0. Cover all 21 cases, exclusive difficulty assignment, timing/availability, selective evidence budgets, identity targets, independent question state, structural report checks, old-save migration and bridge archive preservation. Terminal tests cover useful pipelines plus protection across sudo, redirects, xargs, backups, source refresh and save import. Release tests must prove deterministic self-contained output and consistency with the authored/derived data. jsdom verifies DOM behavior, not real-browser rendering or file-URL storage compatibility.
+Use node:test and jsdom 26.1.0. Cover all 22 cases, preserve the exact fifteen normal case IDs and pack order, and cover exclusive difficulty assignment, timing/availability, selective evidence budgets, identity targets, independent question state, structural report checks, old-save migration and bridge archive preservation. Terminal tests cover useful pipelines plus protection across sudo, redirects, xargs, backups, source refresh and save import. Release tests must prove deterministic self-contained output and consistency with the authored/derived data. jsdom verifies DOM behavior, not real-browser rendering or file-URL storage compatibility.
 
 ## Optional practice settings (v0.6)
 

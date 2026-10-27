@@ -54,6 +54,18 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
 
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
+/* The response exercise shares the investigation UI and remains offline. */
+.response-panel h3{font-size:19px;margin:8px 0 12px}
+.response-panel p{line-height:1.85;margin:10px 0}
+.response-panel .response-status{margin:20px 0;padding:16px;border:1px solid #a69055;border-radius:8px;background:#302c1d}
+.response-panel .response-status.complete{border-color:#609c7a;background:#19372b}
+.response-status dl{display:grid;grid-template-columns:100px minmax(0,1fr);gap:9px 14px;margin:14px 0 0;font-size:12px;line-height:1.8}
+.response-status dt{color:#c1d6cc}.response-status dd{margin:0;overflow-wrap:anywhere;white-space:pre-wrap}
+.response-ack{display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.9;margin:18px 0}
+.response-ack input{margin-top:6px;flex-shrink:0}
+.response-panel .btn{white-space:normal;text-align:left}
+@media(max-width:680px){.response-status dl{grid-template-columns:1fr;gap:2px}.response-status dd{margin-bottom:9px}.response-panel h3{font-size:17px}.tabs{overflow-x:auto;justify-content:flex-start}.tab{flex-shrink:0}}
+
 /* Pulse the next actionable control without fading its label or moving it. */
 .tutorial-pulse{outline:3px solid #b8f290;outline-offset:4px;animation:tutorial-action-pulse 1.6s ease-in-out infinite}
 @keyframes tutorial-action-pulse{
@@ -90,13 +102,13 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
 <div id="bridge-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 <input id="import-file" type="file" accept=".json,application/json" hidden>
 <noscript>この演習にはJavaScriptを有効にしたブラウザが必要です。インターネット接続は不要です。</noscript>
-<script>/* SOCroom v0.6: 15 regular cases, one tutorial, five guided practice cases.
+<script>/* SOCroom: 15 regular cases, one tutorial, six guided practice cases including endpoint response.
  * Generated from content/*.json by assemble-data.js. Synthetic offline data. */
 (function(root){
   "use strict";
   const data = {
   "version": "socroom-3",
-  "releaseVersion": "0.6.0",
+  "releaseVersion": "0.7.0",
   "company": {
     "name": "青凪システムズ",
     "description": "架空の企業のSOCで、監視・調査・初動の引き継ぎを担当します。2026年10月20日の記録を使った演習です。ログ・資料・担当者の回答の時刻はすべてUTC。人物・組織・通信先は教材用の合成データで、アプリは外部へ通信しません。"
@@ -181,12 +193,14 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
         "bridge-usb-copy",
         "bridge-service-auth",
         "bridge-link-followup",
-        "bridge-local-admin"
+        "bridge-local-admin",
+        "response-endpoint-isolation"
       ],
       "briefing": [
-        "この実務演習は、調査から証拠登録・判断・引き継ぎまでをつなげる専用問題です。通常勤務の15問とは別の5件を、1件ずつ担当します。",
-        "全件に時間制限はなく、照会はすぐに返信されます。ログと資料の時刻はUTCです。担当者への照会や封じ込め依頼は、教材内の模擬操作です。",
-        "確認できた事実と未確認事項を分けて報告してください。提出後は自分の報告と報告例を見比べ、次の案件へ進みます。"
+        "この実務演習は、調査から証拠登録・判断・引き継ぎまでをつなげる専用問題です。通常勤務の15問とは別の6件を、1件ずつ担当します。最後の1件では、調査を踏まえた端末隔離の依頼と結果確認まで進めます。",
+        "全件に時間制限はなく、照会はすぐに返信されます。ログと資料の時刻はUTCです。担当者への照会や封じ込め依頼は教材内の模擬操作で、最後の端末隔離には模擬の処置待ち時間があります。",
+        "確認できた事実と未確認事項を分けて報告してください。提出後は自分の報告と報告例を見比べ、次の案件へ進みます。",
+        "端末隔離はSOCroomのベンダー共通の模擬画面で行います。実端末への通信や処置はありません。調査・復旧・責任者承認後の解除条件を引き継ぎ、解除操作は行いません。"
       ]
     }
   ],
@@ -430,6 +444,20 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
       "description": "Proxyの応答監査を受信する収集器。10.28.0.22。要求ポリシーの収集器とは独立して稼働する。"
     },
     {
+      "id": "asset-response-endpoint",
+      "name": "design-lt-014",
+      "owner": "設計部・水野 梓",
+      "importance": "高",
+      "description": "DEV-DESIGN-014 / 10.24.60.14。顧客設計資料を扱う業務端末。緊急時は事前承認手順に従って予備端末へ業務を切り替えられる。"
+    },
+    {
+      "id": "asset-response-peer",
+      "name": "design-lt-041",
+      "owner": "設計ツール配布検証担当",
+      "importance": "中",
+      "description": "DEV-DESIGN-041 / 10.24.60.41。通常変更CHG-DESIGN-214の対象端末。design-lt-014とは別の管理対象。"
+    },
+    {
       "name": "office-f9cb8e-01",
       "owner": "業務端末管理担当",
       "importance": "low",
@@ -641,6 +669,18 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
     },
     {
       "name": "office-375058-02",
+      "owner": "業務端末管理担当",
+      "importance": "low",
+      "description": "一般業務用端末。資産台帳に登録された利用者の定期チェック・業務通信を収集。"
+    },
+    {
+      "name": "office-01829d-01",
+      "owner": "業務端末管理担当",
+      "importance": "low",
+      "description": "一般業務用端末。資産台帳に登録された利用者の定期チェック・業務通信を収集。"
+    },
+    {
+      "name": "office-01829d-02",
       "owner": "業務端末管理担当",
       "importance": "low",
       "description": "一般業務用端末。資産台帳に登録された利用者の定期チェック・業務通信を収集。"
@@ -32071,6 +32111,1365 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
         "office-375058-01",
         "office-375058-02"
       ]
+    },
+    {
+      "id": "response-endpoint-isolation",
+      "scenarioId": "bridge",
+      "difficulty": "low",
+      "title": "業務端末で続く不審な実行と通信",
+      "subtitle": "設計端末 / DEV-DESIGN-014",
+      "host": "design-lt-014",
+      "relatedHosts": [
+        "design-lt-041"
+      ],
+      "user": "k.mizuno",
+      "source": "EDR",
+      "severity": "high",
+      "critical": true,
+      "context": "設計部の端末でファイルの処置通知と、その後の実行・通信記録が届いています。同じ名前のツールを使う承認済み作業もあります。対象と時刻を照合し、今必要な対応と、処置後に確認すべきことを判断してください。",
+      "logs": [
+        {
+          "id": "rsp-log-identity",
+          "time": "10:00:00",
+          "offset": 0,
+          "source": "EDR",
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.60.14",
+          "event": "EDR: device.inventory",
+          "raw": "{\"timestamp\":\"2026-10-20T10:00:00Z\",\"event\":\"EDR: device.inventory\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"ip\":\"10.24.60.14\",\"device_id\":\"DEV-DESIGN-014\",\"hostname\":\"design-lt-014\",\"ipv4\":\"10.24.60.14\",\"sensor_status\":\"healthy\",\"management_channel\":\"connected\",\"inventory_ref\":\"INV-DESIGN-1020\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "rsp-log-update",
+          "time": "10:01:00",
+          "offset": 0,
+          "source": "EDR",
+          "host": "design-lt-041",
+          "user": "svc-design-update",
+          "ip": "10.24.60.41",
+          "event": "EDR: process.started",
+          "raw": "{\"timestamp\":\"2026-10-20T10:01:00Z\",\"event\":\"EDR: process.started\",\"hostname\":\"design-lt-041\",\"properties\":{\"host\":\"design-lt-041\",\"user\":\"svc-design-update\",\"ip\":\"10.24.60.41\",\"device_id\":\"DEV-DESIGN-041\",\"process_guid\":\"PROC-D041-2288\",\"image\":\"C:/Program Files/Aonagi/Design/draft-helper.exe\",\"parent\":\"design-update-service.exe\",\"sha256\":\"941a816c273aef692efa228534b7d05c8c41ee48d9a0a414b51609b43727b87a\",\"signature\":\"valid\",\"signer\":\"AonagiSoftware\",\"process_state\":\"running\",\"change\":\"CHG-DESIGN-214\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "rsp-log-update-net",
+          "time": "10:01:04",
+          "offset": 0,
+          "source": "EDR",
+          "host": "design-lt-041",
+          "user": "svc-design-update",
+          "ip": "10.24.60.41",
+          "event": "EDR: network.connection",
+          "raw": "{\"timestamp\":\"2026-10-20T10:01:04Z\",\"event\":\"EDR: network.connection\",\"hostname\":\"design-lt-041\",\"properties\":{\"host\":\"design-lt-041\",\"user\":\"svc-design-update\",\"ip\":\"10.24.60.41\",\"device_id\":\"DEV-DESIGN-041\",\"process_guid\":\"PROC-D041-2288\",\"destination\":\"updates.aonagi.example\",\"dst\":\"192.0.2.44\",\"dst_port\":\"443\",\"result\":\"allowed\",\"bytes_sent\":\"768\",\"change\":\"CHG-DESIGN-214\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "rsp-log-download",
+          "time": "10:02:10",
+          "offset": 0,
+          "source": "EDR",
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.60.14",
+          "event": "EDR: file.created",
+          "raw": "{\"timestamp\":\"2026-10-20T10:02:10Z\",\"event\":\"EDR: file.created\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"ip\":\"10.24.60.14\",\"device_id\":\"DEV-DESIGN-014\",\"actor_process\":\"browser.exe\",\"path\":\"C:/Users/k.mizuno/Downloads/draft-helper.exe\",\"sha256\":\"572fd6f2c90abcb0928b87f05e92638f28379a31effe7a5a9c1a1b04e28cf2d0\",\"origin\":\"https://draft-review.example/client/draft-helper.exe\",\"result\":\"success\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "rsp-log-start",
+          "time": "10:02:18",
+          "offset": 0,
+          "source": "EDR",
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.60.14",
+          "event": "EDR: process.started",
+          "raw": "{\"timestamp\":\"2026-10-20T10:02:18Z\",\"event\":\"EDR: process.started\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"ip\":\"10.24.60.14\",\"device_id\":\"DEV-DESIGN-014\",\"process_guid\":\"PROC-D014-7024\",\"pid\":\"7024\",\"image\":\"C:/Users/k.mizuno/Downloads/draft-helper.exe\",\"parent\":\"explorer.exe\",\"sha256\":\"572fd6f2c90abcb0928b87f05e92638f28379a31effe7a5a9c1a1b04e28cf2d0\",\"signature\":\"invalid\",\"process_state\":\"running\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "rsp-log-exec",
+          "time": "10:02:25",
+          "offset": 0,
+          "source": "EDR",
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.60.14",
+          "event": "EDR: process.access",
+          "raw": "{\"timestamp\":\"2026-10-20T10:02:25Z\",\"event\":\"EDR: process.access\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"ip\":\"10.24.60.14\",\"device_id\":\"DEV-DESIGN-014\",\"process_guid\":\"PROC-D014-7024\",\"target_image\":\"lsass.exe\",\"operation\":\"process_vm_read\",\"result\":\"success\",\"source_image\":\"C:/Users/k.mizuno/Downloads/draft-helper.exe\",\"sha256\":\"572fd6f2c90abcb0928b87f05e92638f28379a31effe7a5a9c1a1b04e28cf2d0\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "rsp-log-net-first",
+          "time": "10:02:31",
+          "offset": 0,
+          "source": "EDR",
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.60.14",
+          "event": "EDR: network.connection",
+          "raw": "{\"timestamp\":\"2026-10-20T10:02:31Z\",\"event\":\"EDR: network.connection\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"ip\":\"10.24.60.14\",\"device_id\":\"DEV-DESIGN-014\",\"process_guid\":\"PROC-D014-7024\",\"destination\":\"draft-session.example\",\"dst\":\"198.51.100.188\",\"dst_port\":\"443\",\"result\":\"allowed\",\"bytes_sent\":\"1840\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "rsp-log-file-quarantine",
+          "time": "10:03:02",
+          "offset": 0,
+          "source": "EDR",
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.60.14",
+          "event": "EDR: file.quarantined",
+          "raw": "{\"timestamp\":\"2026-10-20T10:03:02Z\",\"event\":\"EDR: file.quarantined\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"ip\":\"10.24.60.14\",\"device_id\":\"DEV-DESIGN-014\",\"path\":\"C:/Users/k.mizuno/Downloads/draft-helper.exe\",\"sha256\":\"572fd6f2c90abcb0928b87f05e92638f28379a31effe7a5a9c1a1b04e28cf2d0\",\"action\":\"file_quarantine\",\"result\":\"success\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "rsp-log-net-latest",
+          "time": "10:05:41",
+          "offset": 0,
+          "source": "EDR",
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.60.14",
+          "event": "EDR: network.connection",
+          "raw": "{\"timestamp\":\"2026-10-20T10:05:41Z\",\"event\":\"EDR: network.connection\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"ip\":\"10.24.60.14\",\"device_id\":\"DEV-DESIGN-014\",\"process_guid\":\"PROC-D014-7024\",\"pid\":\"7024\",\"process_state\":\"running\",\"destination\":\"draft-session.example\",\"dst\":\"198.51.100.188\",\"dst_port\":\"443\",\"result\":\"allowed\",\"bytes_sent\":\"2120\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "rsp-log-management",
+          "time": "10:05:45",
+          "offset": 0,
+          "source": "EDR",
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.60.14",
+          "event": "EDR: management.checkin",
+          "raw": "{\"timestamp\":\"2026-10-20T10:05:45Z\",\"event\":\"EDR: management.checkin\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"ip\":\"10.24.60.14\",\"device_id\":\"DEV-DESIGN-014\",\"agent_state\":\"healthy\",\"management_channel\":\"connected\",\"policy\":\"EP-ISOLATION-LAB-04\",\"management_route\":\"verified-direct\",\"route_check\":\"NET-D014-1020-1000\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-0063a0c7b3a5",
+          "time": "09:55:00",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "s.aoki",
+          "ip": "10.24.80.20",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 09:55:00 office-01829d-01 sshd[2100]: Accepted publickey for s.aoki from 10.24.80.20 port 41000 ssh2: ED25519 SHA256:RfmWQKV2/6OsXX+DiXnMr9b3HXs/h2cYB8yAe10bIx8",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-c8a5ace3d796",
+          "time": "09:55:08",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.21",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.21 - - [20/Oct/2026:09:55:08 +0000] \"GET /health HTTP/1.1\" 200 513 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-4908f72188cf",
+          "time": "09:55:16",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "h.ito",
+          "ip": "10.24.82.22",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:55:16Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"h.ito\",\"src\":\"10.24.82.22\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1026\",\"record\":\"evt-4908f72188cf\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-61b2112ad9d9",
+          "time": "09:55:09",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.83.23",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:55:09Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.83.23\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1027\",\"record\":\"evt-61b2112ad9d9\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-d9ff9062a429",
+          "time": "09:55:32",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "m.tanaka",
+          "ip": "10.24.84.24",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:55:32Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"m.tanaka\",\"src\":\"10.24.84.24\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1028\",\"record\":\"evt-d9ff9062a429\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-08a833f0c924",
+          "time": "09:55:40",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "h.ito",
+          "ip": "10.24.80.25",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 09:55:40 office-01829d-02 sshd[2105]: Accepted publickey for h.ito from 10.24.80.25 port 41005 ssh2: ED25519 SHA256:auijiZNpejW74iBwe2BamgcVOOcY5EVy6/DqFhmDcpk",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-ade934e8bda5",
+          "time": "09:55:48",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.26",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.26 - - [20/Oct/2026:09:55:48 +0000] \"GET /favicon.ico HTTP/1.1\" 200 518 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-6c00287e6264",
+          "time": "09:55:56",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "m.tanaka",
+          "ip": "10.24.82.27",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:55:56Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"m.tanaka\",\"src\":\"10.24.82.27\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1031\",\"record\":\"evt-6c00287e6264\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-fa35f4dc57cf",
+          "time": "09:56:04",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "h.ito",
+          "ip": "10.24.83.28",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:56:04Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"h.ito\",\"src\":\"10.24.83.28\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1032\",\"record\":\"evt-fa35f4dc57cf\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-fe33e9971668",
+          "time": "09:55:28",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.84.29",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:55:28Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.84.29\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1033\",\"record\":\"evt-fe33e9971668\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-c0cb5b495271",
+          "time": "09:56:20",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "m.tanaka",
+          "ip": "10.24.80.30",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 09:56:20 office-01829d-01 sshd[2110]: Accepted publickey for m.tanaka from 10.24.80.30 port 41010 ssh2: ED25519 SHA256:C/OTgURzygN2h5eC3PZB19JRS0iJcd6+5wSDXvnuYUE",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-88e9de67cc75",
+          "time": "09:56:28",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.31",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.31 - - [20/Oct/2026:09:56:28 +0000] \"GET /dashboard HTTP/1.1\" 200 523 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-feac4f26f716",
+          "time": "09:55:38",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.82.32",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:55:38Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.82.32\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1036\",\"record\":\"evt-feac4f26f716\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-b3d2e61192c2",
+          "time": "09:56:44",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "m.tanaka",
+          "ip": "10.24.83.33",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:56:44Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"m.tanaka\",\"src\":\"10.24.83.33\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1037\",\"record\":\"evt-b3d2e61192c2\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-caac16d4fc7f",
+          "time": "09:56:52",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "h.ito",
+          "ip": "10.24.84.34",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:56:52Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"h.ito\",\"src\":\"10.24.84.34\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1038\",\"record\":\"evt-caac16d4fc7f\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-bac419f46c38",
+          "time": "09:57:00",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "s.aoki",
+          "ip": "10.24.80.35",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 09:57:00 office-01829d-02 sshd[2115]: Accepted publickey for s.aoki from 10.24.80.35 port 41015 ssh2: ED25519 SHA256:BFyW8R/S3OHMA26g+uvSbTvXDiVjrTZL4L6pli4CSvw",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-83cca077019b",
+          "time": "09:57:08",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.36",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.36 - - [20/Oct/2026:09:57:08 +0000] \"GET /assets/app.css HTTP/1.1\" 200 528 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-7c20fe808fdd",
+          "time": "09:57:16",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "h.ito",
+          "ip": "10.24.82.37",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:57:16Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"h.ito\",\"src\":\"10.24.82.37\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1041\",\"record\":\"evt-7c20fe808fdd\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-1cc925eff031",
+          "time": "09:55:57",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.83.38",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:55:57Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.83.38\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1042\",\"record\":\"evt-1cc925eff031\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-afb3e2eacabd",
+          "time": "09:57:32",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "m.tanaka",
+          "ip": "10.24.84.39",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:57:32Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"m.tanaka\",\"src\":\"10.24.84.39\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1043\",\"record\":\"evt-afb3e2eacabd\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-e93092f90e17",
+          "time": "09:57:40",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "h.ito",
+          "ip": "10.24.80.40",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 09:57:40 office-01829d-01 sshd[2120]: Accepted publickey for h.ito from 10.24.80.40 port 41020 ssh2: ED25519 SHA256:qWJIFssBTTyZV4xTXY64iH9Xhc63LZA/ZCtEVJlnKUM",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-979066fd591a",
+          "time": "09:57:48",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.41",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.41 - - [20/Oct/2026:09:57:48 +0000] \"GET /health HTTP/1.1\" 200 533 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-7ac6d8429cfa",
+          "time": "09:57:56",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "m.tanaka",
+          "ip": "10.24.82.42",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:57:56Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"m.tanaka\",\"src\":\"10.24.82.42\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1046\",\"record\":\"evt-7ac6d8429cfa\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-64bdb8b47d5a",
+          "time": "09:58:04",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "h.ito",
+          "ip": "10.24.83.43",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:58:04Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"h.ito\",\"src\":\"10.24.83.43\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1047\",\"record\":\"evt-64bdb8b47d5a\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-c2f3987c0ac0",
+          "time": "09:56:16",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.84.44",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:56:16Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.84.44\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1048\",\"record\":\"evt-c2f3987c0ac0\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-7baa52f8f04c",
+          "time": "09:58:20",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "m.tanaka",
+          "ip": "10.24.80.45",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 09:58:20 office-01829d-02 sshd[2125]: Accepted publickey for m.tanaka from 10.24.80.45 port 41025 ssh2: ED25519 SHA256:0lTJmWE6f01X74rY+qZXlf4se3SdvuXkZibMrcdBqyA",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-7a3e6ae0204a",
+          "time": "09:58:28",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.46",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.46 - - [20/Oct/2026:09:58:28 +0000] \"GET /favicon.ico HTTP/1.1\" 200 538 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-15d7623d529e",
+          "time": "09:56:26",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.82.47",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:56:26Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.82.47\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1051\",\"record\":\"evt-15d7623d529e\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-08b050b3732b",
+          "time": "09:58:44",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "m.tanaka",
+          "ip": "10.24.83.48",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:58:44Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"m.tanaka\",\"src\":\"10.24.83.48\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1052\",\"record\":\"evt-08b050b3732b\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-4967427e77ec",
+          "time": "09:58:52",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "h.ito",
+          "ip": "10.24.84.49",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:58:52Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"h.ito\",\"src\":\"10.24.84.49\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1053\",\"record\":\"evt-4967427e77ec\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-c8097fbaf66c",
+          "time": "09:59:00",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "s.aoki",
+          "ip": "10.24.80.50",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 09:59:00 office-01829d-01 sshd[2130]: Accepted publickey for s.aoki from 10.24.80.50 port 41030 ssh2: ED25519 SHA256:AeE0tMT5MQfxI/CC6VIG+kBKg+EBTuyJLNhxwBZENbw",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-e8e3da584501",
+          "time": "09:59:08",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.51",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.51 - - [20/Oct/2026:09:59:08 +0000] \"GET /dashboard HTTP/1.1\" 200 543 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-4091735892eb",
+          "time": "09:59:16",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "h.ito",
+          "ip": "10.24.82.52",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:59:16Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"h.ito\",\"src\":\"10.24.82.52\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1056\",\"record\":\"evt-4091735892eb\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-a17a549717f5",
+          "time": "09:56:45",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.83.53",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:56:45Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.83.53\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1057\",\"record\":\"evt-a17a549717f5\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-aa022f5fb5f9",
+          "time": "09:59:32",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "m.tanaka",
+          "ip": "10.24.84.54",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:59:32Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"m.tanaka\",\"src\":\"10.24.84.54\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1058\",\"record\":\"evt-aa022f5fb5f9\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-c9abb4257f76",
+          "time": "09:59:40",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "h.ito",
+          "ip": "10.24.80.55",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 09:59:40 office-01829d-02 sshd[2135]: Accepted publickey for h.ito from 10.24.80.55 port 41035 ssh2: ED25519 SHA256:R1yx6zg33YXBKSJKJn1bp0sbCnaDP/nZFEe/wKFYRoU",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-f09a6ec80888",
+          "time": "09:59:48",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.56",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.56 - - [20/Oct/2026:09:59:48 +0000] \"GET /assets/app.css HTTP/1.1\" 200 548 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-8af650820e91",
+          "time": "09:59:56",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "m.tanaka",
+          "ip": "10.24.82.57",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:59:56Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"m.tanaka\",\"src\":\"10.24.82.57\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1061\",\"record\":\"evt-8af650820e91\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-730fc611e4d3",
+          "time": "10:00:04",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "h.ito",
+          "ip": "10.24.83.58",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:00:04Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"h.ito\",\"src\":\"10.24.83.58\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1062\",\"record\":\"evt-730fc611e4d3\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-b395c9416f7e",
+          "time": "09:57:04",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.84.59",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:57:04Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.84.59\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1063\",\"record\":\"evt-b395c9416f7e\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-1be9b7a67ab8",
+          "time": "10:00:20",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "m.tanaka",
+          "ip": "10.24.80.20",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 10:00:20 office-01829d-01 sshd[2140]: Accepted publickey for m.tanaka from 10.24.80.20 port 41040 ssh2: ED25519 SHA256:t5kK+KT38By79B5Loa6pcKnMVKlqRuCflMajgtAbTT4",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-4402e431e766",
+          "time": "10:00:28",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.21",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.21 - - [20/Oct/2026:10:00:28 +0000] \"GET /health HTTP/1.1\" 200 553 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-44f4d1104907",
+          "time": "09:57:14",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.82.22",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:57:14Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.82.22\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1066\",\"record\":\"evt-44f4d1104907\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-7d9e67271837",
+          "time": "10:00:44",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "m.tanaka",
+          "ip": "10.24.83.23",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:00:44Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"m.tanaka\",\"src\":\"10.24.83.23\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1067\",\"record\":\"evt-7d9e67271837\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-fae7764a18e6",
+          "time": "10:00:52",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "h.ito",
+          "ip": "10.24.84.24",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:00:52Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"h.ito\",\"src\":\"10.24.84.24\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1068\",\"record\":\"evt-fae7764a18e6\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-deedd7fe70d9",
+          "time": "10:01:00",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "s.aoki",
+          "ip": "10.24.80.25",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 10:01:00 office-01829d-02 sshd[2145]: Accepted publickey for s.aoki from 10.24.80.25 port 41045 ssh2: ED25519 SHA256:+NIVbnDC7bfz7OEVTJr7H8+xaj9j+bL4UrUJ1Z/TD38",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-619685dfc895",
+          "time": "10:01:08",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.26",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.26 - - [20/Oct/2026:10:01:08 +0000] \"GET /favicon.ico HTTP/1.1\" 200 558 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-05f68a63ee8d",
+          "time": "10:01:16",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "h.ito",
+          "ip": "10.24.82.27",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:01:16Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"h.ito\",\"src\":\"10.24.82.27\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1071\",\"record\":\"evt-05f68a63ee8d\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-0c18794d72e6",
+          "time": "09:57:33",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.83.28",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:57:33Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.83.28\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1072\",\"record\":\"evt-0c18794d72e6\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-a38c079cd724",
+          "time": "10:01:32",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "m.tanaka",
+          "ip": "10.24.84.29",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:01:32Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"m.tanaka\",\"src\":\"10.24.84.29\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1073\",\"record\":\"evt-a38c079cd724\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-778fd1033b96",
+          "time": "10:01:40",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "h.ito",
+          "ip": "10.24.80.30",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 10:01:40 office-01829d-01 sshd[2150]: Accepted publickey for h.ito from 10.24.80.30 port 41050 ssh2: ED25519 SHA256:Z9kIT+zO3gGlZcTsawHzjrvX7BtY8i7ZY1XHgm6fuGE",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-ed6578d5ccca",
+          "time": "10:01:48",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.31",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.31 - - [20/Oct/2026:10:01:48 +0000] \"GET /dashboard HTTP/1.1\" 200 563 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-2f18068c19df",
+          "time": "10:01:56",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "m.tanaka",
+          "ip": "10.24.82.32",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:01:56Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"m.tanaka\",\"src\":\"10.24.82.32\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1076\",\"record\":\"evt-2f18068c19df\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-260bbd4e17ca",
+          "time": "10:02:04",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "h.ito",
+          "ip": "10.24.83.33",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:02:04Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"h.ito\",\"src\":\"10.24.83.33\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1077\",\"record\":\"evt-260bbd4e17ca\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-8d1dc24f10d1",
+          "time": "09:57:52",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.84.34",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:57:52Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.84.34\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1078\",\"record\":\"evt-8d1dc24f10d1\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-151da62bfc84",
+          "time": "10:02:20",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "m.tanaka",
+          "ip": "10.24.80.35",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 10:02:20 office-01829d-02 sshd[2155]: Accepted publickey for m.tanaka from 10.24.80.35 port 41055 ssh2: ED25519 SHA256:sAsD5bSvh1ovmlBbnt8TjxdJMmRbdBiLUeXv7HTx3Wc",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-e08483d71c67",
+          "time": "10:02:28",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.36",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.36 - - [20/Oct/2026:10:02:28 +0000] \"GET /assets/app.css HTTP/1.1\" 200 568 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-50db478eae8a",
+          "time": "09:58:02",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.82.37",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:58:02Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.82.37\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1081\",\"record\":\"evt-50db478eae8a\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-dbd5ec02a71e",
+          "time": "10:02:44",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "m.tanaka",
+          "ip": "10.24.83.38",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:02:44Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"m.tanaka\",\"src\":\"10.24.83.38\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1082\",\"record\":\"evt-dbd5ec02a71e\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-80f1ee9f0daf",
+          "time": "10:02:52",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "h.ito",
+          "ip": "10.24.84.39",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:02:52Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"h.ito\",\"src\":\"10.24.84.39\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1083\",\"record\":\"evt-80f1ee9f0daf\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-941aa253002b",
+          "time": "10:03:00",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "s.aoki",
+          "ip": "10.24.80.40",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 10:03:00 office-01829d-01 sshd[2160]: Accepted publickey for s.aoki from 10.24.80.40 port 41060 ssh2: ED25519 SHA256:ZfhOlbYx3L9T7EB2CV+dgYSGi6tKFbPpfG69KSTmQLk",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-9cbd2e7c5d2c",
+          "time": "10:03:08",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.41",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.41 - - [20/Oct/2026:10:03:08 +0000] \"GET /health HTTP/1.1\" 200 573 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-5bf91623a5e0",
+          "time": "10:03:16",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "h.ito",
+          "ip": "10.24.82.42",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:03:16Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"h.ito\",\"src\":\"10.24.82.42\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1086\",\"record\":\"evt-5bf91623a5e0\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-9bc06b3b8877",
+          "time": "09:58:21",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.83.43",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:58:21Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.83.43\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1087\",\"record\":\"evt-9bc06b3b8877\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-1590a04bc68c",
+          "time": "10:03:32",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "m.tanaka",
+          "ip": "10.24.84.44",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:03:32Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"m.tanaka\",\"src\":\"10.24.84.44\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1088\",\"record\":\"evt-1590a04bc68c\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-c841a25b5077",
+          "time": "10:03:40",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "h.ito",
+          "ip": "10.24.80.45",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 10:03:40 office-01829d-02 sshd[2165]: Accepted publickey for h.ito from 10.24.80.45 port 41065 ssh2: ED25519 SHA256:rmmk723xD3m3wB1H3jKKjACc/hclhEh5ZHkyFBceNsY",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-98c0a5409586",
+          "time": "10:03:48",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.46",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.46 - - [20/Oct/2026:10:03:48 +0000] \"GET /favicon.ico HTTP/1.1\" 200 578 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-339b2188db81",
+          "time": "10:03:56",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "m.tanaka",
+          "ip": "10.24.82.47",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:03:56Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"m.tanaka\",\"src\":\"10.24.82.47\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1091\",\"record\":\"evt-339b2188db81\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-659d806be8b4",
+          "time": "10:04:04",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "h.ito",
+          "ip": "10.24.83.48",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:04:04Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"h.ito\",\"src\":\"10.24.83.48\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1092\",\"record\":\"evt-659d806be8b4\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-bd7f0d153352",
+          "time": "09:58:40",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.84.49",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:58:40Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.84.49\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1093\",\"record\":\"evt-bd7f0d153352\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-2b0d16d44071",
+          "time": "10:04:20",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "m.tanaka",
+          "ip": "10.24.80.50",
+          "source": "SSH",
+          "event": "sshd: Accepted publickey",
+          "raw": "Oct 20 10:04:20 office-01829d-01 sshd[2170]: Accepted publickey for m.tanaka from 10.24.80.50 port 41070 ssh2: ED25519 SHA256:nscH3D97aHQRkiuJ1GyCGfLQAOgdSH49x2DG9On+XIs",
+          "path": "/var/log/auth.log",
+          "background": true,
+          "format": "OpenSSH syslog（合成）"
+        },
+        {
+          "id": "evt-e8632833ce0a",
+          "time": "10:04:28",
+          "offset": 0,
+          "host": "",
+          "user": "",
+          "ip": "10.24.81.51",
+          "source": "Web",
+          "event": "HTTP access",
+          "raw": "10.24.81.51 - - [20/Oct/2026:10:04:28 +0000] \"GET /dashboard HTTP/1.1\" 200 583 \"https://portal.example.test/\" \"Mozilla/5.0\"",
+          "path": "/var/log/nginx/access.log",
+          "background": true,
+          "format": "nginx combined（合成）"
+        },
+        {
+          "id": "evt-a96204c27985",
+          "time": "09:58:50",
+          "offset": 0,
+          "host": "design-lt-014",
+          "user": "k.mizuno",
+          "ip": "10.24.82.52",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T09:58:50Z\",\"event\":\"device.heartbeat\",\"hostname\":\"design-lt-014\",\"properties\":{\"host\":\"design-lt-014\",\"user\":\"k.mizuno\",\"src\":\"10.24.82.52\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1096\",\"record\":\"evt-a96204c27985\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-aeef59ad6c8d",
+          "time": "10:04:44",
+          "offset": 0,
+          "host": "office-01829d-02",
+          "user": "m.tanaka",
+          "ip": "10.24.83.53",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:04:44Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-02\",\"properties\":{\"host\":\"office-01829d-02\",\"user\":\"m.tanaka\",\"src\":\"10.24.83.53\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1097\",\"record\":\"evt-aeef59ad6c8d\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        },
+        {
+          "id": "evt-f656950ecad3",
+          "time": "10:04:52",
+          "offset": 0,
+          "host": "office-01829d-01",
+          "user": "h.ito",
+          "ip": "10.24.84.54",
+          "source": "EDR",
+          "event": "device.heartbeat",
+          "raw": "{\"timestamp\":\"2026-10-20T10:04:52Z\",\"event\":\"device.heartbeat\",\"hostname\":\"office-01829d-01\",\"properties\":{\"host\":\"office-01829d-01\",\"user\":\"h.ito\",\"src\":\"10.24.84.54\",\"operation\":\"device.heartbeat\",\"resource\":\"business-home\",\"status\":\"success\",\"bytes\":\"1098\",\"record\":\"evt-f656950ecad3\"}}",
+          "path": "/var/log/socroom/edr.jsonl",
+          "background": true,
+          "format": "SOCroom JSON（合成）"
+        }
+      ],
+      "documents": [
+        {
+          "id": "rsp-doc-assets",
+          "title": "設計端末の資産・接続対応表",
+          "kind": "資産・アカウント",
+          "body": "10月20日10:00 UTCの管理台帳。design-lt-014 / DEV-DESIGN-014 / 10.24.60.14 は設計部の水野 梓（k.mizuno）の貸与端末で、顧客設計資料を扱う。design-lt-041 / DEV-DESIGN-041 / 10.24.60.41 は配布検証担当が管理する別の端末。ホスト名・IPの数字が似ているが同じ機器ではない。操作対象は最新チェックインのdevice_idと台帳を照合して選ぶ。"
+        },
+        {
+          "id": "rsp-doc-change",
+          "title": "通常の設計ツール更新 CHG-DESIGN-214",
+          "kind": "作業申請",
+          "body": "承認対象は design-lt-041 / DEV-DESIGN-041 のみ。10月20日10:00〜10:15 UTC、svc-design-update が design-update-service.exe から C:/Program Files/Aonagi/Design/draft-helper.exe を起動する。署名は AonagiSoftware の有効な署名、sha256=941a816c273aef692efa228534b7d05c8c41ee48d9a0a414b51609b43727b87a、通信先は updates.aonagi.example。設計ツールの配布検証を行う通常変更であり、端末隔離の実施権限を与える申請ではない。"
+        },
+        {
+          "id": "rsp-doc-procedure",
+          "title": "緊急端末対応 IR-ENDPOINT-04",
+          "kind": "対応手順",
+          "body": "IR-ENDPOINT-04 はCSIRT責任者が事前承認した緊急手順。未承認の実行に伴う資格情報メモリへのアクセスと、当該プロセスの外部通信継続を確認した場合、SOC当番は資産台帳・最新チェックイン・証拠を照合して対象端末のネットワーク隔離を依頼できる。design-lt-014 の利用者は代替端末へ切替可能で、設計部責任者は本条件での一時的な業務停止を了承済み。作業対象を design-lt-041 へ広げない。教材の EP-ISOLATION-LAB-04 は一般通信を制限し、管理通信だけを維持する設定で、この合成環境ではVPN・Proxyを経由しない管理経路をNET-D014-1020-1000で事前確認済み。実製品では構成によって管理到達性が異なり、すべてのEPPで同じ挙動を保証するものではない。依頼しただけで完了と扱わず、対象・適用結果・一般通信制限・管理通信の状態を確認する。ログと担当者への連絡を記録する。"
+        },
+        {
+          "id": "rsp-doc-isolation",
+          "title": "ファイル隔離・端末隔離・解除の違い",
+          "kind": "対応手順",
+          "body": "ファイル隔離は指定したファイルを保管領域へ移すなどして利用を制限する処置で、既に起動しているプロセスの停止や端末全体のネットワーク遮断を意味しない。端末のネットワーク隔離は拡散・外部通信を抑えるための処置で、駆除、侵入経路の修正、認証情報の保護、過去の情報流出の解決とは別である。この演習の操作画面はベンダー共通のSOCroom模擬画面で、Microsoft Defenderその他の製品画面やAPIの完全再現ではない。解除はCSIRT・端末管理担当が証拠保全、調査、原因除去・復旧、必要な認証情報の保護、再接続時の監視計画を確認し、業務責任者とCSIRT責任者が承認した後に別途実施する。本演習では解除条件を引き継ぎ、解除ボタンの操作は行わない。"
+        },
+        {
+          "id": "rsp-doc-coverage",
+          "title": "今回の端末記録と観測の限界",
+          "kind": "収集状況",
+          "body": "この画面は10月20日10:05:45 UTCまでの端末センサーの固定抜粋。プロセス作成、対象プロセスへのアクセス、プロセスGUIDに対応する通信先・許可結果・送信量、ファイル処置、管理チェックインを収録する。通信の内容、読み取られた資格情報の内容、外部での利用、ほかの端末への展開全体は収録していない。bytes_sent や通信成功だけで顧客資料の流出を確定しない。隔離操作の依頼・適用確認は画面内の応答状況を別に確認し、元のログの時刻と勤務経過時間を混同しない。"
+        }
+      ],
+      "contact": {
+        "id": "rsp-contact",
+        "name": "水野 梓",
+        "role": "設計部・端末利用者",
+        "question": "通知が出る前後に開いたもの、現在の端末の所在、業務を止めた場合の代替手段を確認する",
+        "replyId": "rsp-reply",
+        "replyTitle": "水野からの回答：直前の操作と業務の代替",
+        "replyText": "取引先から届いた設計レビューというメールのリンクから、閲覧に必要と書かれたアプリを保存して開きました。しばらくしてファイルの隔離通知が出ました。今は机の上にあり、電源は入っています。部内の予備端末で作業を続けられると責任者から聞いています。通知後に裏で何が動いているかは分かりません。",
+        "delaySeconds": 20,
+        "questions": [
+          {
+            "id": "vague",
+            "question": "端末の件について教えてください",
+            "replyId": "rsp-reply-vague",
+            "replyTitle": "水野からの回答：確認する内容",
+            "replyText": "何かの通知が出たので作業を止めました。どの画面や操作を確認すればよいでしょうか。",
+            "delaySeconds": 20
+          },
+          {
+            "id": "leading",
+            "question": "ファイルが隔離されたので、もう問題は起きていませんよね",
+            "replyId": "rsp-reply-leading",
+            "replyTitle": "水野からの回答：通知から分かること",
+            "replyText": "隔離されたという通知は見ましたが、通信が止まったかや裏の処理は私には分かりません。",
+            "delaySeconds": 20
+          },
+          {
+            "id": "specific",
+            "question": "通知が出る前後に開いたもの、現在の端末の所在、業務を止めた場合の代替手段を確認する",
+            "replyId": "rsp-reply",
+            "replyTitle": "水野からの回答：直前の操作と業務の代替",
+            "replyText": "取引先から届いた設計レビューというメールのリンクから、閲覧に必要と書かれたアプリを保存して開きました。しばらくしてファイルの隔離通知が出ました。今は机の上にあり、電源は入っています。部内の予備端末で作業を続けられると責任者から聞いています。通知後に裏で何が動いているかは分かりません。",
+            "delaySeconds": 20
+          }
+        ]
+      },
+      "response": {
+        "kind": "endpoint-isolation",
+        "target": "design-lt-014",
+        "authorizationId": "IR-ENDPOINT-04",
+        "delaySeconds": 45,
+        "requiredEvidenceGroups": [
+          [
+            "rsp-doc-assets"
+          ],
+          [
+            "rsp-log-exec"
+          ],
+          [
+            "rsp-log-net-latest"
+          ],
+          [
+            "rsp-doc-procedure"
+          ]
+        ],
+        "authorizationOptions": [
+          {
+            "value": "IR-ENDPOINT-04",
+            "label": "IR-ENDPOINT-04 — 緊急端末対応手順"
+          },
+          {
+            "value": "CHG-DESIGN-214",
+            "label": "CHG-DESIGN-214 — 設計ツール更新申請"
+          }
+        ]
+      },
+      "answer": {
+        "verdict": "incident",
+        "priorities": [
+          "high"
+        ],
+        "actions": [
+          "contain"
+        ],
+        "target": "design-lt-014",
+        "targetType": "host",
+        "evidenceGroups": [
+          [
+            "rsp-doc-assets"
+          ],
+          [
+            "rsp-log-exec"
+          ],
+          [
+            "rsp-log-net-latest"
+          ],
+          [
+            "rsp-doc-procedure"
+          ],
+          [
+            "rsp-doc-change"
+          ]
+        ],
+        "summary": "design-lt-014 / DEV-DESIGN-014 で未承認の draft-helper.exe が実行され、資格情報メモリへのアクセスと同じ実行GUIDの外部通信を確認した。10:03:02のファイル隔離後も10:05:41に同GUIDの通信が続いている。CHG-DESIGN-214の対象・親・配置先・実体・宛先とは一致しない。IR-ENDPOINT-04に基づき対象端末のネットワーク隔離を依頼し、画面の対象と適用確認を記録する。",
+        "nextStep": "CSIRT・端末管理担当と設計部責任者へ即時連絡し、design-lt-014の隔離依頼と実際の適用結果・管理通信の状態を引き継ぐ。固定ログだけで処置成功と判断せず、応答状況を確認する。証拠を保全し、資格情報への影響、侵入経路、他端末への展開、通信内容を調査する。業務は代替端末へ切り替える。原因除去・復旧・認証情報保護と監視計画を確認し、責任者の承認後に解除を判断する。",
+        "explanation": "ファイルが隔離された後も、先に起動した同じGUIDのプロセスから外部通信が記録されています。ファイル処置だけで対応を終えられません。似た名前の別端末や通常更新とは対象・実行条件を区別し、事前承認手順と業務代替を根拠にdesign-lt-014を隔離します。依頼中と適用確認済みは別です。今回の処置で一般通信を制限できても、駆除や侵入経路修正、過去の流出の有無は確定しません。解除は調査・復旧と責任者承認の後に判断します。",
+        "lessons": [
+          "ファイル隔離と端末のネットワーク隔離を区別する。",
+          "端末名・IPだけでなく、device_idと管理台帳を照合して誤隔離を防ぐ。",
+          "対応権限と業務影響を確認し、依頼後の適用結果まで追跡する。",
+          "隔離は駆除ではない。観測の限界と解除条件を引き継ぐ。"
+        ]
+      },
+      "hints": [
+        "ファイル処置の時刻より後に、同じ実行GUIDの通信があるか確認します。通常更新の対象・親・配置先とも比べてください。",
+        "端末名の数字が似た別機器があります。資産台帳と最新チェックインを照合し、対応手順で権限・業務影響・管理経路を確認します。",
+        "判断と根拠がそろったら対応操作を依頼し、依頼中から適用確認までを確かめます。ファイル処置だけで終了せず、未確認事項と解除の条件を報告してください。"
+      ],
+      "targetType": "host",
+      "targets": [
+        {
+          "value": "design-lt-014",
+          "label": "design-lt-014 — DEV-DESIGN-014 / 10.24.60.14"
+        },
+        {
+          "value": "design-lt-041",
+          "label": "design-lt-041 — DEV-DESIGN-041 / 10.24.60.41"
+        }
+      ],
+      "bridge": {
+        "stage": "independent",
+        "objective": "自分で調査の順序を決め、対象・権限・業務影響を確認して必要な処置を依頼し、その結果と残る調査・解除条件を引き継ぐ。",
+        "focus": "調査と判断から、処置の実行確認・引き継ぎまでをつなげる。",
+        "steps": []
+      },
+      "backgroundHosts": [
+        "office-01829d-01",
+        "office-01829d-02"
+      ]
     }
   ]
 };
@@ -32231,6 +33630,58 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
     if (replyAvailable(session, caseId, question.id)) logHistory(session, 'contact-reply', caseId, '担当者の回答を受信: ' + question.replyTitle);
     return true;
   }
+  function isolationConfig(caseId) {
+    const response = getCase(caseId)?.response;
+    if (!response || response.kind !== 'endpoint-isolation') throw new Error('このケースには端末隔離の操作はありません。');
+    return response;
+  }
+  function isolationState(session, caseId, at = session.elapsed) {
+    const config = isolationConfig(caseId);
+    recordFor(session, caseId);
+    number(at, '隔離状態の確認時刻', 0, session.elapsed);
+    const response = session.records[caseId].response;
+    if (!response || response.requestAt > at) return { status: 'not-requested', target: config.target, requestAt: null, completedAt: null, confirmedAt: null, reason: '', authorizationId: '' };
+    const ready = response.requestAt + config.delaySeconds;
+    const succeeded = ready <= at;
+    return { status: succeeded ? 'succeeded' : 'pending', target: response.target, requestAt: response.requestAt, completedAt: succeeded ? ready : null, confirmedAt: succeeded && response.confirmedAt !== null && response.confirmedAt <= at ? response.confirmedAt : null, reason: response.reason, authorizationId: response.authorizationId };
+  }
+  function isolationFields(caseId, value) {
+    const config = isolationConfig(caseId);
+    if (!plain(value) || value.target !== config.target) throw new Error('隔離対象の端末が一致しません。');
+    if (value.authorizationId !== config.authorizationId) throw new Error('隔離の承認IDが一致しません。');
+    const reason = text(typeof value.reason === 'string' ? value.reason.trim() : value.reason, '隔離理由', 500);
+    if (reason.length < 10 || reason.length > 500) throw new Error('隔離理由は10〜500文字で記録してください。');
+    if (value.impactAcknowledged !== true) throw new Error('端末隔離による業務影響を確認してください。');
+    return { target: config.target, authorizationId: config.authorizationId, reason, impactAcknowledged: true };
+  }
+  function isolationEvidence(session, caseId, evidenceIds, at) {
+    const ids = evidenceFor(session, evidenceIds, at);
+    if (!isolationConfig(caseId).requiredEvidenceGroups.every(group => group.some(id => ids.includes(id)))) throw new Error('端末隔離に必要な根拠を登録してください。');
+    return ids;
+  }
+  function requestIsolation(session, caseId, options) {
+    const record = mutable(session, caseId);
+    const config = isolationConfig(caseId);
+    if (record.response) return false;
+    const fields = isolationFields(caseId, options);
+    const evidenceIds = isolationEvidence(session, caseId, record.evidenceIds, session.elapsed);
+    if (session.elapsed + config.delaySeconds > MAX_TIME) throw new Error('隔離の完了を確認できる経過時間を超えています。');
+    // Preserve the evidence available when authorization was exercised, even if
+    // the analyst later narrows the evidence attached to the handoff report.
+    record.response = { ...fields, requestAt: session.elapsed, confirmedAt: null, evidenceIds };
+    record.status = 'investigating';
+    logHistory(session, 'isolation-request', caseId, '端末隔離を要求: ' + fields.target + ' / 承認 ' + fields.authorizationId);
+    return true;
+  }
+  function confirmIsolation(session, caseId) {
+    const record = mutable(session, caseId);
+    const state = isolationState(session, caseId);
+    if (state.status !== 'succeeded') throw new Error('端末隔離の成功を確認できるまで待ってください。');
+    if (record.response.confirmedAt !== null) return false;
+    record.response.confirmedAt = session.elapsed;
+    logHistory(session, 'isolation-confirm', caseId, '端末隔離の成功と管理通信の維持を確認: ' + state.target);
+    return true;
+  }
   function markInvestigating(session, caseId) {
     const record = mutable(session, caseId);
     if (record.status === 'investigating') return false;
@@ -32253,7 +33704,7 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
     record.evidenceIds.splice(index, 1);
     return true;
   }
-  function assessmentFor(session, caseId, draft, evidenceIds, at, reviewed = false) {
+  function assessmentFor(session, caseId, draft, evidenceIds, at, reviewed = false, responseConfirmedAt) {
     const c = getCase(caseId);
     const answer = c.answer;
     const usable = evidenceIds.filter(id => evidenceAvailableAt(session, id, at));
@@ -32277,7 +33728,12 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
       { id: 'summary', label: '状況の記録', passed: summaryAnchored, detail: '対象・ケースの識別子・証拠ID・時刻（HH:MM）のいずれかを含めます。文章の意味や正確性は採点しません' },
       { id: 'nextStep', label: '次の対応の依頼先', passed: recipientPresent, detail: '担当者・責任者・管理者・SOCなどの依頼先を記載します。対応内容の妥当性は文章から自動判定しません' }
     ];
-    const weights = { verdict: 15, priority: 10, action: 20, target: 10, evidence: 20, evidenceFocus: 10, summary: 10, nextStep: 5 };
+    if (c.response?.kind === 'endpoint-isolation') {
+      const state = isolationState(session, caseId, at);
+      const confirmedAt = responseConfirmedAt === undefined ? state.confirmedAt : responseConfirmedAt;
+      checks.push({ id: 'response', label: '端末隔離の結果確認', passed: state.status === 'succeeded' && confirmedAt !== null && confirmedAt === state.confirmedAt, detail: '承認された対象へ隔離を要求し、成功と管理通信の維持を確認します（配点なし・完了に必要）' });
+    }
+    const weights = { verdict: 15, priority: 10, action: 20, target: 10, evidence: 20, evidenceFocus: 10, summary: 10, nextStep: 5, response: 0 };
     let score = checks.reduce((sum, check) => sum + (check.id === 'evidence' ? 20 * groups.filter(Boolean).length / Math.max(1, groups.length) : check.passed ? weights[check.id] : 0), 0);
     const passed = checks.every(check => check.passed);
     // Keep scoring tied to the original deadline, even after entering unlimited
@@ -32301,6 +33757,10 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
     const assessment = assessCase(session, caseId);
     record.draft = cleanDraft(record.draft);
     record.submission = { at: session.elapsed, draft: clone(record.draft), evidenceIds: record.evidenceIds.slice() };
+    // A submit and a later confirmation can occur between the same two timer
+    // ticks. Preserve their order rather than treating equal timestamps as proof
+    // that confirmation had already happened when this report was submitted.
+    if (getCase(caseId).response?.kind === 'endpoint-isolation') record.submission.responseConfirmedAt = isolationState(session, caseId).confirmedAt;
     if (session.migration?.untimedReview) record.submission.reviewed = true;
     record.attempts += 1;
     record.assessment = assessment;
@@ -32358,6 +33818,10 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
         const ready = requested + question.delaySeconds * DIFFICULTIES[session.difficulty].replyMultiplier;
         if (before < ready && ready <= end) timedEvents.push({ at: ready, type: 'contact-reply', caseId: id, detail: '担当者の回答を受信: ' + question.replyTitle });
       });
+      if (record.response) {
+        const ready = record.response.requestAt + isolationConfig(id).delaySeconds;
+        if (before < ready && ready <= end) timedEvents.push({ at: ready, type: 'isolation-succeeded', caseId: id, detail: '端末隔離が成功。管理通信は維持: ' + record.response.target });
+      }
     });
     timedEvents.sort((a, b) => a.at - b.at).forEach(event => {
       session.elapsed = event.at;
@@ -32402,6 +33866,10 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
       if (record.arrival !== null && record.arrival > checkpoint) { session.records[id] = blankRecord(null); continue; }
       record.contactRequests = Object.fromEntries(Object.entries(record.contactRequests).filter(([, at]) => at <= checkpoint));
       record.requestAt = requestTime(record, contactQuestion(id));
+      if (record.response) {
+        if (record.response.requestAt > checkpoint) delete record.response;
+        else if (record.response.confirmedAt !== null && record.response.confirmedAt > checkpoint) record.response.confirmedAt = null;
+      }
       record.evidenceIds = record.evidenceIds.filter(evidenceId => evidenceAvailable(session, evidenceId));
       if (record.submission && record.submission.at > checkpoint) {
         record.submission = null;
@@ -32485,21 +33953,38 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
       // Other cases are populated below; validate cross-case evidence after every record is restored.
       if (!Array.isArray(raw.evidenceIds) || raw.evidenceIds.length > evidenceMap.size) throw new Error('証拠一覧が不正です。');
       record.evidenceIds = raw.evidenceIds.slice();
+      if (Object.hasOwn(raw, 'response')) {
+        const config = isolationConfig(id);
+        const allowed = ['target', 'authorizationId', 'reason', 'impactAcknowledged', 'requestAt', 'confirmedAt', 'evidenceIds'];
+        if (!plain(raw.response) || Object.keys(raw.response).some(key => !allowed.includes(key))) throw new Error('端末隔離の保存内容が不正です。');
+        const fields = isolationFields(id, raw.response);
+        const requestAt = number(raw.response.requestAt, '隔離要求時刻', expectedArrival === null ? MAX_TIME + 1 : expectedArrival, Math.min(session.elapsed, MAX_TIME - config.delaySeconds));
+        const confirmedAt = raw.response.confirmedAt === null ? null : number(raw.response.confirmedAt, '隔離確認時刻', requestAt + config.delaySeconds, session.elapsed);
+        if (!Array.isArray(raw.response.evidenceIds) || raw.response.evidenceIds.length > evidenceMap.size) throw new Error('隔離要求時の根拠一覧が不正です。');
+        record.response = { ...fields, requestAt, confirmedAt, evidenceIds: raw.response.evidenceIds.slice() };
+      }
       if (raw.submission !== null && raw.submission !== undefined) {
         if (!plain(raw.submission) || expectedArrival === null || record.attempts < 1) throw new Error('提出履歴が不正です。');
         const at = number(raw.submission.at, '提出時刻', expectedArrival, session.elapsed);
         const draft = cleanDraft(raw.submission.draft);
         if (!Array.isArray(raw.submission.evidenceIds) || raw.submission.evidenceIds.length > evidenceMap.size) throw new Error('提出時の証拠一覧が不正です。');
         record.submission = { at, draft, evidenceIds: raw.submission.evidenceIds.slice() };
+        if (getCase(id).response?.kind === 'endpoint-isolation') {
+          if (!Object.hasOwn(raw.submission, 'responseConfirmedAt')) throw new Error('提出時の隔離確認状態が不足しています。');
+          const confirmedAt = raw.submission.responseConfirmedAt === null ? null : number(raw.submission.responseConfirmedAt, '提出時の隔離確認時刻', 0, at);
+          const state = isolationState(session, id, at);
+          if (confirmedAt !== null ? confirmedAt !== state.confirmedAt : state.confirmedAt !== null && state.confirmedAt < at) throw new Error('提出時の隔離確認状態と処置履歴が一致しません。');
+          record.submission.responseConfirmedAt = confirmedAt;
+        } else if (Object.hasOwn(raw.submission, 'responseConfirmedAt')) throw new Error('端末隔離がないケースの提出状態です。');
         if (raw.submission.reviewed !== undefined) {
           if (typeof raw.submission.reviewed !== 'boolean' || (raw.submission.reviewed && !session.migration?.untimedReview)) throw new Error('旧版の見直し提出状態が不正です。');
           record.submission.reviewed = raw.submission.reviewed;
         }
         // This first pass only establishes low-mode arrival ordering from source-case evidence.
-        record.assessment = assessmentFor(session, id, draft, record.submission.evidenceIds, at, record.submission.reviewed);
+        record.assessment = assessmentFor(session, id, draft, record.submission.evidenceIds, at, record.submission.reviewed, record.submission.responseConfirmedAt);
         if (record.assessment.passed) { record.status = 'resolved'; record.resolvedAt = at; }
       }
-      if (record.status !== 'resolved' && (record.attempts || Object.keys(record.contactRequests).length || record.evidenceIds.length || raw.status === 'investigating')) record.status = 'investigating';
+      if (record.status !== 'resolved' && (record.attempts || Object.keys(record.contactRequests).length || record.evidenceIds.length || record.response || raw.status === 'investigating')) record.status = 'investigating';
     }
     for (const id of ids) {
       const record = session.records[id];
@@ -32511,9 +33996,10 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
         if (record.submission) record.submission.evidenceIds = record.submission.evidenceIds.filter(evidenceId => evidenceAvailableAt(session, evidenceId, record.submission.at));
       }
       record.evidenceIds = evidenceFor(session, record.evidenceIds);
+      if (record.response) record.response.evidenceIds = isolationEvidence(session, id, record.response.evidenceIds, record.response.requestAt);
       if (record.submission) {
         record.submission.evidenceIds = evidenceFor(session, record.submission.evidenceIds, record.submission.at);
-        record.assessment = assessmentFor(session, id, record.submission.draft, record.submission.evidenceIds, record.submission.at, record.submission.reviewed);
+        record.assessment = assessmentFor(session, id, record.submission.draft, record.submission.evidenceIds, record.submission.at, record.submission.reviewed, record.submission.responseConfirmedAt);
         record.status = record.assessment.passed ? 'resolved' : 'investigating';
         record.resolvedAt = record.assessment.passed ? record.submission.at : null;
       }
@@ -32538,7 +34024,7 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
       if (afterDeadline && !inTraining && !inReview) throw new Error('重要案件の期限後の提出は、時間切れ後の練習モードでのみ有効です。');
     }
     if (!Array.isArray(value.history) || value.history.length > MAX_HISTORY) throw new Error('操作履歴が多すぎるか不正です。');
-    const historyTypes = ['arrival', 'contact-request', 'contact-reply', 'investigate', 'submit-pass', 'submit-revise', 'complete', 'gameover', 'pause', 'resume', 'training', 'retry', 'restore'];
+    const historyTypes = ['arrival', 'contact-request', 'contact-reply', 'isolation-request', 'isolation-succeeded', 'isolation-confirm', 'investigate', 'submit-pass', 'submit-revise', 'complete', 'gameover', 'pause', 'resume', 'training', 'retry', 'restore'];
     session.history = value.history.map(item => {
       if (!plain(item) || !historyTypes.includes(item.type) || (item.caseId !== null && !ids.includes(item.caseId))) throw new Error('操作履歴が不正です。');
       return { at: number(item.at, '履歴時刻'), type: item.type, caseId: item.caseId, detail: text(item.detail, '履歴', 500) };
@@ -32574,13 +34060,18 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
         lines.push('[' + id + '] ' + content);
       });
       if (!record.evidenceIds.length) lines.push('未添付');
+      if (c.response?.kind === 'endpoint-isolation') {
+        const state = isolationState(session, c.id);
+        const when = at => at === null ? '未実施' : clock(at);
+        lines.push('端末隔離シミュレーション:', '隔離対象: ' + state.target, '承認ID: ' + (state.authorizationId || '未要求'), '隔離理由: ' + (state.reason || '未記入'), '要求時刻: ' + when(state.requestAt), '完了時刻: ' + when(state.completedAt), '結果確認時刻: ' + when(state.confirmedAt), '管理通信: ' + (state.status === 'succeeded' ? '維持（教材内の隔離結果）' : '結果未確認'), '隔離解除はこの演習の範囲外です。解除条件と確認担当を次の対応へ引き継ぎます。');
+      }
       lines.push('');
     }
     lines.push('操作履歴:');
     session.history.forEach(item => lines.push(clock(item.at) + ' ' + (item.caseId ? '[' + item.caseId + '] ' : '') + item.detail));
     return lines.join('\n');
   }
-  return Object.freeze({ DIFFICULTIES, LABELS, PARALLEL_CASE_IDS, createSession, getCase, activeCases, visibleLogs, evidenceAvailable, evidenceLimit, getContactQuestions, availableReplies, replyAvailable, requestContact, advance, markInvestigating, addEvidence, removeEvidence, submitCase, assessCase, getDeadline, pause, resume, continueTraining, retryCheckpoint, hydrate, report });
+  return Object.freeze({ DIFFICULTIES, LABELS, PARALLEL_CASE_IDS, createSession, getCase, activeCases, visibleLogs, evidenceAvailable, evidenceLimit, getContactQuestions, availableReplies, replyAvailable, requestContact, requestIsolation, isolationState, confirmIsolation, advance, markInvestigating, addEvidence, removeEvidence, submitCase, assessCase, getDeadline, pause, resume, continueTraining, retryCheckpoint, hydrate, report });
 }));
 </script>
 <script>/*
@@ -33810,7 +35301,7 @@ SOFTWARE.
   const clone = value => JSON.parse(JSON.stringify(value));
 
   function create() {
-    if (CASE_IDS.length !== 5) throw new Error('ガイド付き実務演習の教材を読み込めません。');
+    if (CASE_IDS.length !== 6) throw new Error('ガイド付き実務演習の教材を読み込めません。');
     return { version: 1, index: 0, guide: { step: 0, seen: [] }, completed: [], reflections: {}, reviewArchive: {}, reviewWorkspaces: {} };
   }
   function currentCase(course) {
@@ -33947,7 +35438,7 @@ SOFTWARE.
   return Object.freeze({ CASE_IDS, create, currentCase, stepComplete, mark, normalize, finish, advance, resumeArchived, hydrate });
 }));
 </script>
-<script>/* SOCroom v0.6.0 — offline analyst workbench */
+<script>/* SOCroom v0.7.0 — offline analyst workbench */
 (() => {
   'use strict';
   const D = globalThis.SOC_DATA, E = globalThis.SocEngine, T = globalThis.SocTutorial, B = globalThis.SocBridge;
@@ -34098,7 +35589,7 @@ SOFTWARE.
     bridge=course;session=next;terminal=nextTerminal;ui=freshUI();screen='work';bridgeContextOpen=false;
     if(session.phase==='paused')E.resume(session);
     prepareBridgeStep();syncTerminal();lastTick=performance.now();lastSave=session.elapsed;save(true);render();checkOutcome();
-    if(session.phase!=='completed')notify(`実務演習 ${bridge.index+1} / 5。時間制限はありません。`);
+    if(session.phase!=='completed')notify(`実務演習 ${bridge.index+1} / ${B.CASE_IDS.length}。時間制限はありません。`);
   }
   function exitBridge(){
     if(!bridge)return;closeModal(false);if(running())E.pause(session);save(true);
@@ -34106,10 +35597,10 @@ SOFTWARE.
     session=original?.session||null;terminal=original?.terminal||null;ui=original?.ui||freshUI();if(original)home=original.home;
     screen='home';lastTick=performance.now();lastSave=session?.elapsed||0;render();
   }
-  function restartBridge(){modal('実務演習を最初から',`<p>5件のガイド付き実務演習の進捗をリセットします。通常勤務と操作チュートリアルはそのまま残ります。</p><p>現在の実務演習を残したい場合は、先に保存してください。</p>`,`<button class="btn" data-action="bridge-export-saved">現在の実務演習を保存</button><button class="btn ghost" data-action="close-dialog">戻る</button><button class="btn primary" data-action="bridge-reset-confirmed">最初から始める</button>`);}
+  function restartBridge(){modal('実務演習を最初から',`<p>${B.CASE_IDS.length}件のガイド付き実務演習の進捗をリセットします。通常勤務と操作チュートリアルはそのまま残ります。</p><p>現在の実務演習を残したい場合は、先に保存してください。</p>`,`<button class="btn" data-action="bridge-export-saved">現在の実務演習を保存</button><button class="btn ghost" data-action="close-dialog">戻る</button><button class="btn primary" data-action="bridge-reset-confirmed">最初から始める</button>`);}
   function renderBridgeEntry(){
-    const completed=Array.isArray(bridgeSaved?.bridge?.completed)?Math.min(5,bridgeSaved.bridge.completed.length):0;
-    return `<section class="bridge-entry" aria-labelledby="bridge-entry-title"><div class="bridge-entry-heading"><div><span class="eyebrow accent">GUIDED PRACTICE / 専用ケース 5件</span><h2 id="bridge-entry-title">操作が分かったら、調査をつなげよう。</h2><p>何を調べ、何を証拠に残し、どう報告するか。案内を少しずつ減らしながら、通常勤務へ進む準備をします。</p></div><span class="badge good">全件 時間制限なし</span></div><ol class="bridge-roadmap">${B.CASE_IDS.map((id,i)=>{const c=E.getCase(id);return `<li class="${i<completed?'done':''}"><span class="mono">${i<completed?'✓':String(i+1).padStart(2,'0')}</span><div><small>${esc(bridgeStageLabels[c.bridge.stage])}</small><strong>${esc(c.title)}</strong><p>${esc(c.bridge.focus)}</p></div></li>`;}).join('')}</ol><div class="bridge-entry-footer"><p class="small muted">${completed===5?'5件の対応を完了しました。次は「難易度 低」の通常勤務へ。':`${completed} / 5 件の対応を完了 · 1件ずつ取り組みます。`}<br>通常勤務・操作チュートリアルとは別に進捗を保存します。</p><div class="flex wrap">${bridgeSaved?`<button class="btn ghost compact" data-action="bridge-restart">最初から</button><button class="btn primary" data-action="bridge-resume">${completed===5?'最後の振り返りを見る':'実務演習の続きから'} ${icon('arrow')}</button>`:`<button class="btn primary" data-action="bridge-start">ガイド付き実務演習を始める ${icon('arrow')}</button>`}</div></div></section>`;
+    const completed=Array.isArray(bridgeSaved?.bridge?.completed)?Math.min(B.CASE_IDS.length,bridgeSaved.bridge.completed.length):0;
+    return `<section class="bridge-entry" aria-labelledby="bridge-entry-title"><div class="bridge-entry-heading"><div><span class="eyebrow accent">GUIDED PRACTICE / 専用ケース ${B.CASE_IDS.length}件</span><h2 id="bridge-entry-title">操作が分かったら、調査をつなげよう。</h2><p>何を調べ、何を証拠に残し、どう報告するか。案内を少しずつ減らし、最後は端末隔離の依頼・結果確認までつなげます。</p></div><span class="badge good">全件 時間制限なし</span></div><ol class="bridge-roadmap">${B.CASE_IDS.map((id,i)=>{const c=E.getCase(id);return `<li class="${i<completed?'done':''}"><span class="mono">${i<completed?'✓':String(i+1).padStart(2,'0')}</span><div><small>${esc(bridgeStageLabels[c.bridge.stage])}</small><strong>${esc(c.title)}</strong><p>${esc(c.bridge.focus)}</p></div></li>`;}).join('')}</ol><div class="bridge-entry-footer"><p class="small muted">${completed===B.CASE_IDS.length?'6件の対応を完了しました。次は「難易度 低」の通常勤務へ。':`${completed} / ${B.CASE_IDS.length} 件の対応を完了 · 1件ずつ取り組みます。`}<br>通常勤務・操作チュートリアルとは別に進捗を保存します。</p><div class="flex wrap">${bridgeSaved?`<button class="btn ghost compact" data-action="bridge-restart">最初から</button><button class="btn primary" data-action="bridge-resume">${completed===B.CASE_IDS.length?'最後の振り返りを見る':'実務演習の続きから'} ${icon('arrow')}</button>`:`<button class="btn primary" data-action="bridge-start">ガイド付き実務演習を始める ${icon('arrow')}</button>`}</div></div></section>`;
   }
   function renderBridgeGuide(){
     const c=selected(),meta=c.bridge,step=bridgeStep(),resolved=record().status==='resolved';
@@ -34121,7 +35612,7 @@ SOFTWARE.
     }else if(meta.stage==='checklist'){
       body=`<p class="small muted">調べる順番と使うツールは自分で選びます。作業を行うと該当する項目にチェックが付きます。チェックは操作の実施を示し、判断の正しさは提出時に確認します。</p><ul class="bridge-checklist">${meta.steps.map(step=>{const done=B.stepComplete(step,bridge,session);return `<li class="${done?'done':''}" data-check="${esc(step.id)}"><span aria-label="${done?'実施済み':'未実施'}">${done?'✓':'○'}</span>${esc(step.title)}</li>`;}).join('')}</ul>`;
     }else body='<p class="bridge-independent">この1件は、調査の順番・必要な証拠・判断と引き継ぎを自分で組み立てます。提出後に報告を振り返れます。行き詰まったら「調査のヒント」も利用できます。</p>';
-    return `<section class="bridge-guide" id="bridge-guide" aria-label="ガイド付き実務演習" data-stage="${esc(meta.stage)}" data-step="${esc(step?.id||'independent')}"><div class="bridge-guide-heading"><span class="badge good">実務演習 ${bridge.index+1} / 5</span><strong>${esc(bridgeStageLabels[meta.stage])}</strong><span class="small muted">時間制限なし</span><button class="btn ghost compact" data-action="bridge-exit">中断して勤務選択へ</button></div><p class="bridge-objective"><strong>今回の目標</strong>　${esc(meta.objective)}</p><div class="bridge-guide-body">${body}</div></section>`;
+    return `<section class="bridge-guide" id="bridge-guide" aria-label="ガイド付き実務演習" data-stage="${esc(meta.stage)}" data-step="${esc(step?.id||'independent')}"><div class="bridge-guide-heading"><span class="badge good">実務演習 ${bridge.index+1} / ${B.CASE_IDS.length}</span><strong>${esc(bridgeStageLabels[meta.stage])}</strong><span class="small muted">時間制限なし</span><button class="btn ghost compact" data-action="bridge-exit">中断して勤務選択へ</button></div><p class="bridge-objective"><strong>今回の目標</strong>　${esc(meta.objective)}</p><div class="bridge-guide-body">${body}</div></section>`;
   }
   function highlightBridge(force=false){
     document.querySelectorAll('.bridge-target,.bridge-pulse').forEach(el=>{el.classList.remove('bridge-target','bridge-pulse');if(el.getAttribute('aria-describedby')==='bridge-instruction')el.removeAttribute('aria-describedby');});
@@ -34147,12 +35638,12 @@ SOFTWARE.
   function showBridgeReview(){
     if(!bridge||session.phase!=='completed')return;
     const c=selected(),r=record(),a=c.answer;
-    modal('実務演習の振り返り',`<span class="badge good">実務演習 ${bridge.index+1} / 5 完了</span><h3>${esc(c.title)}</h3><p>${esc(a.explanation)}</p><div class="bridge-comparison"><section><h3>あなたの報告</h3><p class="report-text">${esc(r.draft.summary)}</p><h3>あなたの引き継ぎ</h3><p class="report-text">${esc(r.draft.nextStep)}</p><p class="small">登録した根拠：${r.evidenceIds.map(esc).join('、')}</p></section><section><h3>報告の例</h3><p class="report-text">${esc(a.summary)}</p><h3>引き継ぎの例</h3><p class="report-text">${esc(a.nextStep)}</p><p class="small">根拠の組み合わせ：${a.evidenceGroups.map(group=>group.map(esc).join(' または ')).join(' ＋ ')}</p></section></div><h3>報告を見直す観点</h3><ul><li>報告例と比べて修正する一文を選び、事実と対応する証拠ID・対象・時刻を示せるか。</li><li>その証拠が支える範囲を越えて、別端末や実行完了まで断定していないか。</li><li>未確認事項ごとに、確認先・必要な記録・次の対応を具体的に書けているか。</li></ul><h3>自分の報告を3つに分ける（任意）</h3>${[['facts','修正点と根拠：直す一文・理由・証拠ID・対象・時刻'],['limits','根拠の範囲：言えること／まだ分からないこと'],['next','未確認事項の確認先：誰に、どの記録・対応を依頼するか']].map(([key,label])=>`<label class="field">${label}<textarea data-reflection="${key}" maxlength="1400">${esc(bridge.reflections?.[c.id]?.[key]||'')}</textarea></label>`).join('')}${a.lessons.map(lesson=>`<p class="hint">${esc(lesson)}</p>`).join('')}<p class="notice">文章の意味や品質は自動採点していません。上の観点で自分の報告と報告例を比較してください。</p><label class="bridge-reflection"><input type="checkbox" id="bridge-reflected"> 自分の報告と報告例を比較し、改善する点を確認した</label>`,`<button class="btn" data-action="report">自分の報告を保存</button><button class="btn ghost" data-action="bridge-exit">勤務選択へ</button><button class="btn primary" data-action="bridge-review-next" disabled>${bridge.index===4?'5件を終えて通常勤務へ':'次の実務演習へ →'}</button>`);
+    modal('実務演習の振り返り',`<span class="badge good">実務演習 ${bridge.index+1} / ${B.CASE_IDS.length} 完了</span><h3>${esc(c.title)}</h3><p>${esc(a.explanation)}</p><div class="bridge-comparison"><section><h3>あなたの報告</h3><p class="report-text">${esc(r.draft.summary)}</p><h3>あなたの引き継ぎ</h3><p class="report-text">${esc(r.draft.nextStep)}</p><p class="small">登録した根拠：${r.evidenceIds.map(esc).join('、')}</p></section><section><h3>報告の例</h3><p class="report-text">${esc(a.summary)}</p><h3>引き継ぎの例</h3><p class="report-text">${esc(a.nextStep)}</p><p class="small">根拠の組み合わせ：${a.evidenceGroups.map(group=>group.map(esc).join(' または ')).join(' ＋ ')}</p></section></div><h3>報告を見直す観点</h3><ul><li>報告例と比べて修正する一文を選び、事実と対応する証拠ID・対象・時刻を示せるか。</li><li>その証拠が支える範囲を越えて、別端末や実行完了まで断定していないか。</li><li>未確認事項ごとに、確認先・必要な記録・次の対応を具体的に書けているか。</li></ul><h3>自分の報告を3つに分ける（任意）</h3>${[['facts','修正点と根拠：直す一文・理由・証拠ID・対象・時刻'],['limits','根拠の範囲：言えること／まだ分からないこと'],['next','未確認事項の確認先：誰に、どの記録・対応を依頼するか']].map(([key,label])=>`<label class="field">${label}<textarea data-reflection="${key}" maxlength="1400">${esc(bridge.reflections?.[c.id]?.[key]||'')}</textarea></label>`).join('')}${a.lessons.map(lesson=>`<p class="hint">${esc(lesson)}</p>`).join('')}<p class="notice">文章の意味や品質は自動採点していません。上の観点で自分の報告と報告例を比較してください。</p><label class="bridge-reflection"><input type="checkbox" id="bridge-reflected"> 自分の報告と報告例を比較し、改善する点を確認した</label>`,`<button class="btn" data-action="report">自分の報告を保存</button><button class="btn ghost" data-action="bridge-exit">勤務選択へ</button><button class="btn primary" data-action="bridge-review-next" disabled>${bridge.index===B.CASE_IDS.length-1?'6件を終えて通常勤務へ':bridge.index===B.CASE_IDS.length-2?'次は端末隔離の実行確認へ →':'次の実務演習へ →'}</button>`);
   }
   function bridgeReviewNext(){
     if(!$('bridge-reflected')?.checked||!bridge||session.phase!=='completed')return;
     closeModal(false);
-    if(!B.advance(bridge)){exitBridge();home={scenarioId:'low',difficulty:'low',individual:'',untimed:false};render();notify('5件の実務演習が完了しました。次は難易度「低」で調査をつなげてみましょう。');return;}
+    if(!B.advance(bridge)){exitBridge();home={scenarioId:'low',difficulty:'low',individual:'',untimed:false};render();notify('6件の実務演習が完了しました。次は難易度「低」で調査をつなげてみましょう。');return;}
     session=B.resumeArchived(bridge)||E.createSession('bridge','low',B.currentCase(bridge).id);if(session.phase==='paused')E.resume(session);terminal=null;const archivedWorkspace=bridge.reviewWorkspaces?.[session.selectedCaseId];if(archivedWorkspace){terminal=globalThis.SocTerminal.create({});terminal.setWorkspace(archivedWorkspace);delete bridge.reviewWorkspaces[session.selectedCaseId];}ui=freshUI();screen='work';prepareBridgeStep();syncTerminal();lastTick=performance.now();lastSave=0;save(true);render();checkOutcome();
   }
   function topbar(inSession=false){return `<header class="topbar"><a href="#" class="brand" data-action="home"><span class="brand-symbol">s_</span><span>SOC<em>room</em></span><small class="release-version">v${esc(D.releaseVersion)}</small></a><div class="top-actions"><span class="local"><i class="dot"></i>LOCAL ONLY</span>${inSession?`<button class="btn ghost compact" data-action="export">${icon('save')}保存</button>`:''}<button class="btn ghost compact" data-action="import">${icon('upload')}読込</button><button class="btn ghost compact" data-action="guide">${icon('help')}進め方</button></div></header>`;}
@@ -34170,9 +35661,10 @@ SOFTWARE.
   }
   function renderHome(){
     const packs=D.scenarios.filter(s=>!s.hidden),sc=packs.find(s=>s.id===home.scenarioId)||packs[0];
+    if(!packs.some(pack=>pack.id===home.scenarioId))home={scenarioId:sc.id,difficulty:sc.difficulty,individual:'',untimed:false};
     const descriptions={low:'端末1台の記録から、事実と対応を結び付ける。時間を気にせず基礎を練習します。',medium:'認証・通信・業務記録を照合し、紛らわしい出来事を見分ける。5件を並行して担当します。',high:'複数端末への広がりや、欠けた記録を評価する。影響範囲と対応の優先順位を判断します。'};
     const timing={low:'制限なし · 1件ずつ到着',medium:'各20分 · 5件同時に到着',high:'各15分 · 45秒ごとに到着'};
-    $('app').innerHTML=topbar()+`<main class="home" id="content"><div class="home-intro"><div><div class="eyebrow accent">OFFLINE SOC SIMULATOR / LOCAL EDITION 0.6.0</div><h1>ログをつなぐ。<br>判断を、次の対応へ。</h1><p>あなたはSOCの一次対応アナリスト。アラートを調べ、証拠を集め、<br class="desktop">根拠から次の対応を判断する。難易度ごとに異なる5問で、調査力を磨こう。</p></div><div class="signal-visual" aria-hidden="true"><div class="signal-ring"></div><div class="signal-label">SOC</div><span class="signal-foot">OBSERVE / INVESTIGATE / RESPOND</span></div></div>
+    $('app').innerHTML=topbar()+`<main class="home" id="content"><div class="home-intro"><div><div class="eyebrow accent">OFFLINE SOC SIMULATOR / LOCAL EDITION ${esc(D.releaseVersion)}</div><h1>ログをつなぐ。<br>判断を、次の対応へ。</h1><p>あなたはSOCの一次対応アナリスト。アラートを調べ、証拠を集め、<br class="desktop">根拠から次の対応を判断する。難易度ごとに異なる5問で、調査力を磨こう。</p></div><div class="signal-visual" aria-hidden="true"><div class="signal-ring"></div><div class="signal-label">SOC</div><span class="signal-foot">OBSERVE / INVESTIGATE / RESPOND</span></div></div>
       ${session?`<div class="saved-strip spread"><div><strong>前回の勤務を再開できます</strong><p class="small muted">${esc(D.scenarios.find(s=>s.id===session.scenarioId)?.title)} · 難易度 ${labels[session.difficulty]} · ${fmt(session.elapsed)} 経過 · ${caseIds().filter(id=>session.records[id].status==='resolved').length}/${caseIds().length}件対応済み</p></div><button class="btn" data-action="continue">勤務に戻る ${icon('arrow')}</button></div>`:''}
       ${Object.keys(legacySaves).length?`<div class="legacy-progress"><div><strong>前の版の進捗が残っています</strong><p>v0.2の進捗は新しい問題とは別に保持しています。バックアップとして保存ファイルを取り出せますが、この版では読み込めません。</p></div><div>${legacySaves.normal?'<button class="btn compact" data-action="legacy-normal">旧版の勤務を保存</button>':''}${legacySaves.tutorial?'<button class="btn compact" data-action="legacy-tutorial">旧版チュートリアルを保存</button>':''}</div></div>`:''}
       <section class="tutorial-entry"><div><span class="eyebrow accent">FIRST INVESTIGATION / 専用の練習問題 1問</span><h2>まずは、案内に沿って1件やってみる。</h2><p>押す場所・操作の意味・次の手順を、画面で一つずつ案内します。<br>通常勤務には出ない専用問題。時間制限なしで練習できます。</p></div><div class="tutorial-entry-actions"><button class="btn primary" data-action="tutorial-start">${icon('play')}操作チュートリアルを始める</button>${tutorialSaved?`${tutorialSaved.session?.phase==='completed'?'<span class="badge good">チュートリアル完了済み</span>':'<button class="btn" data-action="tutorial-resume">チュートリアルの続きから</button>'}<span class="small muted">「始める」は最初から練習できます。</span>`:''}</div></section>
@@ -34180,12 +35672,12 @@ SOFTWARE.
       <div class="section-line"><h2><span class="accent mono">01</span>　難易度と問題セット</h2><span class="eyebrow">5 CASES × 3 LEVELS / 15 DISTINCT CASES</span></div>
       <div class="scenario-grid">${packs.map(pack=>`<button class="scenario-card ${pack.id===sc.id?'selected':''}" data-difficulty="${pack.difficulty}" aria-pressed="${pack.id===sc.id}"><span class="number">${pack.difficulty.toUpperCase()} / 5 CASES</span>${pack.id===sc.id?`<span class="check">${icon('check')}</span>`:''}<h3>難易度 ${labels[pack.difficulty]} / ${esc(pack.title)}</h3><p>${esc(descriptions[pack.difficulty])}</p><span class="pack-timing">${esc(timing[pack.difficulty])}</span></button>`).join('')}</div>
       <div class="setup"><section><h2><span class="accent mono">02</span>　この難易度の5問</h2><ol class="case-preview">${sc.caseIds.map((id,index)=>{const c=E.getCase(id);return `<li data-preview-case="${esc(id)}"><span class="case-number mono">${String(index+1).padStart(2,'0')}</span><div><strong>${esc(c.title)}</strong><p>${esc(c.subtitle)}</p><span>${esc(c.source)}${c.relatedHosts?.length?' · 複数端末を調査':''}</span></div></li>`;}).join('')}</ol><label class="field">演習の範囲<select id="home-scope"><option value="">一勤務を体験する（5問）</option>${sc.difficulty==='medium'?`<option value="parallel" ${home.individual==='parallel'?'selected':''}>2件の並行練習（MFA認証と業務送信）</option>`:''}${sc.caseIds.map(id=>`<option value="${esc(id)}" ${home.individual===id?'selected':''}>ケース練習：${esc(E.getCase(id).title)}</option>`).join('')}</select></label>${home.individual&&sc.difficulty!=='low'?`<label class="field"><span><input type="checkbox" id="home-untimed" ${home.untimed?'checked':''}> 最初から時間制限なしで調査する</span><span class="small muted">返信待ちと追加ログの到着は維持します。時間切れ後の復習とは別に記録します。</span></label>`:''}${sc.difficulty!=='low'?'<p class="notice">初めての中・高は、単独・時間制限なしで調べ方を確かめられます。中は単独→2件並行→5件勤務の順でも練習できます。</p>':''}</section><section><h2><span class="accent mono">03</span>　勤務の引き継ぎ</h2><div class="briefing-box">${modeBriefing(sc,home.individual,home.untimed).map(p=>`<p>${esc(p)}</p>`).join('')}</div><div class="pack-note"><strong>難易度を変えると、別の問題になります。</strong><p>端末・ログ・背景・判断の根拠が異なります。チュートリアルの問題も、この15問には含みません。</p><p>${esc(modeTiming(sc,home.individual,home.untimed))}。途中保存・一時停止ができます。</p></div></section></div>
-      <div class="launchbar"><div><strong>調査 → 証拠登録 → 判断・対応 → 引き継ぎ</strong><p class="small muted">${home.individual==='parallel'?'既存の2件を同時に担当します。':home.individual?'選んだ1問を練習します。':'この難易度の5問を担当します。'}${home.individual&&home.untimed&&sc.difficulty!=='low'?'時間制限はありません。':''}すべて合成データ、対応操作はシミュレーションです。</p></div><button class="btn primary" data-action="start">${home.individual==='parallel'?'2件の並行練習を開始':home.individual?'この1問を開始':'5問の勤務を開始'} ${icon('arrow')}</button></div><footer class="home-footer"><span>ブラウザだけで動作。操作1問 ＋ ガイド付き実務演習5問 ＋ 通常勤務15問。</span><span>Inspired by Logroom · MIT License · v0.6.0</span></footer></main>`;
+      <div class="launchbar"><div><strong>調査 → 証拠登録 → 判断・対応 → 引き継ぎ</strong><p class="small muted">${home.individual==='parallel'?'既存の2件を同時に担当します。':home.individual?'選んだ1問を練習します。':'この難易度の5問を担当します。'}${home.individual&&home.untimed&&sc.difficulty!=='low'?'時間制限はありません。':''}すべて合成データ、対応操作はシミュレーションです。</p></div><button class="btn primary" data-action="start">${home.individual==='parallel'?'2件の並行練習を開始':home.individual?'この1問を開始':'5問の勤務を開始'} ${icon('arrow')}</button></div><footer class="home-footer"><span>ブラウザだけで動作。操作1問 ＋ ガイド付き実務演習6問（端末隔離を含む） ＋ 通常勤務15問。</span><span>Inspired by Logroom · MIT License · v${esc(D.releaseVersion)}</span></footer></main>`;
   }
   function deadlineText(id){const r=session.records[id],left=remaining(id);return r.status==='resolved'?'対応を記録済み':left===null?'制限時間なし':left===0?'期限超過':`初動期限まで ${fmt(left)}`;}
   function renderQueue(){const active=E.activeCases(session),resolved=caseIds().filter(id=>session.records[id].status==='resolved').length;return `<aside class="queue" aria-label="アラート一覧"><div class="queue-heading"><div class="spread"><h2>アラートキュー</h2><span class="badge">${active.filter(c=>session.records[c.id].status!=='resolved').length} 未完了</span></div><p>機械の重要度と、業務上の優先度を見極める。</p></div><div class="queue-list">${active.map(c=>{const r=session.records[c.id],left=remaining(c.id),waiting=E.getContactQuestions(c.id).some(q=>r.contactRequests?.[q.id]!=null&&!E.replyAvailable(session,c.id,q.id));return `<button class="alert-card ${c.id===session.selectedCaseId?'active':''}" data-case="${esc(c.id)}" aria-current="${c.id===session.selectedCaseId}"><div class="spread"><span class="badge ${c.severity}">検知：${labels[c.severity]}</span><span class="case-state">${r.status==='resolved'?'✓ 対応済み':waiting?'回答待ち':r.status==='investigating'?'調査中':'未着手'}</span></div><h3>${esc(c.title)}</h3><div class="host">${esc(c.host)} / ${esc(c.user)}</div><div class="deadline ${left!==null&&left<120&&r.status!=='resolved'?'urgent':''}" data-deadline="${esc(c.id)}">${deadlineText(c.id)}</div></button>`;}).join('')}</div><div class="queue-footer"><div class="spread"><span>勤務の進捗</span><span class="mono">${resolved} / ${caseIds().length}</span></div><div class="progress-track"><span style="width:${resolved/caseIds().length*100}%"></span></div><p>${session.difficulty==='low'&&!session.individualCaseId?'対応が完了すると、次の案件が届きます。':'関連する更新は、勤務の進行に合わせて届きます。'}</p><button class="btn ghost compact" style="margin-top:12px;width:100%" data-action="step">${icon('clock')}次の更新へ進む</button><p class="small" style="margin-top:5px">${limit()===null?'時間制限はありません。':'進めた時間も期限に含まれます。'}</p></div></aside>`;}
-  function renderAnalysis(){const c=selected(),r=record();if(!c)return '<section class="analysis"><div class="empty">新しいアラートを待っています。</div></section>';return `<section class="analysis" aria-label="調査ワークスペース"><div class="case-heading"><div class="spread"><span class="eyebrow">INVESTIGATION / ${esc(c.id.toUpperCase())}</span><span class="badge ${r.status==='resolved'?'good':c.severity}">${r.status==='resolved'?'対応記録済み':c.source}</span></div><h2>${esc(c.title)}</h2><p>${esc(c.subtitle)}</p><div class="case-meta" style="margin-top:10px"><span>HOST <code>${esc(c.host)}</code></span><span>USER <code>${esc(c.user)}</code></span>${c.relatedHosts?.length?`<span>関連端末 <code>${c.relatedHosts.map(esc).join(' / ')}</code></span>`:''}<span>UTC / 合成データ</span></div><div class="case-toolbar"><button class="btn compact" data-action="context">${icon('folder')}依頼・状況</button>${session.difficulty!=='high'?`<button class="btn ghost compact" data-action="hint">${icon('help')}調査のヒント</button>`:''}<button class="btn ghost compact" data-action="filter-host">${icon('search')}${c.targetType&&c.targetType!=='host'?(c.user?'このユーザーを検索':'ログを表示'):'この端末を検索'}</button></div></div><nav class="tabs" role="tablist" aria-label="調査ツール">${[['logs','logs','ログ検索'],['resources','folder','資産・資料'],['timeline','clock','時系列'],['terminal','terminal','ターミナル'],['contact','message','照会']].map(([id,ic,label])=>`<button class="tab ${ui.tab===id?'active':''}" role="tab" aria-selected="${ui.tab===id}" aria-controls="investigation-view" data-tab="${id}">${icon(ic)}${label}${id==='contact'&&E.availableReplies(session,c.id).length?'<span class="dot"></span>':''}</button>`).join('')}</nav><div class="view" id="investigation-view" role="tabpanel" aria-label="${{logs:'ログ検索',resources:'資産・資料',timeline:'時系列',terminal:'ターミナル',contact:'照会'}[ui.tab]}">${renderView()}</div></section>`;}
-  function renderView(){if(ui.tab==='logs')return renderLogs();if(ui.tab==='resources')return renderResources();if(ui.tab==='timeline')return renderTimeline();if(ui.tab==='terminal')return renderTerminal();return renderContact();}
+  function renderAnalysis(){const c=selected(),r=record();if(!c)return '<section class="analysis"><div class="empty">新しいアラートを待っています。</div></section>';return `<section class="analysis" aria-label="調査ワークスペース"><div class="case-heading"><div class="spread"><span class="eyebrow">INVESTIGATION / ${esc(c.id.toUpperCase())}</span><span class="badge ${r.status==='resolved'?'good':c.severity}">${r.status==='resolved'?'対応記録済み':c.source}</span></div><h2>${esc(c.title)}</h2><p>${esc(c.subtitle)}</p><div class="case-meta" style="margin-top:10px"><span>HOST <code>${esc(c.host)}</code></span><span>USER <code>${esc(c.user)}</code></span>${c.relatedHosts?.length?`<span>関連端末 <code>${c.relatedHosts.map(esc).join(' / ')}</code></span>`:''}<span>UTC / 合成データ</span></div><div class="case-toolbar"><button class="btn compact" data-action="context">${icon('folder')}依頼・状況</button>${session.difficulty!=='high'?`<button class="btn ghost compact" data-action="hint">${icon('help')}調査のヒント</button>`:''}<button class="btn ghost compact" data-action="filter-host">${icon('search')}${c.targetType&&c.targetType!=='host'?(c.user?'このユーザーを検索':'ログを表示'):'この端末を検索'}</button></div></div><nav class="tabs" role="tablist" aria-label="調査ツール">${[['logs','logs','ログ検索'],['resources','folder','資産・資料'],['timeline','clock','時系列'],['terminal','terminal','ターミナル'],['contact','message','照会'],...(c.response?[['response','shield','端末対応']]:[])].map(([id,ic,label])=>`<button class="tab ${ui.tab===id?'active':''}" role="tab" aria-selected="${ui.tab===id}" aria-controls="investigation-view" data-tab="${id}">${icon(ic)}${label}${id==='contact'&&E.availableReplies(session,c.id).length?'<span class="dot"></span>':''}</button>`).join('')}</nav><div class="view" id="investigation-view" role="tabpanel" aria-label="${{logs:'ログ検索',resources:'資産・資料',timeline:'時系列',terminal:'ターミナル',contact:'照会',response:'端末対応'}[ui.tab]}">${renderView()}</div></section>`;}
+  function renderView(){if(ui.tab==='logs')return renderLogs();if(ui.tab==='resources')return renderResources();if(ui.tab==='timeline')return renderTimeline();if(ui.tab==='terminal')return renderTerminal();if(ui.tab==='response'&&selected().response)return renderResponse();return renderContact();}
   function filterLogs(logs){
     const q=ui.query.toLowerCase().trim(),from=ui.from?.length===5?ui.from+':00':ui.from,to=ui.to?.length===5?ui.to+':59':ui.to;
     return logs.filter(l=>(!ui.source||l.source===ui.source)&&(!ui.host||l.host===ui.host)&&(!from||l.time>=from)&&(!to||l.time<=to)&&(!ui.evidenceOnly||record().evidenceIds.includes(l.id))&&(!q||[l.raw,l.event,l.id,l.host,l.user,l.ip,l.source].join(' ').toLowerCase().includes(q)));
@@ -34204,8 +35696,17 @@ SOFTWARE.
     const c=selected(),r=record(),questions=E.getContactQuestions(c.id);
     return `<div class="contact-person"><div class="avatar">${esc(c.contact.name.slice(0,1))}</div><div><strong>${esc(c.contact.name)}</strong><p class="small muted">${esc(c.contact.role)} / 演習内の担当者</p></div></div><p>${questions.length>1?'何を確認するか選んでください。回答が十分でなければ、別の質問で追加確認できます。':'担当者に確認します。'}</p>${questions.map((q,i)=>{const requested=r.contactRequests?.[q.id]??null,ready=E.replyAvailable(session,c.id,q.id),delay=Math.ceil(q.delaySeconds*E.DIFFICULTIES[session.difficulty].replyMultiplier),wait=Math.max(0,Math.ceil((requested??session.elapsed)+delay-session.elapsed));return `<article class="resource"><h3>照会 ${i+1}</h3><div class="message">${esc(q.question)}</div>${requested===null?`<button class="btn primary" data-action="contact" data-question="${esc(q.id)}" ${!running()||r.status==='resolved'?'disabled':''}>${icon('message')}確認を依頼する</button><p class="small muted">${delay?'返信まで約'+fmt(delay):'すぐに返信が届きます。'}</p>`:ready?`<span class="badge good">返信を受信</span><div class="message reply">${esc(q.replyText)}</div>${evidenceButton(q.replyId)}`:`<div class="notice">返信待ち <span data-reply-countdown="${esc(q.id)}">${fmt(wait)}</span></div><button class="btn" data-action="step">次の更新へ進む</button>`}</article>`;}).join('')}<p class="small muted">依頼・返信は同梱シナリオによる模擬連絡です。${limit()===null?'時間制限はありません。':'待機時間も対応期限に含まれます。'}</p>`;
   }
+  function renderResponse(){
+    const c=selected(),r=record(),state=E.isolationState(session,c.id),disabled=!running()||r.status==='resolved';
+    const draft=ui.isolationDraft||{target:'',authorizationId:'',reason:'',impactAcknowledged:false};
+    const requested=state.status!=='not-requested',complete=state.status==='succeeded';
+    const status=state.confirmedAt!==null?'隔離成功・結果確認済み':complete?'隔離成功・結果を確認してください':requested?'実行待ち — まだ隔離済みではありません':'未依頼';
+    return `<section class="response-panel" aria-labelledby="response-title"><div class="eyebrow accent">SIMULATED ENDPOINT RESPONSE</div><h3 id="response-title">端末のネットワーク隔離</h3><p>「資産・資料」とログで対象・実行・継続通信・対応権限を確認し、根拠を登録してください。ファイルを隔離する操作とは異なり、この端末の業務通信を止めます。</p><p class="small muted">製品共通の教材画面です。Defenderなどの実画面・権限設定を再現したものではありません。</p><div class="response-status ${complete?'complete':''}" role="status"><strong>${esc(status)}</strong>${requested?`<dl><dt>処置対象</dt><dd>${esc(state.target)}</dd><dt>依頼時刻</dt><dd>勤務経過 ${fmt(state.requestAt)}</dd><dt>実行結果</dt><dd>${complete?'ネットワーク隔離に成功（模擬） · 勤務経過 '+fmt(state.completedAt):'端末への処置を待っています。依頼の受付だけでは隔離完了ではありません。'}</dd><dt>管理通信</dt><dd>${complete?'管理サービスとの接続を維持（この教材環境で確認済み）':'隔離後の状態はまだ未確認'}</dd><dt>結果の確認</dt><dd>${state.confirmedAt!==null?'勤務経過 '+fmt(state.confirmedAt):'未確認'}</dd><dt>根拠となる権限</dt><dd>${esc(state.authorizationId)}</dd><dt>依頼理由</dt><dd>${esc(state.reason)}</dd></dl>`:'<p>対象端末・対応権限・業務への影響を確認してから依頼します。</p>'}</div>
+      ${requested?`${!complete?'<button class="btn" data-action="step" '+(disabled?'disabled':'')+'>次の更新へ進む</button><p class="small muted">別のログや資料を確認しながら待つこともできます。</p>':`<p class="notice">隔離成功は、駆除完了や流出なしを意味しません。隔離を維持し、調査・復旧と解除判断を担当者へ引き継ぎます。</p><button class="btn primary" data-action="response-confirm" ${disabled||state.confirmedAt!==null?'disabled':''}>${state.confirmedAt!==null?'隔離結果を確認済み':'対象・隔離成功・管理通信の結果を確認した'}</button>`}`:`<form id="isolation-form"><label class="field">隔離する端末<select id="isolation-target" data-isolation="target" required ${disabled?'disabled':''}><option value="">資産台帳と照合して選択</option>${c.targets.map(target=>`<option value="${esc(target.value)}" ${draft.target===target.value?'selected':''}>${esc(target.label)}</option>`).join('')}</select></label><label class="field">この処置の承認・権限<select id="isolation-authorization" data-isolation="authorizationId" required ${disabled?'disabled':''}><option value="">手順・承認の資料から選択</option>${c.response.authorizationOptions.map(item=>`<option value="${esc(item.value)}" ${draft.authorizationId===item.value?'selected':''}>${esc(item.label)}</option>`).join('')}</select></label><label class="field">隔離を依頼する理由<textarea id="isolation-reason" data-isolation="reason" minlength="10" maxlength="500" required ${disabled?'disabled':''} placeholder="どの端末で、どの根拠から、何を止める必要があるか。">${esc(draft.reason)}</textarea><small>10〜500文字。内容の意味は自動採点しません。</small></label><label class="response-ack"><input type="checkbox" id="isolation-impact" data-isolation="impactAcknowledged" ${draft.impactAcknowledged?'checked':''} required ${disabled?'disabled':''}> 業務通信が止まる影響と代替手段を、資料で確認した</label><button class="btn primary" type="submit" ${disabled?'disabled':''}>選択した端末の隔離を依頼する（模擬）</button></form>`}
+      <p class="small muted">処置時刻は「勤務経過」です。収集済みログの発生時刻（UTC）と区別して記録してください。処置中も保存・再開できます。</p></section>`;
+  }
   function options(values,current,placeholder){return `<option value="">${placeholder}</option>`+values.map(id=>`<option value="${esc(id)}" ${id===current?'selected':''}>${esc(labels[id]||id)}</option>`).join('');}
-  function renderCasepanel(){const c=selected(),r=record();if(!c)return '';const disabled=!running()||r.status==='resolved';return `<aside class="casepanel" aria-label="対応記録"><div class="spread"><h2 class="panel-title">対応記録</h2><span class="eyebrow">CASE NOTE</span></div><p class="panel-subtitle">証拠から判断を組み立て、次の担当者へ。</p>${r.assessment?renderAssessment(r.assessment):''}<div class="evidence-tray"><h3>登録した証拠 <span class="mono">${r.evidenceIds.length} / ${E.evidenceLimit(c.id)}</span></h3><p class="small muted">提出する主証拠は最大${E.evidenceLimit(c.id)}件。判断に必要な根拠に絞り、補足は本文に記録します。</p>${r.evidenceIds.length?r.evidenceIds.map(id=>{const e=evidence(id);return `<div class="evidence-item"><span>${esc(e.title)}<small>${esc(id)} · ${esc(e.detail)}</small></span><button class="icon-btn" aria-label="証拠 ${esc(id)} を外す" data-remove-evidence="${esc(id)}" ${disabled?'disabled':''}>${icon('close')}</button></div>`;}).join(''):'<p class="small muted">ログ・資料・担当者の回答から、判断に必要な根拠を追加します。</p>'}</div><form id="case-form"><label class="field">判定<select data-draft="verdict" id="draft-verdict" ${disabled?'disabled':''}>${options(['incident','benign','unknown'],r.draft.verdict,'判定を選択')}</select></label><div class="field-grid"><label class="field">対応優先度<select data-draft="priority" id="draft-priority" ${disabled?'disabled':''}>${options(['high','medium','low'],r.draft.priority,'優先度')}</select></label><label class="field">${tutorial?'対象端末':'主な対象（端末・アカウント・アプリ）'}<select data-draft="target" id="draft-target" ${disabled?'disabled':''}><option value="">対象を選択</option>${[...new Map(caseIds().flatMap(id=>{const item=E.getCase(id);return item.targets||[{value:item.host,label:item.host}];}).map(x=>[x.value,x])).values()].map(x=>`<option value="${esc(x.value)}" ${x.value===r.draft.target?'selected':''}>${esc(x.label)}</option>`).join('')}</select>${c.relatedHosts?.length?'<small>関連端末への影響は、下の報告文に記録します。</small>':''}</label></div><label class="field">次の対応<select data-draft="action" id="draft-action" ${disabled?'disabled':''}>${options(['escalate','contain','close','monitor'],r.draft.action,'対応を選択')}</select></label><label class="field">確認した事実・判断の理由<textarea id="draft-summary" data-draft="summary" maxlength="1400" ${disabled?'disabled':''} placeholder="何が起きたか。どの証拠から、どこまで分かるか。">${esc(r.draft.summary)}</textarea></label><label class="field">未確認事項・引き継ぎ<textarea id="draft-nextStep" data-draft="nextStep" maxlength="1000" ${disabled?'disabled':''} placeholder="次に確認すること、依頼先、必要な対応。">${esc(r.draft.nextStep)}</textarea><small>報告に対象・時刻・証拠IDなどの具体情報、引き継ぎに依頼先（担当・責任者など）を含めてください。文章の意味・品質は自動採点しません。</small></label><button type="submit" class="btn primary submit" ${disabled||(tutorial&&tutorialStep().id!=='submit')?'disabled':''}>${icon('check')}${r.status==='resolved'?'対応を記録済み':'判断と対応を記録する'}</button></form><p class="small muted" style="margin-top:10px">根拠と判断の組み合わせを確認します。必要な初動が揃うと、対応完了になります。</p></aside>`;}
+  function renderCasepanel(){const c=selected(),r=record();if(!c)return '';const disabled=!running()||r.status==='resolved';return `<aside class="casepanel" aria-label="対応記録"><div class="spread"><h2 class="panel-title">対応記録</h2><span class="eyebrow">CASE NOTE</span></div><p class="panel-subtitle">証拠から判断を組み立て、次の担当者へ。</p>${r.assessment?renderAssessment(r.assessment):''}${c.response?'<p class="notice">この案件は「端末対応」で隔離を依頼し、成功結果を確認してから報告を完成させます。</p>':''}<div class="evidence-tray"><h3>登録した証拠 <span class="mono">${r.evidenceIds.length} / ${E.evidenceLimit(c.id)}</span></h3><p class="small muted">提出する主証拠は最大${E.evidenceLimit(c.id)}件。判断に必要な根拠に絞り、補足は本文に記録します。</p>${r.evidenceIds.length?r.evidenceIds.map(id=>{const e=evidence(id);return `<div class="evidence-item"><span>${esc(e.title)}<small>${esc(id)} · ${esc(e.detail)}</small></span><button class="icon-btn" aria-label="証拠 ${esc(id)} を外す" data-remove-evidence="${esc(id)}" ${disabled?'disabled':''}>${icon('close')}</button></div>`;}).join(''):'<p class="small muted">ログ・資料・担当者の回答から、判断に必要な根拠を追加します。</p>'}</div><form id="case-form"><label class="field">判定<select data-draft="verdict" id="draft-verdict" ${disabled?'disabled':''}>${options(['incident','benign','unknown'],r.draft.verdict,'判定を選択')}</select></label><div class="field-grid"><label class="field">対応優先度<select data-draft="priority" id="draft-priority" ${disabled?'disabled':''}>${options(['high','medium','low'],r.draft.priority,'優先度')}</select></label><label class="field">${tutorial?'対象端末':'主な対象（端末・アカウント・アプリ）'}<select data-draft="target" id="draft-target" ${disabled?'disabled':''}><option value="">対象を選択</option>${[...new Map(caseIds().flatMap(id=>{const item=E.getCase(id);return item.targets||[{value:item.host,label:item.host}];}).map(x=>[x.value,x])).values()].map(x=>`<option value="${esc(x.value)}" ${x.value===r.draft.target?'selected':''}>${esc(x.label)}</option>`).join('')}</select>${c.relatedHosts?.length?'<small>関連端末への影響は、下の報告文に記録します。</small>':''}</label></div><label class="field">次の対応<select data-draft="action" id="draft-action" ${disabled?'disabled':''}>${options(['escalate','contain','close','monitor'],r.draft.action,'対応を選択')}</select></label><label class="field">確認した事実・判断の理由<textarea id="draft-summary" data-draft="summary" maxlength="1400" ${disabled?'disabled':''} placeholder="何が起きたか。どの証拠から、どこまで分かるか。">${esc(r.draft.summary)}</textarea></label><label class="field">未確認事項・引き継ぎ<textarea id="draft-nextStep" data-draft="nextStep" maxlength="1000" ${disabled?'disabled':''} placeholder="次に確認すること、依頼先、必要な対応。">${esc(r.draft.nextStep)}</textarea><small>報告に対象・時刻・証拠IDなどの具体情報、引き継ぎに依頼先（担当・責任者など）を含めてください。文章の意味・品質は自動採点しません。</small></label><button type="submit" class="btn primary submit" ${disabled||(tutorial&&tutorialStep().id!=='submit')?'disabled':''}>${icon('check')}${r.status==='resolved'?'対応を記録済み':'判断と対応を記録する'}</button></form><p class="small muted" style="margin-top:10px">根拠と判断の組み合わせを確認します。必要な初動が揃うと、対応完了になります。</p></aside>`;}
   function renderAssessment(a){return `<div class="assessment"><h3 class="${a.passed?'accent':''}">${a.passed?'✓ 対応を記録しました':'記録前に確認してください'}</h3>${a.checks.map(c=>`<div class="check-row"><span class="${c.passed?'pass':'fail'}">${c.passed?'✓':'○'}</span><span>${esc(c.label)}${!c.passed?`<br><span class="muted">${esc(c.detail)}</span>`:''}</span></div>`).join('')}</div>`;}
   function renderParallelGuide(){return `<details class="notice parallel-guide" open><summary>2件を並行して調べる：操作と判断の振り返り</summary><ol><li>両方の依頼・資産を読み、先に確認すべき影響を仮置きします。</li><li>担当者の確認が必要なら、答えを決めつけない質問を先に依頼します。</li><li>返信待ちの間に別件のログ・申請を照合します。「次の更新へ進む」でも待ち時間を進められます。</li><li>返信や追加記録の到着後、優先順位と結論を見直します。どの事実で順番を変えたかを報告へ残してください。</li></ol><p class="small">操作の順番や文章の意味は自動採点しません。最後に操作履歴と報告を見比べます。</p></details>`;}
   function renderWorkbench(){const sc=scenario(),isRunning=running();$('app').innerHTML=`<div class="workbench ${tutorial?'tutorial-active':bridge?'bridge-active':''}">${topbar(true)}<div class="shiftbar"><div><div class="eyebrow">${esc(D.company.name)} / ${bridge?'GUIDED PRACTICE / '+(bridge.index+1)+' OF 5':tutorial?'GUIDED FIRST INVESTIGATION':session.practice?.kind==='parallel'?'PARALLEL PRACTICE':session.individualCaseId?'CASE PRACTICE':'ON DUTY'}</div><h1>${esc(sc.title)} <span class="badge ${session.difficulty}">${bridge?'時間制限なし':'難易度 '+labels[session.difficulty]}</span>${session.practice?.untimed?' <span class="badge">学習・時間制限なし</span>':''}${session.trainingAfterFailure?' <span class="badge">復習・時間制限なし</span>':''}</h1></div><div class="clock-group"><div class="status-running ${!isRunning?'status-paused':''}"><i class="dot"></i>${isRunning?'ON SHIFT':session.phase==='paused'?'PAUSED':session.phase==='completed'?'COMPLETED':'TIME EXPIRED'}</div><div><div class="clock-note">勤務経過 / ACTIVE TIME</div><div class="clock" id="shift-clock">${fmt(session.elapsed)}</div></div><button class="btn compact" data-action="pause">${icon(isRunning?'pause':'play')}${isRunning?'一時停止':session.phase==='paused'?'再開':'結果'}</button></div></div>${session.migration?.untimedReview?'<p class="notice" role="status">旧版の進捗を新しい教材・採点で再確認しました。保存済みの根拠と下書きを引き継ぎ、時間制限なしで見直せます。</p>':''}${tutorial?renderTutorialGuide():bridge?renderBridgeGuide():session.practice?.kind==='parallel'?renderParallelGuide():''}<main id="content" class="workspace">${renderQueue()}${renderAnalysis()}${renderCasepanel()}</main><footer class="bottombar"><span id="save-status">${storageOK?'このブラウザに保存済み':'自動保存不可 · 保存ファイルを書き出してください'}</span><span>UTC LOGS · SIMULATED RESPONSE · ZERO EXTERNAL REQUESTS</span></footer></div>`;}
@@ -34249,16 +35750,17 @@ SOFTWARE.
     if(contextRead&&tutorialComplete())document.querySelector('[data-action="tutorial-next"]')?.focus({preventScroll:true});
   }
   function showPause(){if(!session)return;hiddenSession=null;if(running())E.pause(session);modal('勤務を一時停止',`<p>${limit()===null?'経過時間は止まっています。この勤務に時間制限はありません。':'経過時間と対応期限は止まっています。'}離席中・別タブ表示中・保存後に閉じている時間は計測しません。</p><p>勤務経過 <strong class="mono accent">${fmt(session.elapsed)}</strong></p>`,`<button class="btn" data-action="export">${icon('save')}進捗を保存</button><button class="btn ghost" data-action="home">勤務選択へ</button><button class="btn primary" data-action="resume">勤務を再開 ${icon('play')}</button>`);}
-  function showGuide(){modal('SOCroom の進め方',`<p>アラートは調査の入り口です。検知の重要度を参考に、端末の役割・ログ・予定された作業を照合して判断します。</p><h3>1. 根拠を集める</h3><p>「ログ検索」「資産・資料」「照会」から証拠を追加します。IPやユーザー名をクリックすると、同じ値を検索できます。必要なら「ターミナル」で grep や awk を使えます。</p><h3>2. 対応を記録する</h3><p>判定・優先度・対象・対応を選び、事実と未確認事項を記録します。「判断できない」場合も、適切な根拠と引き継ぎがあれば完了できます。報告に対象・時刻・証拠ID、引き継ぎに依頼先があるかを確認します。内容の意味は自動採点しません。</p><h3>3. 操作の次は、ガイド付き実務演習</h3><p>専用の5件で調査の進め方を練習できます。最初の2件は次の行動と理由、次の2件はチェックリスト、最後の1件は目標だけを示します。全件時間制限なしで、通常勤務とは別に保存します。各件の最後に、自分の報告と報告例を比べてから次へ進みます。</p><h3>4. 時間と難易度</h3><p>低・中・高はそれぞれ異なる5問です。低は基本的な証拠の照合、中は複数ログと業務確認、高は複数端末や欠けた情報の評価が必要です。低は制限なしで1件ずつ、中は5件同時で各20分、高は45秒間隔で追加され各15分です。重要な案件の初動期限超過でゲームオーバーになります。正当な操作の案件が遅れた場合は、終了時に遅延として表示します。これらは教材用の時間設定です。</p><p>中・高の単独練習では、開始前に「最初から時間制限なし」を選べます。中の2件並行練習は無期限を初期選択し、照会待ちの間に別件を調べる練習ができます。通常の5件勤務と時間切れ後の復習も引き続き選べます。</p><p>「次の更新へ進む」は返信や到着を待つ時間を進めます。時間制限がある勤務では、進めた時間も期限に含まれます。勤務の経過時間と、ログに記された発生時刻（UTC）は別です。</p><h3>保存とローカル動作</h3><p>外部通信はありません。自動保存はブラウザに依存するため、大切な進捗は「保存」からJSONファイルに書き出してください。「読込」で別のブラウザにも移せます。ゲームオーバー後は再挑戦か時間制限なしの復習ができます。</p><h3>出典・ライセンス</h3><p>仮想シェルは Logroom（Copyright © 2026 Logroom contributors, MIT License）を基にしています。ライセンス全文は配布HTMLのソースと開発用ファイルに同梱しています。ログ・人物・組織・担当者への連絡は教材用の架空データです。</p>`,`${!tutorial&&!bridge?'<button class="btn" data-action="tutorial-start">操作チュートリアルを始める</button>':''}<button class="btn primary" data-action="close-dialog">調査に戻る</button>`,true);}
+  function showGuide(){modal('SOCroom の進め方',`<p>アラートは調査の入り口です。検知の重要度を参考に、端末の役割・ログ・予定された作業を照合して判断します。</p><h3>1. 根拠を集める</h3><p>「ログ検索」「資産・資料」「照会」から証拠を追加します。IPやユーザー名をクリックすると、同じ値を検索できます。必要なら「ターミナル」で grep や awk を使えます。</p><h3>2. 対応を記録する</h3><p>判定・優先度・対象・対応を選び、事実と未確認事項を記録します。「判断できない」場合も、適切な根拠と引き継ぎがあれば完了できます。報告に対象・時刻・証拠ID、引き継ぎに依頼先があるかを確認します。内容の意味は自動採点しません。</p><h3>3. 操作の次は、ガイド付き実務演習</h3><p>専用の6件で調査から対応までを練習できます。最初の2件は次の行動と理由、次の2件はチェックリスト、5件目は目標だけを示します。最後の6件目では、証拠から端末隔離を判断し、依頼・結果確認・引き継ぎまで進めます。全件時間制限なしで、通常勤務とは別に保存します。各件の最後に、自分の報告と報告例を比べてから次へ進みます。</p><h3>4. 時間と難易度</h3><p>低・中・高はそれぞれ異なる5問です。低は基本的な証拠の照合、中は複数ログと業務確認、高は複数端末や欠けた情報の評価が必要です。低は制限なしで1件ずつ、中は5件同時で各20分、高は45秒間隔で追加され各15分です。重要な案件の初動期限超過でゲームオーバーになります。正当な操作の案件が遅れた場合は、終了時に遅延として表示します。これらは教材用の時間設定です。</p><p>中・高の単独練習では、開始前に「最初から時間制限なし」を選べます。中の2件並行練習は無期限を初期選択し、照会待ちの間に別件を調べる練習ができます。通常の5件勤務と時間切れ後の復習も引き続き選べます。</p><p>「次の更新へ進む」は返信や到着を待つ時間を進めます。時間制限がある勤務では、進めた時間も期限に含まれます。勤務の経過時間と、ログに記された発生時刻（UTC）は別です。</p><h3>保存とローカル動作</h3><p>外部通信はありません。自動保存はブラウザに依存するため、大切な進捗は「保存」からJSONファイルに書き出してください。「読込」で別のブラウザにも移せます。ゲームオーバー後は再挑戦か時間制限なしの復習ができます。</p><h3>出典・ライセンス</h3><p>仮想シェルは Logroom（Copyright © 2026 Logroom contributors, MIT License）を基にしています。ライセンス全文は配布HTMLのソースと開発用ファイルに同梱しています。ログ・人物・組織・担当者への連絡は教材用の架空データです。</p>`,`${!tutorial&&!bridge?'<button class="btn" data-action="tutorial-start">操作チュートリアルを始める</button>':''}<button class="btn primary" data-action="close-dialog">調査に戻る</button>`,true);}
   function renderAnswers(){return caseIds().map(id=>{const c=E.getCase(id),r=session.records[id];return `<article class="result-case"><h3>${esc(c.title)} <span class="badge ${r.status==='resolved'?'good':'medium'}">${r.status==='resolved'?'対応済み':'未完了'}</span></h3><p><strong>${esc(labels[c.answer.verdict])}</strong> · 優先度 ${c.answer.priorities.map(x=>labels[x]).join(' / ')}</p><p>${esc(c.answer.explanation)}</p><h3>確認する根拠</h3><p>${c.answer.evidenceGroups.map(group=>group.map(id=>`${esc(id)}：${esc(evidence(id).title)}`).join(' または ')).join('<br>')}</p><h3>報告の例</h3><p>${esc(c.answer.summary)}</p><p>引き継ぎ：${esc(c.answer.nextStep)}</p>${c.answer.lessons.map(x=>`<p class="hint">${esc(x)}</p>`).join('')}</article>`;}).join('');}
   function showDebrief(revealAnswers=false){const completed=session.phase==='completed',resolved=caseIds().filter(id=>session.records[id].status==='resolved').length;const late=caseIds().filter(id=>{const r=session.records[id];return limit()!==null&&r.resolvedAt!==null&&r.resolvedAt>r.arrival+limit();}).length;const score=Math.round(caseIds().reduce((n,id)=>n+(session.records[id].assessment?.score||0),0)/caseIds().length);modal(completed?'勤務完了 / SHIFT COMPLETE':'対応期限超過 / GAME OVER',`<div class="eyebrow ${completed?'accent':''}">${completed?'SHIFT COMPLETE':'TIME EXPIRED'}</div><p class="result-heading">${completed?'勤務、お疲れさまでした。':'初動の期限を超えました。'}</p><div class="spread" style="margin:18px 0"><div class="result-score">${resolved}<span> / ${caseIds().length} 件対応</span></div><div class="mono muted">${fmt(session.elapsed)} 経過</div></div><p>${completed?'記録した根拠と判断を振り返りましょう。':esc(typeof session.failure==='string'?session.failure:(session.failure?.caseId ? E.getCase(session.failure.caseId).title+'：'+session.failure.reason : '重要な案件について、期限までに必要な判断・対応を記録できませんでした。'))}</p>${session.practice?.untimed?'<div class="notice">最初から時間制限なしの学習として記録しました。時間内クリアの評価とは別です。</div>':''}${session.trainingAfterFailure?'<div class="notice">時間制限なしの復習で完了しました。通常の時間内クリアとは区別して記録されます。</div>':''}<p class="small muted">判定項目の達成度 ${score}% · 期限を過ぎた完了案件 ${late}件<br>文章の品質はこの評価に含みません。</p>${completed?'<section class="notice"><h3>自分の報告を確かめる</h3><p>報告例と比べて修正する一文と理由を挙げ、証拠IDと対象・時刻を対応させます。その証拠が支える範囲を越えた断定がないか、未確認事項の確認先と必要な記録が具体的かを報告例と比べてください。文章の意味は自動採点していません。</p></section><section class="notice"><h3>次のおすすめ（任意）</h3><p>SOCの調査・判断・報告に慣れたら、ThreatHunting-roomで仮説から調べる練習もできます。このままSOCroomの別の勤務や復習を続けても構いません。</p><a href="https://retiacole.github.io/threathunting-room/" target="_blank" rel="noopener noreferrer">ThreatHunting-roomを開く（オンライン）</a><p class="small">オフラインでは入手済みの threathunting-room.html を開きます。進捗は別々に保存されます。</p></section>':''}${completed||revealAnswers?renderAnswers():'<p class="notice">再挑戦・復習を選べます。判定・根拠・報告例を確認したい場合だけ「解答を見る」を押してください。</p><button class="btn" data-action="show-answers">解答を見る</button>'}`,`<button class="btn" data-action="report">${icon('save')}報告を書き出す</button>${completed?'<button class="btn primary" data-action="home">次の勤務を選ぶ</button>':'<button class="btn" data-action="retry">期限3分前から再挑戦</button><button class="btn primary" data-action="training">時間制限なしで続ける</button>'}`);}
   function checkOutcome(){if(!session||screen!=='work'||tutorial)return;if(bridge){if(session.phase==='completed'&&ui.outcomeShown!=='completed'){B.finish(bridge,session);ui.outcomeShown='completed';save(true);showBridgeReview();}return;}if(['completed','gameover'].includes(session.phase)&&ui.outcomeShown!==session.phase){ui.outcomeShown=session.phase;showDebrief();}}
   function start(){if(session&&session.phase!=='completed'){modal('新しい勤務を開始',`<p>現在の勤務を新しい演習に切り替えます。必要なら、先に進捗ファイルを保存してください。</p>`,`<button class="btn" data-action="export">現在の進捗を保存</button><button class="btn ghost" data-action="close-dialog">戻る</button><button class="btn primary" data-action="start-confirmed">新しい勤務を開始</button>`);return;}startConfirmed();}
   function startConfirmed(){closeModal(false);session=E.createSession(home.scenarioId,home.difficulty,home.individual==='parallel'?null:home.individual||null,home.individual==='parallel'?{kind:'parallel',untimed:home.untimed}:home.individual&&home.difficulty!=='low'&&home.untimed?{kind:'single',untimed:true}:null);ui={tab:'logs',query:'',source:'',host:'',command:'',terminalEntries:[],outcomeShown:'',hintLevel:0};terminal=null;screen='work';syncTerminal();lastTick=performance.now();lastSave=0;save(true);render();notify('勤務を開始しました。アラートを選び、調査を進めましょう。');}
-  function step(){if(!running())return notify('勤務を再開してから時間を進めてください。');const candidates=[];for(const id of caseIds()){const r=session.records[id],c=E.getCase(id);if(r.arrival===null&&session.difficulty==='high'&&!session.individualCaseId)candidates.push(caseIds().indexOf(id)*45);if(r.arrival!==null&&r.arrival>session.elapsed)candidates.push(r.arrival);for(const q of E.getContactQuestions(id)){const at=r.contactRequests?.[q.id];if(at!=null&&!E.replyAvailable(session,id,q.id))candidates.push(at+q.delaySeconds*E.DIFFICULTIES[session.difficulty].replyMultiplier);}for(const l of c.logs)if(r.arrival!==null&&r.arrival+l.offset>session.elapsed)candidates.push(r.arrival+l.offset);}const next=candidates.length?Math.min(...candidates.filter(x=>x>session.elapsed)):session.elapsed+30;const seconds=Number.isFinite(next)?Math.max(1,next-session.elapsed):30;change(()=>E.advance(session,seconds));notify(`${fmt(seconds)} 進めました。${limit()===null?'時間制限はありません。':'対応期限にも加算されています。'}`);lastTick=performance.now();}
+  function step(){if(!running())return notify('勤務を再開してから時間を進めてください。');const candidates=[];for(const id of caseIds()){const r=session.records[id],c=E.getCase(id);if(r.arrival===null&&session.difficulty==='high'&&!session.individualCaseId)candidates.push(caseIds().indexOf(id)*45);if(r.arrival!==null&&r.arrival>session.elapsed)candidates.push(r.arrival);for(const q of E.getContactQuestions(id)){const at=r.contactRequests?.[q.id];if(at!=null&&!E.replyAvailable(session,id,q.id))candidates.push(at+q.delaySeconds*E.DIFFICULTIES[session.difficulty].replyMultiplier);}for(const l of c.logs)if(r.arrival!==null&&r.arrival+l.offset>session.elapsed)candidates.push(r.arrival+l.offset);}for(const id of caseIds()){const c=E.getCase(id);if(c.response){const state=E.isolationState(session,id);if(state.status==='pending')candidates.push(state.requestAt+c.response.delaySeconds);}}const next=candidates.length?Math.min(...candidates.filter(x=>x>session.elapsed)):session.elapsed+30;const seconds=Number.isFinite(next)?Math.max(1,next-session.elapsed):30;change(()=>E.advance(session,seconds));notify(`${fmt(seconds)} 進めました。${limit()===null?'時間制限はありません。':'対応期限にも加算されています。'}`);lastTick=performance.now();}
   function selectCase(id){session.selectedCaseId=id;ui.hintLevel=0;ui.host='';ui.query='';ui.source='';ui.from='';ui.to='';ui.logLimit=100;ui.evidenceOnly=false;if(running()&&record().status==='open')E.markInvestigating(session,id);save();render();}
   const actions={
     start,startConfirmed,'start-confirmed':startConfirmed,
+    'response-confirm':()=>change(()=>{E.confirmIsolation(session,selected().id);notify('隔離結果を確認しました。調査で分かったことと、未確認事項・解除条件を引き継いでください。');}),
     'legacy-normal':()=>download('socroom-v0.2-progress.json',JSON.stringify(legacySaves.normal,null,2),'application/json'),
     'legacy-tutorial':()=>download('socroom-v0.2-tutorial.json',JSON.stringify(legacySaves.tutorial,null,2),'application/json'),
     'bridge-export-saved':()=>download('socroom-guided-practice.json',JSON.stringify(bridge?savedObject():bridgeSaved,null,2),'application/json'),'bridge-start':()=>startBridge(false),'bridge-resume':()=>startBridge(true),'bridge-restart':restartBridge,'bridge-reset-confirmed':()=>startBridge(false),'bridge-exit':exitBridge,'bridge-next':bridgeNext,'bridge-back':bridgeBack,'bridge-locate':bridgeLocate,'bridge-review':showBridgeReview,'bridge-review-next':bridgeReviewNext,
@@ -34282,12 +35784,12 @@ SOFTWARE.
     training:()=>{closeModal(false);change(()=>E.continueTraining(session));ui.outcomeShown='';lastTick=performance.now();},
   };
   document.addEventListener('click',event=>{const target=event.target.closest('button,[data-action]');if(!target||target.disabled)return;try{if(target.dataset.action){event.preventDefault();actions[target.dataset.action]?.(target);}else if(target.dataset.scenario){const pack=D.scenarios.find(s=>s.id===target.dataset.scenario&&!s.hidden);if(pack){home.scenarioId=pack.id;home.difficulty=pack.difficulty;home.individual='';render();}}else if(target.dataset.difficulty){home.difficulty=target.dataset.difficulty;home.scenarioId=target.dataset.difficulty;home.individual='';render();}else if(target.dataset.case){tutorialMark('case');selectCase(target.dataset.case);}else if(target.dataset.tab){tutorialMark(target.dataset.tab);bridgeMark(target.dataset.tab);ui.tab=target.dataset.tab;render();}else if(target.dataset.evidence){change(()=>E.addEvidence(session,selected().id,target.dataset.evidence));}else if(target.dataset.removeEvidence){change(()=>E.removeEvidence(session,selected().id,target.dataset.removeEvidence));}else if(target.dataset.query){ui.query=target.dataset.query;ui.host='';ui.source='';ui.tab='logs';render();}else if(target.dataset.command){ui.command=target.dataset.command;render();$('terminal-input')?.focus();}}catch(error){notify(error.message,true);}});
-  document.addEventListener('input',event=>{const el=event.target;if(el.id==='log-search'){ui.query=el.value;ui.logLimit=100;if(tutorial){tutorial.query=el.value;if(!event.isComposing&&el.value.trim()===T.SEARCH_QUERY)tutorialMark('search');save();}if(!event.isComposing)render();}else if(el.dataset.reflection&&bridge){bridge.reflections??={};bridge.reflections[selected().id]??={facts:'',limits:'',next:''};bridge.reflections[selected().id][el.dataset.reflection]=el.value.slice(0,1400);save();}else if(el.dataset.draft&&running()&&record().status!=='resolved'){record().draft[el.dataset.draft]=el.value;save();if(!event.isComposing){refreshTutorial();refreshBridge();}}else if(el.id==='terminal-input'){ui.command=el.value;}});
+  document.addEventListener('input',event=>{const el=event.target;if(el.id==='log-search'){ui.query=el.value;ui.logLimit=100;if(tutorial){tutorial.query=el.value;if(!event.isComposing&&el.value.trim()===T.SEARCH_QUERY)tutorialMark('search');save();}if(!event.isComposing)render();}else if(el.dataset.reflection&&bridge){bridge.reflections??={};bridge.reflections[selected().id]??={facts:'',limits:'',next:''};bridge.reflections[selected().id][el.dataset.reflection]=el.value.slice(0,1400);save();}else if(el.dataset.isolation&&running()&&record().status!=='resolved'){ui.isolationDraft??={target:'',authorizationId:'',reason:'',impactAcknowledged:false};ui.isolationDraft[el.dataset.isolation]=el.type==='checkbox'?el.checked:el.value;}else if(el.dataset.draft&&running()&&record().status!=='resolved'){record().draft[el.dataset.draft]=el.value;save();if(!event.isComposing){refreshTutorial();refreshBridge();}}else if(el.id==='terminal-input'){ui.command=el.value;}});
   document.addEventListener('toggle',event=>{const el=event.target;if(!el.dataset.logDetails||!el.isConnected)return;const openLogs=new Set(ui.openLogs||[]);if(el.open)openLogs.add(el.dataset.logDetails);else openLogs.delete(el.dataset.logDetails);ui.openLogs=[...openLogs];if(bridge&&el.dataset.logDetails&&el.open){bridgeMark('raw');refreshBridge();}if(!tutorial||el.dataset.logDetails!==T.PRIMARY_LOG_ID)return;tutorial.openLogs=el.open?[T.PRIMARY_LOG_ID]:[];if(el.open)tutorialMark('raw');save();refreshTutorial();},true);
   document.addEventListener('compositionstart',()=>{composing=true;});
   document.addEventListener('compositionend',event=>{composing=false;if(event.target.id==='log-search'){ui.query=event.target.value;if(tutorial){tutorial.query=ui.query;if(ui.query.trim()===T.SEARCH_QUERY)tutorialMark('search');save();}}if(pendingRender||event.target.id==='log-search')render();else{refreshTutorial();refreshBridge();}});
   document.addEventListener('change',event=>{const el=event.target;if(el.id==='bridge-reflected'){const next=document.querySelector('[data-action="bridge-review-next"]');if(next)next.disabled=!el.checked;}else if(el.id==='home-scope'){home.individual=el.value;home.untimed=el.value==='parallel';render();}else if(el.id==='home-untimed'){home.untimed=el.checked;render();}else if(el.id==='time-from'||el.id==='time-to'){ui[el.id==='time-from'?'from':'to']=el.value;ui.logLimit=100;render();}else if(el.id==='evidence-only'){ui.evidenceOnly=el.checked;ui.logLimit=100;render();}else if(el.id==='source-filter'){ui.source=el.value;ui.logLimit=100;render();}else if(el.id==='host-filter'){ui.host=el.value;ui.logLimit=100;render();}});
-  document.addEventListener('submit',event=>{if(event.target.id==='case-form'){event.preventDefault();if(tutorial&&tutorialStep().id!=='submit')return notify('上のチュートリアルに沿って、順番に操作してください。');change(()=>{const result=E.submitCase(session,selected().id);notify(result.passed?'根拠と判断を確認しました。対応を記録しました。':'不足している項目を確認し、調査を続けてください。',!result.passed);});}else if(event.target.id==='terminal-form'){event.preventDefault();if(!running())return notify('勤務を再開してから実行してください。');const command=ui.command.trim();if(!command)return;syncTerminal();const result=terminal.run(command);if(result.clear)ui.terminalEntries=[];else ui.terminalEntries.push(`$ ${command}\n${result.stdout||''}${result.stderr?'[error] '+result.stderr:''}`);ui.terminalEntries=ui.terminalEntries.slice(-40);ui.command='';save();render();if($('terminal-output'))$('terminal-output').scrollTop=$('terminal-output').scrollHeight;$('terminal-input')?.focus();}});
+  document.addEventListener('submit',event=>{if(event.target.id==='isolation-form'){event.preventDefault();change(()=>{E.requestIsolation(session,selected().id,{target:$('isolation-target').value,authorizationId:$('isolation-authorization').value,reason:$('isolation-reason').value,impactAcknowledged:$('isolation-impact').checked});notify('隔離依頼を受け付けました。実行結果を確認するまで、隔離済みとは報告できません。');});}else if(event.target.id==='case-form'){event.preventDefault();if(tutorial&&tutorialStep().id!=='submit')return notify('上のチュートリアルに沿って、順番に操作してください。');change(()=>{const result=E.submitCase(session,selected().id);notify(result.passed?'根拠と判断を確認しました。対応を記録しました。':'不足している項目を確認し、調査を続けてください。',!result.passed);});}else if(event.target.id==='terminal-form'){event.preventDefault();if(!running())return notify('勤務を再開してから実行してください。');const command=ui.command.trim();if(!command)return;syncTerminal();const result=terminal.run(command);if(result.clear)ui.terminalEntries=[];else ui.terminalEntries.push(`$ ${command}\n${result.stdout||''}${result.stderr?'[error] '+result.stderr:''}`);ui.terminalEntries=ui.terminalEntries.slice(-40);ui.command='';save();render();if($('terminal-output'))$('terminal-output').scrollTop=$('terminal-output').scrollHeight;$('terminal-input')?.focus();}});
   $('dialog').addEventListener('cancel',event=>{event.preventDefault();closeModal(true);});
   $('import-file').addEventListener('change',async event=>{
     const file=event.target.files?.[0];if(!file)return;
@@ -34323,7 +35825,7 @@ SOFTWARE.
   });
   document.addEventListener('keydown',event=>{if(event.key==='/'&&screen==='work'&&!$('dialog').open&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){event.preventDefault();ui.tab='logs';render();$('log-search')?.focus();}});
   function updateTimers(){if(screen!=='work'||!session)return;if($('shift-clock'))$('shift-clock').textContent=fmt(session.elapsed);document.querySelectorAll('[data-deadline]').forEach(el=>{const r=session.records[el.dataset.deadline],left=remaining(el.dataset.deadline);el.textContent=deadlineText(el.dataset.deadline);el.classList.toggle('urgent',left!==null&&left<120&&r.status!=='resolved');});document.querySelectorAll('[data-reply-countdown]').forEach(el=>{const q=E.getContactQuestions(selected().id).find(x=>x.id===el.dataset.replyCountdown),at=record().contactRequests?.[q.id];el.textContent=fmt(at+q.delaySeconds*E.DIFFICULTIES[session.difficulty].replyMultiplier-session.elapsed);});}
-  function signature(){return session?JSON.stringify([session.phase,E.activeCases(session).map(c=>c.id),E.visibleLogs(session).length,E.activeCases(session).map(c=>E.availableReplies(session,c.id).map(q=>q.id))]):'';}
+  function signature(){return session?JSON.stringify([session.phase,E.activeCases(session).map(c=>c.id),E.visibleLogs(session).length,E.activeCases(session).map(c=>E.availableReplies(session,c.id).map(q=>q.id)),E.activeCases(session).filter(c=>c.response).map(c=>E.isolationState(session,c.id).status)]):'';}
   function pauseForHidden(){hiddenSession=session;E.pause(session);save(true);render();}
   setInterval(()=>{const now=performance.now(),delta=(now-lastTick)/1000;lastTick=now;if(!running()||screen!=='work')return;if(document.hidden){pauseForHidden();return;}if(delta>8){if(limit()!==null)showPause();return;}const before=signature();E.advance(session,delta);if(before!==signature()){syncTerminal();render();checkOutcome();}else updateTimers();if(session.elapsed-lastSave>5){save();lastSave=session.elapsed;}},500);
   document.addEventListener('visibilitychange',()=>{

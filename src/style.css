@@ -21,6 +21,18 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
 
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
+/* The response exercise shares the investigation UI and remains offline. */
+.response-panel h3{font-size:19px;margin:8px 0 12px}
+.response-panel p{line-height:1.85;margin:10px 0}
+.response-panel .response-status{margin:20px 0;padding:16px;border:1px solid #a69055;border-radius:8px;background:#302c1d}
+.response-panel .response-status.complete{border-color:#609c7a;background:#19372b}
+.response-status dl{display:grid;grid-template-columns:100px minmax(0,1fr);gap:9px 14px;margin:14px 0 0;font-size:12px;line-height:1.8}
+.response-status dt{color:#c1d6cc}.response-status dd{margin:0;overflow-wrap:anywhere;white-space:pre-wrap}
+.response-ack{display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.9;margin:18px 0}
+.response-ack input{margin-top:6px;flex-shrink:0}
+.response-panel .btn{white-space:normal;text-align:left}
+@media(max-width:680px){.response-status dl{grid-template-columns:1fr;gap:2px}.response-status dd{margin-bottom:9px}.response-panel h3{font-size:17px}.tabs{overflow-x:auto;justify-content:flex-start}.tab{flex-shrink:0}}
+
 /* Pulse the next actionable control without fading its label or moving it. */
 .tutorial-pulse{outline:3px solid #b8f290;outline-offset:4px;animation:tutorial-action-pulse 1.6s ease-in-out infinite}
 @keyframes tutorial-action-pulse{

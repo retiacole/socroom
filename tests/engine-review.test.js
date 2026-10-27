@@ -272,6 +272,12 @@ test('every published report example passes the structural rubric with selected 
     E.requestContact(s, c.id);
     E.advance(s, Math.max(...c.logs.map(log => log.offset), c.contact.delaySeconds * E.DIFFICULTIES[c.difficulty].replyMultiplier));
     answer(E, s, c.id);
+    if (c.response) {
+      assert.equal(E.assessCase(s, c.id).passed, false, 'the report cannot replace response confirmation');
+      E.requestIsolation(s, c.id, { target: c.response.target, authorizationId: c.response.authorizationId, reason: c.host + ' の継続通信と承認範囲を確認したため隔離する。', impactAcknowledged: true });
+      E.advance(s, c.response.delaySeconds);
+      E.confirmIsolation(s, c.id);
+    }
     const result = E.assessCase(s, c.id);
     assert.equal(result.passed, true, c.id + ': ' + result.checks.filter(check => !check.passed).map(check => check.id).join(', '));
     assert.equal(result.score, 100, c.id);

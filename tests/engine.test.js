@@ -30,6 +30,18 @@ function solve(session, id, engine = E, data = DATA) {
     assert.ok(id, 'available evidence for ' + c.id + ': ' + group.join(', '));
     engine.addEvidence(session, c.id, id);
   }
+  if (c.response) {
+    assert.equal(engine.submitCase(session, c.id).passed, false, 'a complete report alone cannot finish the response exercise');
+    assert.equal(engine.requestIsolation(session, c.id, {
+      target: c.response.target, authorizationId: c.response.authorizationId,
+      reason: c.response.target + ' の実行・通信記録と承認範囲を照合し、拡大を防ぐため隔離する。', impactAcknowledged: true
+    }), true);
+    assert.equal(engine.isolationState(session, c.id).status, 'pending');
+    engine.advance(session, c.response.delaySeconds);
+    assert.equal(engine.isolationState(session, c.id).status, 'succeeded');
+    assert.equal(engine.submitCase(session, c.id).passed, false, 'a successful action still requires result confirmation');
+    assert.equal(engine.confirmIsolation(session, c.id), true);
+  }
   return engine.submitCase(session, c.id);
 }
 function json(value) { return JSON.parse(JSON.stringify(value)); }
@@ -335,21 +347,30 @@ test('ticks do not create endless history and negative time is rejected', () => 
   assert.throws(() => E.advance(s, NaN));
 });
 
-test('production dataset isolates five cases per difficulty and supports all twenty-one saved cases', () => {
+test('production dataset preserves fifteen normal cases and supports all twenty-two saved cases', () => {
   const data = require('../src/data.js'), engine = require('../src/engine.js');
-  assert.equal(data.cases.length, 21);
+  assert.equal(data.cases.length, 22);
+  assert.equal(data.cases.filter(c=>['low','medium','high'].includes(c.scenarioId)).length,15);
+  assert.equal(data.scenarios.length,5);
   for (const pack of data.scenarios) {
-    const s = engine.createSession(pack.id, pack.difficulty, pack.id === 'tutorial' ? pack.caseIds[0] : null);
-    assert.equal(Object.keys(s.records).length, pack.id === 'tutorial' ? 1 : 5);
+    const individual = pack.id === 'tutorial';
+    const s = engine.createSession(pack.id, pack.difficulty, individual ? pack.caseIds[0] : null);
+    assert.equal(Object.keys(s.records).length, individual ? 1 : pack.id==='bridge'?6:5);
     for (const id of pack.caseIds) {
       while (s.records[id].arrival === null) engine.advance(s, 45);
+      if(engine.getCase(id).response)assert.equal(engine.getDeadline(s,id),null,'sixth bridge case has no deadline');
       engine.requestContact(s, id);
       const delay = engine.getCase(id).contact.delaySeconds * engine.DIFFICULTIES[pack.difficulty].replyMultiplier;
       engine.advance(s, delay);
       assert.equal(solve(s, id, engine, data).passed, true);
     }
     assert.equal(s.phase, 'completed');
-    assert.equal(engine.hydrate(JSON.stringify(s)).phase, 'completed');
+    const restored=engine.hydrate(JSON.stringify(s));
+    assert.equal(restored.phase, 'completed');
+    for(const id of pack.caseIds.filter(id=>engine.getCase(id).response)){
+      assert.equal(engine.isolationState(restored,id).status,'succeeded');
+      assert.notEqual(engine.isolationState(restored,id).confirmedAt,null);
+    }
     for (const other of ['low','medium','high'].filter(d => d !== pack.difficulty)) {
       assert.throws(() => engine.createSession(pack.id, other), /問題セット/);
       const altered = json(s);altered.difficulty = other;

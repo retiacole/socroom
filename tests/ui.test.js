@@ -21,6 +21,7 @@ const { JSDOM, VirtualConsole } = jsdom;
 const SRC = path.join(__dirname, '../src');
 const STORE = 'socroom.offline.v2';
 const TUTORIAL_STORE = 'socroom.tutorial.v2';
+const BRIDGE_STORE = 'socroom.bridge.v1';
 const read = name => fs.readFileSync(path.join(SRC, name), 'utf8');
 const escapeScript = source => source.replace(/<\/script/gi, '<\\/script');
 const observer = `
@@ -28,7 +29,8 @@ const observer = `
     const original = globalThis.SocEngine;
     globalThis.SocEngine = Object.freeze({ ...original,
       createSession(...args) { const value = original.createSession(...args); globalThis.__observedSession = value; return value; },
-      hydrate(...args) { const value = original.hydrate(...args); globalThis.__observedSession = value; return value; }
+      hydrate(...args) { const value = original.hydrate(...args); globalThis.__observedSession = value; return value; },
+      resume(value) { globalThis.__observedSession = value; return original.resume(value); }
     });
   })();
 `;
@@ -41,6 +43,7 @@ function assembledHTML() {
 
 function harness(t, saved = null, options = {}) {
   const storage = new Map(saved ? [[STORE, typeof saved === 'string' ? saved : JSON.stringify(saved)]] : []);
+  if(options.bridgeSaved)storage.set(BRIDGE_STORE,JSON.stringify(options.bridgeSaved));
   if (options.tutorialSaved) storage.set(TUTORIAL_STORE, typeof options.tutorialSaved === 'string' ? options.tutorialSaved : JSON.stringify(options.tutorialSaved));
   for (const [kind,value] of Object.entries(options.legacySaves || {})) storage.set(kind === 'normal' ? 'socroom.offline.v1' : 'socroom.tutorial.v1', JSON.stringify(value));
   const errors = [], downloads = [], blobs = new Map(), intervals = new Map(), timeouts = new Map();
@@ -121,6 +124,128 @@ function start(h, difficulty = 'low', scenarioId = null, individual = null) {
   assert.ok(h.document.querySelector('.workbench'));
   assert.equal(h.session.phase, 'running');
 }
+
+const ISOLATION_CASE = 'response-endpoint-isolation';
+function isolationSaved() {
+  const E=require('../src/engine.js'),B=require('../src/bridge.js'),course=B.create();
+  for(let index=0;index<5;index++){
+    const c=B.currentCase(course),session=E.createSession('bridge','low',c.id);
+    E.advance(session,Math.max(0,...c.logs.map(log=>log.offset)));E.requestContact(session,c.id);
+    for(const group of c.answer.evidenceGroups)E.addEvidence(session,c.id,group[0]);
+    session.records[c.id].draft={verdict:c.answer.verdict,priority:c.answer.priorities[0],action:c.answer.actions[0],target:c.answer.target,summary:c.answer.summary,nextStep:c.answer.nextStep};
+    assert.equal(E.submitCase(session,c.id).passed,true);B.finish(course,session);B.advance(course);
+  }
+  return {format:'socroom-save',version:1,bridge:course,session:E.createSession('bridge','low',ISOLATION_CASE),workspace:null};
+}
+function startIsolation(h){h.click('[data-action="bridge-resume"]');}
+
+function isolationEvidence(h) {
+  const c=h.window.SocEngine.getCase(ISOLATION_CASE);
+  for(const group of c.answer.evidenceGroups){
+    const id=group[0],tab=c.logs.some(log=>log.id===id)?'logs':'resources';
+    h.click(`[data-tab="${tab}"]`);
+    if(tab==='logs')h.input('#log-search',id);
+    h.click(`[data-evidence="${id}"]`);
+  }
+}
+function isolationForm(h,target='design-lt-014') {
+  h.click('[data-tab="response"]');
+  h.input('#isolation-target',target);
+  h.input('#isolation-authorization','IR-ENDPOINT-04');
+  h.input('#isolation-reason','design-lt-014 の実行後も続く通信を止めるため、手順に沿って隔離を依頼する。');
+  h.get('#isolation-impact').checked=true;
+  h.get('#isolation-impact').dispatchEvent(new h.window.Event('input',{bubbles:true}));
+}
+function isolationReport(h) {
+  const c=h.window.SocEngine.getCase(ISOLATION_CASE);
+  for(const [key,value] of Object.entries({verdict:'incident',priority:'high',action:'contain',target:c.host,summary:c.host+' の不審な実行・通信を確認した。',nextStep:'端末管理担当へ調査と復旧・解除判断を引き継ぐ。'}))h.input('#draft-'+key,value);
+}
+
+test('endpoint exercise follows five guided cases without a separate home entry', t=>{
+  const h=harness(t,null,{bridgeSaved:isolationSaved()});
+  assert.equal(h.document.querySelectorAll('[data-difficulty]').length,3);
+  assert.equal(h.document.querySelectorAll('.bridge-roadmap li').length,6);
+  assert.equal(h.document.querySelector('[data-action="response-start"]'),null);
+  startIsolation(h);
+  assert.equal(h.session.scenarioId,'bridge');
+  assert.equal(h.session.individualCaseId,ISOLATION_CASE);
+  assert.match(h.get('#bridge-guide').textContent,/6 \/ 6/);
+  assert.equal(h.window.SocEngine.getDeadline(h.session,ISOLATION_CASE),null);
+  h.click('[data-action="home"]');
+  assert.equal(h.document.querySelectorAll('[data-preview-case]').length,5);
+  start(h,'medium');
+  assert.equal(Object.keys(h.session.records).length,5);
+  assert.equal(h.document.querySelector('[data-tab="response"]'),null);
+});
+
+test('endpoint exercise preserves the paused normal shift and its report',t=>{
+  const h=harness(t,null,{bridgeSaved:isolationSaved()});start(h,'medium');
+  h.input('#draft-summary','既存の調査メモを保存する。');
+  h.click('[data-action="home"]');startIsolation(h);
+  assert.equal(h.session.scenarioId,'bridge');
+  h.click('[data-action="export"]');
+  assert.equal(JSON.parse(h.downloads.at(-1).content).bridge.index,5);
+  h.click('[data-action="bridge-exit"]');
+  h.click('[data-action="continue"]');h.click('#dialog [data-action="resume"]');
+  assert.equal(h.session.scenarioId,'medium');
+  assert.equal(h.get('#draft-summary').value,'既存の調査メモを保存する。');
+});
+
+test('isolation controls reject insufficient evidence and wrong target without creating an action',t=>{
+  const h=harness(t,null,{bridgeSaved:isolationSaved()});startIsolation(h);
+  isolationForm(h);h.submit('#isolation-form');
+  assert.equal(h.window.SocEngine.isolationState(h.session,ISOLATION_CASE).status,'not-requested');
+  assert.equal(h.get('#toast').className,'error');
+  isolationEvidence(h);isolationForm(h,'design-lt-041');h.submit('#isolation-form');
+  assert.equal(h.window.SocEngine.isolationState(h.session,ISOLATION_CASE).status,'not-requested');
+  h.input('#isolation-target','design-lt-014');h.input('#isolation-authorization','');h.submit('#isolation-form');
+  assert.equal(h.window.SocEngine.isolationState(h.session,ISOLATION_CASE).status,'not-requested');
+});
+
+test('endpoint case requires an actual successful operation and explicit result confirmation before completion',t=>{
+  const h=harness(t,null,{bridgeSaved:isolationSaved()});startIsolation(h);
+  isolationEvidence(h);isolationReport(h);h.submit('#case-form');
+  assert.notEqual(h.session.records[ISOLATION_CASE].status,'resolved');
+  isolationForm(h);h.submit('#isolation-form');
+  assert.match(h.get('.response-status').textContent,/実行待ち/);
+  assert.equal(h.document.querySelector('[data-action="response-confirm"]'),null);
+  h.submit('#case-form');
+  assert.notEqual(h.session.records[ISOLATION_CASE].status,'resolved');
+  h.click('.response-panel [data-action="step"]');
+  assert.match(h.get('.response-status').textContent,/隔離成功/);
+  assert.match(h.get('.response-status').textContent,/管理サービスとの接続を維持/);
+  h.submit('#case-form');
+  assert.notEqual(h.session.records[ISOLATION_CASE].status,'resolved','success without result confirmation is not complete');
+  h.click('[data-action="response-confirm"]');
+  h.submit('#case-form');
+  assert.equal(h.session.phase,'completed');
+  h.click('#dialog [data-action="report"]');
+  assert.match(h.downloads.at(-1).content,/design-lt-014/);
+  assert.match(h.downloads.at(-1).content,/IR-ENDPOINT-04/);
+  assert.match(h.downloads.at(-1).content,/00:45/);
+  h.click('#dialog [data-action="bridge-exit"]');
+  h.click('[data-action="bridge-resume"]');
+  h.click('#dialog .modal-head [data-action="close-dialog"]');
+  h.click('[data-tab="response"]');
+  assert.equal(h.get('[data-action="response-confirm"]').disabled,true);
+});
+
+test('pending endpoint action survives export and reload and never completes during a pause',t=>{
+  const h=harness(t,null,{bridgeSaved:isolationSaved()});startIsolation(h);
+  isolationEvidence(h);isolationForm(h);h.submit('#isolation-form');
+  h.tick(1);h.click('[data-action="export"]');
+  const saved=JSON.parse(h.downloads.at(-1).content),restored=harness(t,null,{bridgeSaved:saved});
+  restored.tick(100);
+  startIsolation(restored);
+  assert.equal(restored.session.elapsed,saved.session.elapsed);
+  assert.equal(restored.window.SocEngine.isolationState(restored.session,ISOLATION_CASE).status,'pending');
+  restored.click('[data-tab="response"]');
+  restored.tick(43);
+  assert.match(restored.get('.response-status').textContent,/実行待ち/);
+  restored.tick(1);
+  assert.match(restored.get('.response-status').textContent,/隔離成功/);
+  assert.equal(restored.window.SocEngine.isolationState(restored.session,ISOLATION_CASE).confirmedAt,null);
+});
 function solveThroughDOM(h, id) {
   const c = h.window.SOC_DATA.cases.find(item => item.id === id);
   while (h.session.records[id].arrival === null) h.click('[data-action="step"]');

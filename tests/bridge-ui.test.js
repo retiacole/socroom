@@ -134,6 +134,35 @@ function collectAndReport(h, c) {
     if (!saved.session.records[c.id].evidenceIds.includes(id)) h.click(`[data-evidence="${id}"]`);
   }
   for (const [name, value] of Object.entries({ verdict: c.answer.verdict, priority: c.answer.priorities[0], action: c.answer.actions[0], target: c.answer.target, summary: `${c.answer.target} の根拠を時刻と対象に照らして確認した。確認できた事実と残る不明点を区別する。`, nextStep: '根拠を添えて担当者へ引き継ぎ、未確認事項の確認方法を伝える。' })) h.input('#draft-' + name, value);
+  if (c.response) {
+    h.submit('#case-form');
+    assert.equal(h.get('#dialog').open, false, 'a complete report cannot replace isolation');
+    assert.equal(saveSnapshot(h).session.records[c.id].assessment.passed, false);
+    h.click('[data-tab="response"]');
+    h.input('#isolation-target', c.response.target);
+    h.input('#isolation-authorization', c.response.authorizationId);
+    h.input('#isolation-reason', c.host + ' の継続通信と承認範囲を確認したため隔離する。');
+    const impact = h.get('#isolation-impact');
+    impact.checked = true;
+    impact.dispatchEvent(new h.window.Event('input', { bubbles: true }));
+    h.submit('#isolation-form');
+    const pending = saveSnapshot(h);
+    assert.equal(h.window.SocEngine.isolationState(pending.session, c.id).status, 'pending');
+    const earlyConfirm = h.document.querySelector('[data-action="response-confirm"]');
+    assert.ok(!earlyConfirm || earlyConfirm.disabled, 'confirmation is unavailable before success');
+    h.submit('#case-form');
+    assert.equal(h.get('#dialog').open, false, 'a pending isolation cannot complete the case');
+    h.click('.response-panel [data-action="step"]');
+    const succeeded = saveSnapshot(h);
+    assert.equal(h.window.SocEngine.isolationState(succeeded.session, c.id).status, 'succeeded');
+    assert.equal(h.window.SocEngine.isolationState(succeeded.session, c.id).confirmedAt, null);
+    h.submit('#case-form');
+    assert.equal(h.get('#dialog').open, false, 'success without explicit confirmation is not completion');
+    h.click('[data-action="response-confirm"]');
+    const confirmed = saveSnapshot(h);
+    assert.notEqual(h.window.SocEngine.isolationState(confirmed.session, c.id).confirmedAt, null);
+    assert.equal(confirmed.session.records[c.id].assessment.passed, false, 'confirmation does not rewrite the earlier submission');
+  }
   h.submit('#case-form');
 }
 function reflectAndAdvance(h) {
@@ -151,17 +180,17 @@ function reflectAndAdvance(h) {
 
 // These tests exercise the DOM and the saved file format. They deliberately use
 // the engine answer data as an oracle, not a UI shortcut available to learners.
-test('five dedicated practice cases gradually remove guidance while requiring real evidence and reports', t => {
+test('six practice cases gradually remove guidance and require real evidence, reports and endpoint response', t => {
   const h = harness(t);
   const scenario = h.window.SOC_DATA.scenarios.find(s => s.id === 'bridge');
   assert.ok(scenario);
-  assert.equal(scenario.caseIds.length, 5);
+  assert.equal(scenario.caseIds.length, 6);
   const normalIds = h.window.SOC_DATA.scenarios.filter(s => !s.hidden).flatMap(s => s.caseIds);
   scenario.caseIds.forEach(id => assert.equal(normalIds.includes(id), false));
   assert.equal(scenario.caseIds.includes(h.window.SocTutorial.CASE_ID), false);
   h.click('[data-action="bridge-start"]');
-  const stages = ['guided', 'guided', 'checklist', 'checklist', 'independent'];
-  for (let index = 0; index < 5; index++) {
+  const stages = ['guided', 'guided', 'checklist', 'checklist', 'independent', 'independent'];
+  for (let index = 0; index < 6; index++) {
     const c = bridgeCase(h);
     assert.equal(c.id, scenario.caseIds[index]);
     const saved = saveSnapshot(h);
@@ -195,7 +224,7 @@ test('five dedicated practice cases gradually remove guidance while requiring re
   }
   assert.ok(h.document.querySelector('.home'));
   const persisted = JSON.parse(h.storage.get(BRIDGE_STORE));
-  assert.equal(persisted.bridge.completed.length, 5);
+  assert.equal(persisted.bridge.completed.length, 6);
   assert.equal(h.storage.has(STORE), false, 'the bridge never writes a normal shift save');
   assert.equal(h.storage.has(TUTORIAL_STORE), false, 'the bridge never writes a tutorial save');
 });
@@ -294,6 +323,55 @@ test('bridge reload resumes its own case, course history, notes and terminal wor
   assert.equal(result.workspace.files['/home/analyst/practice.txt'], 'preserved\n');
   assert.equal(restored.storage.has(STORE), false);
   assert.equal(restored.storage.has(TUTORIAL_STORE), false);
+});
+
+test('a saved completion of the original five cases opens the sixth through review while retaining earlier notes', t => {
+  const setup = harness(t), E = setup.window.SocEngine, B = setup.window.SocBridge;
+  const course = B.create();
+  let session;
+  // This is an old-save fixture. The sixth case below is completed only through
+  // real DOM controls, including its isolation operation and confirmation.
+  for (let index = 0; index < 5; index++) {
+    const c = B.currentCase(course);
+    session = E.createSession('bridge', 'low', c.id);
+    E.requestContact(session, c.id);
+    E.advance(session, Math.max(0, ...c.logs.map(log => log.offset)));
+    for (const group of c.answer.evidenceGroups) E.addEvidence(session, c.id, group[0]);
+    session.records[c.id].draft = { verdict: c.answer.verdict, priority: c.answer.priorities[0], action: c.answer.actions[0], target: c.answer.target, summary: c.answer.summary + ' 旧版で残した第' + (index + 1) + '問のメモ。', nextStep: c.answer.nextStep };
+    course.reflections[c.id] = { facts: '旧版の事実メモ ' + index, limits: '旧版の未確認事項 ' + index, next: '旧版の依頼先 ' + index };
+    assert.equal(E.submitCase(session, c.id).passed, true);
+    B.finish(course, session);
+    if (index < 4) B.advance(course);
+  }
+  const fifthId = session.selectedCaseId;
+  const oldSave = JSON.parse(JSON.stringify({ format: 'socroom-save', version: 1, session, bridge: course, workspace: { files: { '/home/analyst/fifth-note.txt': '旧版の第5問の作業メモ' }, dirs: ['/home/analyst'], history: [], cwd: '/home/analyst', oldcwd: '/home/analyst' } }));
+  assert.equal(oldSave.bridge.index, 4);
+  assert.equal(oldSave.bridge.completed.length, 5);
+  const normal = E.createSession('medium', 'medium');
+  normal.records[normal.selectedCaseId].draft.summary = '別枠の通常勤務メモ';
+  const h = harness(t, { format: 'socroom-save', version: 1, session: normal }, { bridgeSaved: oldSave });
+  assert.equal(h.document.querySelector('[data-action="response-start"]'), null, 'there is no separate response entry');
+  h.click('[data-action="bridge-resume"]');
+  assert.match(h.get('#dialog').textContent, /5 \/ 6 完了/);
+  assert.equal(h.get('[data-reflection="facts"]').value, oldSave.bridge.reflections[fifthId].facts);
+  assert.equal(saveSnapshot(h).workspace.files['/home/analyst/fifth-note.txt'], '旧版の第5問の作業メモ');
+  reflectAndAdvance(h);
+  let saved = saveSnapshot(h);
+  assert.equal(saved.bridge.index, 5);
+  assert.equal(saved.bridge.completed.length, 5);
+  assert.equal(saved.session.selectedCaseId, 'response-endpoint-isolation');
+  assert.equal(saved.session.scenarioId, 'bridge');
+  assert.equal(h.get('#draft-summary').value, '');
+  assert.deepEqual(saved.bridge.reflections, oldSave.bridge.reflections);
+  assert.deepEqual(saved.bridge.completed.map(s => s.records[s.selectedCaseId].draft), oldSave.bridge.completed.map(s => s.records[s.selectedCaseId].draft));
+  collectAndReport(h, bridgeCase(h));
+  saved = saveSnapshot(h);
+  assert.equal(saved.bridge.completed.length, 6);
+  assert.deepEqual(saved.bridge.reflections, oldSave.bridge.reflections);
+  reflectAndAdvance(h);
+  h.click('[data-action="continue"]');
+  h.click('[data-action="resume"]');
+  assert.equal(h.get('#draft-summary').value, '別枠の通常勤務メモ');
 });
 
 test('bridge imported save restores progress and rejects mismatched course data without losing active work', async t => {

@@ -151,6 +151,58 @@
     if (replyAvailable(session, caseId, question.id)) logHistory(session, 'contact-reply', caseId, '担当者の回答を受信: ' + question.replyTitle);
     return true;
   }
+  function isolationConfig(caseId) {
+    const response = getCase(caseId)?.response;
+    if (!response || response.kind !== 'endpoint-isolation') throw new Error('このケースには端末隔離の操作はありません。');
+    return response;
+  }
+  function isolationState(session, caseId, at = session.elapsed) {
+    const config = isolationConfig(caseId);
+    recordFor(session, caseId);
+    number(at, '隔離状態の確認時刻', 0, session.elapsed);
+    const response = session.records[caseId].response;
+    if (!response || response.requestAt > at) return { status: 'not-requested', target: config.target, requestAt: null, completedAt: null, confirmedAt: null, reason: '', authorizationId: '' };
+    const ready = response.requestAt + config.delaySeconds;
+    const succeeded = ready <= at;
+    return { status: succeeded ? 'succeeded' : 'pending', target: response.target, requestAt: response.requestAt, completedAt: succeeded ? ready : null, confirmedAt: succeeded && response.confirmedAt !== null && response.confirmedAt <= at ? response.confirmedAt : null, reason: response.reason, authorizationId: response.authorizationId };
+  }
+  function isolationFields(caseId, value) {
+    const config = isolationConfig(caseId);
+    if (!plain(value) || value.target !== config.target) throw new Error('隔離対象の端末が一致しません。');
+    if (value.authorizationId !== config.authorizationId) throw new Error('隔離の承認IDが一致しません。');
+    const reason = text(typeof value.reason === 'string' ? value.reason.trim() : value.reason, '隔離理由', 500);
+    if (reason.length < 10 || reason.length > 500) throw new Error('隔離理由は10〜500文字で記録してください。');
+    if (value.impactAcknowledged !== true) throw new Error('端末隔離による業務影響を確認してください。');
+    return { target: config.target, authorizationId: config.authorizationId, reason, impactAcknowledged: true };
+  }
+  function isolationEvidence(session, caseId, evidenceIds, at) {
+    const ids = evidenceFor(session, evidenceIds, at);
+    if (!isolationConfig(caseId).requiredEvidenceGroups.every(group => group.some(id => ids.includes(id)))) throw new Error('端末隔離に必要な根拠を登録してください。');
+    return ids;
+  }
+  function requestIsolation(session, caseId, options) {
+    const record = mutable(session, caseId);
+    const config = isolationConfig(caseId);
+    if (record.response) return false;
+    const fields = isolationFields(caseId, options);
+    const evidenceIds = isolationEvidence(session, caseId, record.evidenceIds, session.elapsed);
+    if (session.elapsed + config.delaySeconds > MAX_TIME) throw new Error('隔離の完了を確認できる経過時間を超えています。');
+    // Preserve the evidence available when authorization was exercised, even if
+    // the analyst later narrows the evidence attached to the handoff report.
+    record.response = { ...fields, requestAt: session.elapsed, confirmedAt: null, evidenceIds };
+    record.status = 'investigating';
+    logHistory(session, 'isolation-request', caseId, '端末隔離を要求: ' + fields.target + ' / 承認 ' + fields.authorizationId);
+    return true;
+  }
+  function confirmIsolation(session, caseId) {
+    const record = mutable(session, caseId);
+    const state = isolationState(session, caseId);
+    if (state.status !== 'succeeded') throw new Error('端末隔離の成功を確認できるまで待ってください。');
+    if (record.response.confirmedAt !== null) return false;
+    record.response.confirmedAt = session.elapsed;
+    logHistory(session, 'isolation-confirm', caseId, '端末隔離の成功と管理通信の維持を確認: ' + state.target);
+    return true;
+  }
   function markInvestigating(session, caseId) {
     const record = mutable(session, caseId);
     if (record.status === 'investigating') return false;
@@ -173,7 +225,7 @@
     record.evidenceIds.splice(index, 1);
     return true;
   }
-  function assessmentFor(session, caseId, draft, evidenceIds, at, reviewed = false) {
+  function assessmentFor(session, caseId, draft, evidenceIds, at, reviewed = false, responseConfirmedAt) {
     const c = getCase(caseId);
     const answer = c.answer;
     const usable = evidenceIds.filter(id => evidenceAvailableAt(session, id, at));
@@ -197,7 +249,12 @@
       { id: 'summary', label: '状況の記録', passed: summaryAnchored, detail: '対象・ケースの識別子・証拠ID・時刻（HH:MM）のいずれかを含めます。文章の意味や正確性は採点しません' },
       { id: 'nextStep', label: '次の対応の依頼先', passed: recipientPresent, detail: '担当者・責任者・管理者・SOCなどの依頼先を記載します。対応内容の妥当性は文章から自動判定しません' }
     ];
-    const weights = { verdict: 15, priority: 10, action: 20, target: 10, evidence: 20, evidenceFocus: 10, summary: 10, nextStep: 5 };
+    if (c.response?.kind === 'endpoint-isolation') {
+      const state = isolationState(session, caseId, at);
+      const confirmedAt = responseConfirmedAt === undefined ? state.confirmedAt : responseConfirmedAt;
+      checks.push({ id: 'response', label: '端末隔離の結果確認', passed: state.status === 'succeeded' && confirmedAt !== null && confirmedAt === state.confirmedAt, detail: '承認された対象へ隔離を要求し、成功と管理通信の維持を確認します（配点なし・完了に必要）' });
+    }
+    const weights = { verdict: 15, priority: 10, action: 20, target: 10, evidence: 20, evidenceFocus: 10, summary: 10, nextStep: 5, response: 0 };
     let score = checks.reduce((sum, check) => sum + (check.id === 'evidence' ? 20 * groups.filter(Boolean).length / Math.max(1, groups.length) : check.passed ? weights[check.id] : 0), 0);
     const passed = checks.every(check => check.passed);
     // Keep scoring tied to the original deadline, even after entering unlimited
@@ -221,6 +278,10 @@
     const assessment = assessCase(session, caseId);
     record.draft = cleanDraft(record.draft);
     record.submission = { at: session.elapsed, draft: clone(record.draft), evidenceIds: record.evidenceIds.slice() };
+    // A submit and a later confirmation can occur between the same two timer
+    // ticks. Preserve their order rather than treating equal timestamps as proof
+    // that confirmation had already happened when this report was submitted.
+    if (getCase(caseId).response?.kind === 'endpoint-isolation') record.submission.responseConfirmedAt = isolationState(session, caseId).confirmedAt;
     if (session.migration?.untimedReview) record.submission.reviewed = true;
     record.attempts += 1;
     record.assessment = assessment;
@@ -278,6 +339,10 @@
         const ready = requested + question.delaySeconds * DIFFICULTIES[session.difficulty].replyMultiplier;
         if (before < ready && ready <= end) timedEvents.push({ at: ready, type: 'contact-reply', caseId: id, detail: '担当者の回答を受信: ' + question.replyTitle });
       });
+      if (record.response) {
+        const ready = record.response.requestAt + isolationConfig(id).delaySeconds;
+        if (before < ready && ready <= end) timedEvents.push({ at: ready, type: 'isolation-succeeded', caseId: id, detail: '端末隔離が成功。管理通信は維持: ' + record.response.target });
+      }
     });
     timedEvents.sort((a, b) => a.at - b.at).forEach(event => {
       session.elapsed = event.at;
@@ -322,6 +387,10 @@
       if (record.arrival !== null && record.arrival > checkpoint) { session.records[id] = blankRecord(null); continue; }
       record.contactRequests = Object.fromEntries(Object.entries(record.contactRequests).filter(([, at]) => at <= checkpoint));
       record.requestAt = requestTime(record, contactQuestion(id));
+      if (record.response) {
+        if (record.response.requestAt > checkpoint) delete record.response;
+        else if (record.response.confirmedAt !== null && record.response.confirmedAt > checkpoint) record.response.confirmedAt = null;
+      }
       record.evidenceIds = record.evidenceIds.filter(evidenceId => evidenceAvailable(session, evidenceId));
       if (record.submission && record.submission.at > checkpoint) {
         record.submission = null;
@@ -405,21 +474,38 @@
       // Other cases are populated below; validate cross-case evidence after every record is restored.
       if (!Array.isArray(raw.evidenceIds) || raw.evidenceIds.length > evidenceMap.size) throw new Error('証拠一覧が不正です。');
       record.evidenceIds = raw.evidenceIds.slice();
+      if (Object.hasOwn(raw, 'response')) {
+        const config = isolationConfig(id);
+        const allowed = ['target', 'authorizationId', 'reason', 'impactAcknowledged', 'requestAt', 'confirmedAt', 'evidenceIds'];
+        if (!plain(raw.response) || Object.keys(raw.response).some(key => !allowed.includes(key))) throw new Error('端末隔離の保存内容が不正です。');
+        const fields = isolationFields(id, raw.response);
+        const requestAt = number(raw.response.requestAt, '隔離要求時刻', expectedArrival === null ? MAX_TIME + 1 : expectedArrival, Math.min(session.elapsed, MAX_TIME - config.delaySeconds));
+        const confirmedAt = raw.response.confirmedAt === null ? null : number(raw.response.confirmedAt, '隔離確認時刻', requestAt + config.delaySeconds, session.elapsed);
+        if (!Array.isArray(raw.response.evidenceIds) || raw.response.evidenceIds.length > evidenceMap.size) throw new Error('隔離要求時の根拠一覧が不正です。');
+        record.response = { ...fields, requestAt, confirmedAt, evidenceIds: raw.response.evidenceIds.slice() };
+      }
       if (raw.submission !== null && raw.submission !== undefined) {
         if (!plain(raw.submission) || expectedArrival === null || record.attempts < 1) throw new Error('提出履歴が不正です。');
         const at = number(raw.submission.at, '提出時刻', expectedArrival, session.elapsed);
         const draft = cleanDraft(raw.submission.draft);
         if (!Array.isArray(raw.submission.evidenceIds) || raw.submission.evidenceIds.length > evidenceMap.size) throw new Error('提出時の証拠一覧が不正です。');
         record.submission = { at, draft, evidenceIds: raw.submission.evidenceIds.slice() };
+        if (getCase(id).response?.kind === 'endpoint-isolation') {
+          if (!Object.hasOwn(raw.submission, 'responseConfirmedAt')) throw new Error('提出時の隔離確認状態が不足しています。');
+          const confirmedAt = raw.submission.responseConfirmedAt === null ? null : number(raw.submission.responseConfirmedAt, '提出時の隔離確認時刻', 0, at);
+          const state = isolationState(session, id, at);
+          if (confirmedAt !== null ? confirmedAt !== state.confirmedAt : state.confirmedAt !== null && state.confirmedAt < at) throw new Error('提出時の隔離確認状態と処置履歴が一致しません。');
+          record.submission.responseConfirmedAt = confirmedAt;
+        } else if (Object.hasOwn(raw.submission, 'responseConfirmedAt')) throw new Error('端末隔離がないケースの提出状態です。');
         if (raw.submission.reviewed !== undefined) {
           if (typeof raw.submission.reviewed !== 'boolean' || (raw.submission.reviewed && !session.migration?.untimedReview)) throw new Error('旧版の見直し提出状態が不正です。');
           record.submission.reviewed = raw.submission.reviewed;
         }
         // This first pass only establishes low-mode arrival ordering from source-case evidence.
-        record.assessment = assessmentFor(session, id, draft, record.submission.evidenceIds, at, record.submission.reviewed);
+        record.assessment = assessmentFor(session, id, draft, record.submission.evidenceIds, at, record.submission.reviewed, record.submission.responseConfirmedAt);
         if (record.assessment.passed) { record.status = 'resolved'; record.resolvedAt = at; }
       }
-      if (record.status !== 'resolved' && (record.attempts || Object.keys(record.contactRequests).length || record.evidenceIds.length || raw.status === 'investigating')) record.status = 'investigating';
+      if (record.status !== 'resolved' && (record.attempts || Object.keys(record.contactRequests).length || record.evidenceIds.length || record.response || raw.status === 'investigating')) record.status = 'investigating';
     }
     for (const id of ids) {
       const record = session.records[id];
@@ -431,9 +517,10 @@
         if (record.submission) record.submission.evidenceIds = record.submission.evidenceIds.filter(evidenceId => evidenceAvailableAt(session, evidenceId, record.submission.at));
       }
       record.evidenceIds = evidenceFor(session, record.evidenceIds);
+      if (record.response) record.response.evidenceIds = isolationEvidence(session, id, record.response.evidenceIds, record.response.requestAt);
       if (record.submission) {
         record.submission.evidenceIds = evidenceFor(session, record.submission.evidenceIds, record.submission.at);
-        record.assessment = assessmentFor(session, id, record.submission.draft, record.submission.evidenceIds, record.submission.at, record.submission.reviewed);
+        record.assessment = assessmentFor(session, id, record.submission.draft, record.submission.evidenceIds, record.submission.at, record.submission.reviewed, record.submission.responseConfirmedAt);
         record.status = record.assessment.passed ? 'resolved' : 'investigating';
         record.resolvedAt = record.assessment.passed ? record.submission.at : null;
       }
@@ -458,7 +545,7 @@
       if (afterDeadline && !inTraining && !inReview) throw new Error('重要案件の期限後の提出は、時間切れ後の練習モードでのみ有効です。');
     }
     if (!Array.isArray(value.history) || value.history.length > MAX_HISTORY) throw new Error('操作履歴が多すぎるか不正です。');
-    const historyTypes = ['arrival', 'contact-request', 'contact-reply', 'investigate', 'submit-pass', 'submit-revise', 'complete', 'gameover', 'pause', 'resume', 'training', 'retry', 'restore'];
+    const historyTypes = ['arrival', 'contact-request', 'contact-reply', 'isolation-request', 'isolation-succeeded', 'isolation-confirm', 'investigate', 'submit-pass', 'submit-revise', 'complete', 'gameover', 'pause', 'resume', 'training', 'retry', 'restore'];
     session.history = value.history.map(item => {
       if (!plain(item) || !historyTypes.includes(item.type) || (item.caseId !== null && !ids.includes(item.caseId))) throw new Error('操作履歴が不正です。');
       return { at: number(item.at, '履歴時刻'), type: item.type, caseId: item.caseId, detail: text(item.detail, '履歴', 500) };
@@ -494,11 +581,16 @@
         lines.push('[' + id + '] ' + content);
       });
       if (!record.evidenceIds.length) lines.push('未添付');
+      if (c.response?.kind === 'endpoint-isolation') {
+        const state = isolationState(session, c.id);
+        const when = at => at === null ? '未実施' : clock(at);
+        lines.push('端末隔離シミュレーション:', '隔離対象: ' + state.target, '承認ID: ' + (state.authorizationId || '未要求'), '隔離理由: ' + (state.reason || '未記入'), '要求時刻: ' + when(state.requestAt), '完了時刻: ' + when(state.completedAt), '結果確認時刻: ' + when(state.confirmedAt), '管理通信: ' + (state.status === 'succeeded' ? '維持（教材内の隔離結果）' : '結果未確認'), '隔離解除はこの演習の範囲外です。解除条件と確認担当を次の対応へ引き継ぎます。');
+      }
       lines.push('');
     }
     lines.push('操作履歴:');
     session.history.forEach(item => lines.push(clock(item.at) + ' ' + (item.caseId ? '[' + item.caseId + '] ' : '') + item.detail));
     return lines.join('\n');
   }
-  return Object.freeze({ DIFFICULTIES, LABELS, PARALLEL_CASE_IDS, createSession, getCase, activeCases, visibleLogs, evidenceAvailable, evidenceLimit, getContactQuestions, availableReplies, replyAvailable, requestContact, advance, markInvestigating, addEvidence, removeEvidence, submitCase, assessCase, getDeadline, pause, resume, continueTraining, retryCheckpoint, hydrate, report });
+  return Object.freeze({ DIFFICULTIES, LABELS, PARALLEL_CASE_IDS, createSession, getCase, activeCases, visibleLogs, evidenceAvailable, evidenceLimit, getContactQuestions, availableReplies, replyAvailable, requestContact, requestIsolation, isolationState, confirmIsolation, advance, markInvestigating, addEvidence, removeEvidence, submitCase, assessCase, getDeadline, pause, resume, continueTraining, retryCheckpoint, hydrate, report });
 }));

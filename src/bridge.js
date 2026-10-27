@@ -13,7 +13,7 @@
   const clone = value => JSON.parse(JSON.stringify(value));
 
   function create() {
-    if (CASE_IDS.length !== 5) throw new Error('ガイド付き実務演習の教材を読み込めません。');
+    if (CASE_IDS.length !== 6) throw new Error('ガイド付き実務演習の教材を読み込めません。');
     return { version: 1, index: 0, guide: { step: 0, seen: [] }, completed: [], reflections: {}, reviewArchive: {}, reviewWorkspaces: {} };
   }
   function currentCase(course) {

@@ -14,21 +14,39 @@ function assertObservedValues(value,id){
   else if(typeof value==='string')assert.equal(missingAssertions.has(value),false,`no answer-bearing missing value ${id}`);
 }
 
-test('twenty-one cases keep disjoint packs, valid source evidence, realistic formats and actionable targets', () => {
+test('twenty-two cases keep the fifteen normal cases, disjoint packs, valid evidence and actionable targets', () => {
   assert.equal(D.version,'socroom-3');
   assert.equal(D.releaseVersion,require('../package.json').version);
-  assert.equal(D.cases.length,21);
+  assert.equal(D.cases.length,22);
   assert.equal(D.scenarios.length,5);
+  const normalPacks={
+    low:['low-quarantine','low-lost-device','low-backup','low-mail-rule','low-log-gap'],
+    medium:['medium-bulk-upload','medium-mfa-fatigue','medium-waf-import','medium-oauth-consent','medium-saas-gap'],
+    high:['high-pipeline','high-recovery','high-lateral','high-export','high-rollout']
+  };
+  assert.deepEqual(D.scenarios.map(s=>s.id).sort(),['bridge','high','low','medium','tutorial']);
+  for(const [id,caseIds] of Object.entries(normalPacks)){
+    const pack=D.scenarios.find(s=>s.id===id);
+    assert.deepEqual(pack.caseIds,caseIds,'normal pack content/order remains unchanged');
+    assert.equal(pack.difficulty,id);
+    assert.ok(!pack.hidden&&!pack.standalone,'normal five-case shifts remain visible');
+  }
+  assert.equal(D.cases.filter(c=>Object.hasOwn(normalPacks,c.scenarioId)).length,15);
+  const bridgePack=D.scenarios.find(s=>s.id==='bridge');
+  assert.equal(bridgePack.hidden,true);
+  assert.equal(bridgePack.difficulty,'low');
+  assert.deepEqual(bridgePack.caseIds,['bridge-app-update','bridge-usb-copy','bridge-service-auth','bridge-link-followup','bridge-local-admin','response-endpoint-isolation'],'isolation follows the unchanged first five guided cases');
+  assert.deepEqual(D.cases.filter(c=>c.response).map(c=>c.id),['response-endpoint-isolation'],'only the sixth bridge case requires isolation');
   const allIds=new Set(),allCases=new Set(),rawEvents=new Set(),formats=new Set();
   for(const pack of D.scenarios){
-    assert.equal(pack.caseIds.length,pack.id==='tutorial'?1:5);
+    assert.equal(pack.caseIds.length,pack.id==='tutorial'?1:pack.id==='bridge'?6:5);
     assert.ok(['low','medium','high'].includes(pack.difficulty));
     const cases=pack.caseIds.map(id=>D.cases.find(c=>c.id===id));
     assert.ok(cases.every(c=>c&&c.scenarioId===pack.id&&c.difficulty===pack.difficulty));
     for(const c of cases){assert.equal(allCases.has(c.id),false,'no case shared across packs');allCases.add(c.id);}
-    if(!pack.hidden)for(const verdict of ['benign','incident'])assert.ok(cases.some(c=>c.answer.verdict===verdict),`${pack.id} practices both authorized and incident findings`);
+    if(Object.hasOwn(normalPacks,pack.id))for(const verdict of ['benign','incident'])assert.ok(cases.some(c=>c.answer.verdict===verdict),`${pack.id} practices both authorized and incident findings`);
   }
-  assert.equal(allCases.size,21);
+  assert.equal(allCases.size,22);
   for(const c of D.cases){
     const firstObserved=c.logs.filter(log=>!log.background).map(log=>log.time).sort()[0];
     for(const log of c.logs.filter(log=>log.background&&log.host===c.host)){
@@ -38,6 +56,24 @@ test('twenty-one cases keep disjoint packs, valid source evidence, realistic for
     const ownIds=new Set([...c.logs.map(l=>l.id),...c.documents.map(d=>d.id),...questions.map(q=>q.replyId)]);
     assert.equal(ownIds.size,c.logs.length+c.documents.length+questions.length,c.id);
     for(const id of ownIds){assert.ok(!allIds.has(id),`duplicate ${id}`);allIds.add(id);}
+    if(c.response){
+      assert.equal(c.scenarioId,'bridge');
+      assert.equal(c.bridge.stage,'independent');
+      assert.equal(c.response.kind,'endpoint-isolation');
+      assert.equal(c.response.target,c.answer.target);
+      assert.equal(c.targetType,'host');
+      assert.equal(c.response.delaySeconds,45);
+      assert.ok(c.documents.some(d=>d.body.includes(c.response.authorizationId)),'authorization comes from a readable document');
+      assert.equal(c.response.requiredEvidenceGroups.length,4);
+      const actionEvidence=new Set();
+      for(const group of c.response.requiredEvidenceGroups){
+        assert.ok(group.length&&group.every(id=>ownIds.has(id)),'isolation evidence is selectable');
+        for(const id of group){assert.equal(actionEvidence.has(id),false);actionEvidence.add(id);}
+      }
+      assert.deepEqual(c.answer.actions,['contain']);
+      assert.equal(c.answer.verdict,'incident');
+      assert.deepEqual(c.answer.priorities,['high']);
+    }
     for(const host of [c.host,...(c.relatedHosts||[]),...(c.backgroundHosts||[])])assert.ok(D.assets.some(a=>a.name===host),host);
     for(const log of c.logs){
       assert.match(log.time,/^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/,`normalized UTC time ${log.id}`);
