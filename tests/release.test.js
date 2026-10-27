@@ -16,6 +16,7 @@ function assertObservedValues(value,id){
 
 test('twenty-one cases keep disjoint packs, valid source evidence, realistic formats and actionable targets', () => {
   assert.equal(D.version,'socroom-3');
+  assert.equal(D.releaseVersion,require('../package.json').version);
   assert.equal(D.cases.length,21);
   assert.equal(D.scenarios.length,5);
   const allIds=new Set(),allCases=new Set(),rawEvents=new Set(),formats=new Set();

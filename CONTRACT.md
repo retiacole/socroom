@@ -1,4 +1,4 @@
-# SOCroom v0.5.1 implementation contract
+# SOCroom v0.6.0 implementation contract
 
 The product is one offline HTML. Runtime: vanilla JavaScript, embedded CSS and data, no network/API/framework. Source modules are UMD/CommonJS for tests. User-facing language is Japanese. Build with `node build.js`; develop and test with Node.js 22 or later. The bundled file must not request external CSS, fonts, scripts or data; retain `connect-src 'none'`.
 
@@ -77,3 +77,11 @@ Reflection compares the learner report with the authored facts, limits and next 
 ## Verification
 
 Use node:test and jsdom 26.1.0. Cover all 21 cases, exclusive difficulty assignment, timing/availability, selective evidence budgets, identity targets, independent question state, structural report checks, old-save migration and bridge archive preservation. Terminal tests cover useful pipelines plus protection across sudo, redirects, xargs, backups, source refresh and save import. Release tests must prove deterministic self-contained output and consistency with the authored/derived data. jsdom verifies DOM behavior, not real-browser rendering or file-URL storage compatibility.
+
+## Optional practice settings (v0.6)
+
+`createSession(scenarioId,difficulty,individualCaseId,practice=null)` accepts `{kind:'single'|'parallel',untimed:boolean}` only for visible normal packs. Single requires one medium/high case. Parallel is the fixed medium MFA/bulk-upload pair and has simultaneous arrivals. Other case selection, unknown settings and incompatible saved metadata are rejected. Absent settings retain existing save behavior. The session remains socroom-3; `releaseVersion` comes from package.json.
+
+An initially untimed practice has no deadline or late score penalty, while inquiry delays and log publication remain unchanged. It cannot carry a failure history. Its export labels it separately from timed completion and post-failure review. Timed pair practice retains the medium 20-minute deadline. Normal five-case shifts and old saved sessions retain their timing.
+
+The topmost brand shows the release version. Completion offers an optional external recommendation to ThreatHunting-room; same-room continuation remains available. No inter-room import or prerequisites are introduced.

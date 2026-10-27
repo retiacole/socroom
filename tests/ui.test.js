@@ -149,10 +149,10 @@ test('home switches between three disjoint five-question packs and keeps tutoria
   for (const pack of h.window.SOC_DATA.scenarios.filter(s => !s.hidden)) {
     h.click(`[data-difficulty="${pack.difficulty}"]`);
     const options = [...h.get('#home-scope').options];
-    assert.equal(options.length, 6);
+    assert.equal(options.length, pack.id === 'medium' ? 7 : 6);
     assert.equal(h.get('#home-scope').value, '', 'changing difficulty clears an individual selection');
     assert.equal(h.document.querySelectorAll('[data-preview-case]').length, 5);
-    options.slice(1).forEach(option => {assert.equal(ids.has(option.value), false);ids.add(option.value);});
+    options.slice(1).filter(option => option.value !== 'parallel').forEach(option => {assert.equal(ids.has(option.value), false);ids.add(option.value);});
     h.input('#home-scope', options[1].value, 'change');
   }
   assert.equal(ids.size, 15);
@@ -1220,4 +1220,40 @@ test('completed tutorial stays marked complete after leaving and reloading the a
   const restored = harness(t, null, { tutorialSaved: h.storage.get(TUTORIAL_STORE) });
   assert.match(restored.get('.tutorial-entry').textContent, /完了済み/);
   assert.doesNotMatch(restored.get('.tutorial-entry').textContent, /チュートリアルの続きから/);
+});
+
+test('initial untimed individual practice survives export and import without a time penalty', async t => {
+  const h=harness(t);h.click('[data-difficulty="medium"]');h.input('#home-scope','medium-mfa-fatigue','change');
+  const checkbox=h.get('#home-untimed');checkbox.checked=true;checkbox.dispatchEvent(new h.window.Event('change',{bubbles:true}));h.click('[data-action="start"]');
+  assert.equal(h.session.practice.untimed,true);assert.match(h.get('.workbench').textContent,/学習・時間制限なし/);assert.match(h.get('[data-deadline]').textContent,/制限時間なし/);
+  h.tick(1250);assert.equal(h.session.phase,'running');h.click('[data-action="export"]');const saved=h.downloads.at(-1).content;
+  const restored=harness(t);await restored.importFile(saved);assert.equal(restored.session.practice.untimed,true);assert.equal(Object.keys(restored.session.records).length,1);
+});
+test('parallel practice starts untimed, keeps both cases and offers same-room continuation after completion', t => {
+  const h=harness(t);h.click('[data-difficulty="medium"]');h.input('#home-scope','parallel','change');assert.equal(h.get('#home-untimed').checked,true);h.click('[data-action="start"]');
+  assert.equal(Object.keys(h.session.records).length,2);assert.ok(h.document.querySelector('.parallel-guide'));assert.match(h.get('.parallel-guide').textContent,/返信待ち/);
+  for(const id of h.window.SocEngine.PARALLEL_CASE_IDS)solveThroughDOM(h,id);
+  assert.equal(h.session.phase,'completed');assert.ok(h.document.querySelector('[data-action="home"]'));assert.ok(h.document.querySelector('a[href="https://retiacole.github.io/threathunting-room/"]'));
+});
+
+test('selected practice briefing and timing match single, parallel and untimed modes without changing regular shift instructions', t => {
+  const h=harness(t);
+  const text=()=>h.get('.briefing-box').textContent+' '+h.get('.pack-note').textContent;
+  for(const difficulty of ['low','medium','high']){
+    h.click(`[data-difficulty="${difficulty}"]`);
+    const original=h.window.SOC_DATA.scenarios.find(s=>s.id===difficulty).briefing.join('');
+    assert.equal(h.get('.briefing-box').textContent,original);
+    const id=h.window.SOC_DATA.scenarios.find(s=>s.id===difficulty).caseIds[0];h.input('#home-scope',id,'change');
+    assert.match(text(),/1件だけ/);assert.doesNotMatch(text(),/5案件|5件|45秒/);
+    if(difficulty!=='low'){
+      assert.match(text(),new RegExp(difficulty==='medium'?'20分':'15分'));
+      const box=h.get('#home-untimed');box.checked=true;box.dispatchEvent(new h.window.Event('change',{bubbles:true}));
+      assert.match(text(),/時間制限はありません/);assert.doesNotMatch(text(),/20分|15分|ゲームオーバー/);
+    }
+  }
+  h.click('[data-difficulty="medium"]');h.input('#home-scope','parallel','change');
+  assert.match(text(),/2件を同時/);assert.match(text(),/時間制限はありません/);assert.doesNotMatch(text(),/5案件|5件|20分|ゲームオーバー/);
+  const box=h.get('#home-untimed');box.checked=false;box.dispatchEvent(new h.window.Event('change',{bubbles:true}));assert.match(text(),/20分/);assert.match(text(),/ゲームオーバー/);
+  box.checked=true;h.get('#home-untimed').checked=true;h.get('#home-untimed').dispatchEvent(new h.window.Event('change',{bubbles:true}));h.click('[data-action="start"]');h.click('[data-action="context"]');
+  assert.match(h.get('#dialog').textContent,/2件を同時/);assert.match(h.get('#dialog').textContent,/時間制限はありません/);assert.doesNotMatch(h.get('#dialog').textContent,/5案件|5件|20分|ゲームオーバー/);
 });

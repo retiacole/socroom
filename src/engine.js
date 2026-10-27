@@ -15,6 +15,8 @@
     medium: Object.freeze({ label: LABELS.medium, limitSeconds: 1200, replyMultiplier: 1 }),
     high: Object.freeze({ label: LABELS.high, limitSeconds: 900, replyMultiplier: 1.5 })
   });
+  const PARALLEL_CASE_IDS = Object.freeze(['medium-mfa-fatigue', 'medium-bulk-upload']);
+  const untimedPractice = session => session.practice?.untimed === true;
   const ENUMS = { verdict: ['', 'incident', 'benign', 'unknown'], priority: ['', 'high', 'medium', 'low'], action: ['', 'escalate', 'contain', 'close', 'monitor'] };
   const caseMap = new Map(DATA.cases.map(c => [c.id, c]));
   const legacyVersion = VERSION === 'socroom-3' ? 'socroom-2' : null;
@@ -65,6 +67,7 @@
     return { status: 'open', arrival, requestAt: null, contactRequests: {}, evidenceIds: [], draft: blankDraft(), attempts: 0, assessment: null, resolvedAt: null, submission: null };
   }
   function idsFor(session) {
+    if (session.practice?.kind === 'parallel') return PARALLEL_CASE_IDS.slice();
     if (session.individualCaseId) return [session.individualCaseId];
     const scenario = DATA.scenarios.find(s => s.id === session.scenarioId);
     if (!scenario) throw new Error('シナリオが見つかりません。');
@@ -74,15 +77,21 @@
     session.history.push({ at: session.elapsed, type, caseId: caseId || null, detail: String(detail || '').slice(0, 500) });
     if (session.history.length > MAX_HISTORY) session.history.splice(0, session.history.length - MAX_HISTORY);
   }
-  function createSession(scenarioId, difficulty, individualCaseId = null) {
+  function createSession(scenarioId, difficulty, individualCaseId = null, practice = null) {
     const scenario = DATA.scenarios.find(s => s.id === scenarioId);
     if (!scenario || !Object.hasOwn(DIFFICULTIES, difficulty)) throw new Error('シナリオまたは難易度が不正です。');
     if (scenario.difficulty && scenario.difficulty !== difficulty) throw new Error('この問題セットは選択した難易度では利用できません。');
     if (individualCaseId !== null && !scenario.caseIds.includes(individualCaseId)) throw new Error('このシナリオにないケースです。');
-    const ids = individualCaseId ? [individualCaseId] : scenario.caseIds;
+    if (practice !== null) {
+      if (!plain(practice) || !['single','parallel'].includes(practice.kind) || typeof practice.untimed !== 'boolean' || Object.keys(practice).some(key => !['kind','untimed'].includes(key)) || scenario.hidden) throw new Error('練習設定が不正です。');
+      if (practice.kind === 'single' && (!individualCaseId || difficulty === 'low')) throw new Error('単独練習は中・高の1件を選んでください。');
+      if (practice.kind === 'parallel' && (scenarioId !== 'medium' || difficulty !== 'medium' || individualCaseId || !PARALLEL_CASE_IDS.every(id => scenario.caseIds.includes(id)))) throw new Error('並行練習は中の専用2件を使います。');
+      practice = {kind:practice.kind, untimed:practice.untimed};
+    }
+    const ids = practice?.kind === 'parallel' ? PARALLEL_CASE_IDS : individualCaseId ? [individualCaseId] : scenario.caseIds;
     const records = {};
     ids.forEach((id, i) => { records[id] = blankRecord(difficulty === 'medium' || i === 0 ? 0 : null); });
-    const session = { version: VERSION, scenarioId, difficulty, individualCaseId, phase: 'running', elapsed: 0, selectedCaseId: ids[0], records, history: [], failure: null, trainingAfterFailure: false };
+    const session = { version: VERSION, scenarioId, difficulty, individualCaseId, phase: 'running', elapsed: 0, selectedCaseId: ids[0], records, history: [], failure: null, trainingAfterFailure: false, ...(practice ? {practice} : {}) };
     ids.forEach(id => { if (records[id].arrival === 0) logHistory(session, 'arrival', id, 'アラートを受信'); });
     return session;
   }
@@ -128,7 +137,7 @@
   function getDeadline(session, caseId) {
     const record = session.records[caseId];
     const limit = DIFFICULTIES[session.difficulty].limitSeconds;
-    return !record || record.arrival === null || limit === null || session.trainingAfterFailure || session.migration?.untimedReview ? null : record.arrival + limit;
+    return !record || record.arrival === null || limit === null || untimedPractice(session) || session.trainingAfterFailure || session.migration?.untimedReview ? null : record.arrival + limit;
   }
   function requestContact(session, caseId, questionId) {
     const record = mutable(session, caseId);
@@ -193,7 +202,7 @@
     const passed = checks.every(check => check.passed);
     // Keep scoring tied to the original deadline, even after entering unlimited
     // training, so restoring a save never rewrites an earlier submission's score.
-    const originalLimit = DIFFICULTIES[session.difficulty].limitSeconds;
+    const originalLimit = untimedPractice(session) ? null : DIFFICULTIES[session.difficulty].limitSeconds;
     const deadline = originalLimit === null ? null : session.records[caseId].arrival + originalLimit;
     if (deadline !== null && at > deadline && !(reviewed && session.migration?.untimedReview && at >= session.migration.at)) {
       checks.push({ id: 'deadline', label: '時間内の初動', passed: false, detail: '当初の対応期限を超過（評価 −10点）。記録を完成させてください。' });
@@ -250,7 +259,7 @@
     let end = Math.min(MAX_TIME, before + seconds);
     const ids = idsFor(session);
     let failedId = null;
-    if (!session.trainingAfterFailure && !session.migration?.untimedReview && DIFFICULTIES[session.difficulty].limitSeconds !== null) {
+    if (!untimedPractice(session) && !session.trainingAfterFailure && !session.migration?.untimedReview && DIFFICULTIES[session.difficulty].limitSeconds !== null) {
       ids.forEach((id, i) => {
         const record = session.records[id];
         const arrival = record.arrival !== null ? record.arrival : session.difficulty === 'high' ? i * 45 : null;
@@ -337,7 +346,7 @@
     if (!serialized || serialized.length > MAX_JSON_LENGTH) throw new Error('保存データが大きすぎるか不正です。');
     const legacy = !!(legacyVersion && value?.version === legacyVersion);
     if (!plain(value) || (value.version !== VERSION && !legacy) || !['running', 'paused', 'gameover', 'completed'].includes(value.phase)) throw new Error('対応していない保存データです。');
-    const session = createSession(value.scenarioId, value.difficulty, value.individualCaseId === undefined ? null : value.individualCaseId);
+    const session = createSession(value.scenarioId, value.difficulty, value.individualCaseId === undefined ? null : value.individualCaseId, value.practice === undefined ? null : value.practice);
     session.elapsed = number(value.elapsed, '保存時刻');
     if (typeof value.trainingAfterFailure !== 'boolean') throw new Error('練習モードの状態が不正です。');
     session.trainingAfterFailure = value.trainingAfterFailure;
@@ -432,7 +441,7 @@
     }
     if (legacy) session.migration.untimedReview = session.migration.reopenedCaseIds.length > 0;
     if (value.failure !== null) {
-      if (!plain(value.failure) || !ids.includes(value.failure.caseId) || !getCase(value.failure.caseId).critical || DIFFICULTIES[session.difficulty].limitSeconds === null) throw new Error('期限超過の履歴が不正です。');
+      if (untimedPractice(session) || !plain(value.failure) || !ids.includes(value.failure.caseId) || !getCase(value.failure.caseId).critical || DIFFICULTIES[session.difficulty].limitSeconds === null) throw new Error('期限超過の履歴が不正です。');
       const failedRecord = session.records[value.failure.caseId];
       const at = number(value.failure.at, '期限超過時刻', 0, session.elapsed);
       if (failedRecord.arrival === null || at !== failedRecord.arrival + DIFFICULTIES[session.difficulty].limitSeconds) throw new Error('期限超過時刻が不正です。');
@@ -442,7 +451,7 @@
     for (const id of ids) {
       const record = session.records[id];
       const limit = DIFFICULTIES[session.difficulty].limitSeconds;
-      if (!record.submission || !getCase(id).critical || limit === null) continue;
+      if (!record.submission || !getCase(id).critical || limit === null || untimedPractice(session)) continue;
       const afterDeadline = record.submission.at >= record.arrival + limit;
       const inTraining = session.trainingAfterFailure && session.failure && record.submission.at >= session.failure.at;
       const inReview = record.submission.reviewed && session.migration?.untimedReview && record.submission.at >= session.migration.at;
@@ -471,6 +480,7 @@
   function report(session) {
     const scenario = DATA.scenarios.find(s => s.id === session.scenarioId);
     const lines = ['SOCroom 調査・引き継ぎレポート', '架空の教材環境 / ' + DATA.company.name, '勤務: ' + scenario.title, '難易度: ' + DIFFICULTIES[session.difficulty].label, '経過: ' + clock(session.elapsed), '状態: ' + LABELS[session.phase], '自由記述は識別子・時刻や依頼先の有無だけを確認し、意味・正確性は自動採点していません。', ''];
+    if (session.practice) lines.push((session.practice.kind === 'parallel' ? '2件の並行練習' : '単独練習') + (session.practice.untimed ? '（最初から時間制限なし）' : '（時間制限あり）'), '');
     if (session.trainingAfterFailure) lines.push('時間切れ後の練習モード', '');
     if (session.migration?.untimedReview) lines.push('旧版データの見直し（時間制限なし）', '');
     for (const c of activeCases(session)) {
@@ -490,5 +500,5 @@
     session.history.forEach(item => lines.push(clock(item.at) + ' ' + (item.caseId ? '[' + item.caseId + '] ' : '') + item.detail));
     return lines.join('\n');
   }
-  return Object.freeze({ DIFFICULTIES, LABELS, createSession, getCase, activeCases, visibleLogs, evidenceAvailable, evidenceLimit, getContactQuestions, availableReplies, replyAvailable, requestContact, advance, markInvestigating, addEvidence, removeEvidence, submitCase, assessCase, getDeadline, pause, resume, continueTraining, retryCheckpoint, hydrate, report });
+  return Object.freeze({ DIFFICULTIES, LABELS, PARALLEL_CASE_IDS, createSession, getCase, activeCases, visibleLogs, evidenceAvailable, evidenceLimit, getContactQuestions, availableReplies, replyAvailable, requestContact, advance, markInvestigating, addEvidence, removeEvidence, submitCase, assessCase, getDeadline, pause, resume, continueTraining, retryCheckpoint, hydrate, report });
 }));

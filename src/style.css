@@ -43,3 +43,6 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
 @media(max-width:970px){.bridge-active .analysis{min-height:650px;max-height:1000px}.bridge-guide{max-height:none}.bridge-target{scroll-margin-top:24px}.bridge-entry-heading{align-items:flex-start}.bridge-entry-heading>.badge{white-space:normal}.bridge-entry-footer{flex-wrap:wrap}}
 @media(max-width:680px){.bridge-entry{padding:18px}.bridge-entry-heading{display:block}.bridge-entry-heading>.badge{margin-top:12px}.bridge-entry h2{font-size:18px}.bridge-roadmap{grid-template-columns:1fr;margin:16px 0;gap:0}.bridge-roadmap li{padding:12px 0}.bridge-roadmap p{margin-top:3px}.bridge-entry-footer{display:block}.bridge-entry-footer>.flex{margin-top:12px}.bridge-guide{padding:12px 16px}.bridge-guide-heading{gap:8px}.bridge-guide-heading>.btn{margin-left:0}.bridge-guide-body{display:block}.bridge-guide h3{font-size:14px}.bridge-controls{flex-direction:row;flex-wrap:wrap;margin-top:10px}.bridge-checklist,.bridge-comparison{grid-template-columns:1fr}.bridge-guide p{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.bridge-pulse{animation:none;outline-color:var(--blue);box-shadow:0 0 0 4px #95bde922}}
+
+/* The release number remains visible in the top brand on narrow screens. */
+.brand small.release-version{display:inline;color:var(--mint);white-space:nowrap}
