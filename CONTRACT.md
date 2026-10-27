@@ -1,4 +1,4 @@
-# SOCroom v0.5 implementation contract
+# SOCroom v0.5.1 implementation contract
 
 The product is one offline HTML. Runtime: vanilla JavaScript, embedded CSS and data, no network/API/framework. Source modules are UMD/CommonJS for tests. User-facing language is Japanese. Build with `node build.js`; develop and test with Node.js 22 or later. The bundled file must not request external CSS, fonts, scripts or data; retain `connect-src 'none'`.
 
@@ -46,9 +46,9 @@ Terminal files represent the same available evidence as the GUI. Preserve a stab
 
 `/home/analyst` is the writable workspace (2 MiB per file, 4 MiB total, 128 files, 256 directories including the home directory). Original files, including originals located beneath home, are immutable. The adapter guards storage mutations with Proxy checks as well as shell metadata. Pipes, xargs, redirects, backups, directory moves and simulated sudo must not bypass this boundary. `/dev/null` is a sink and does not create a workspace file. Restoring a workspace cannot inject, shadow or move a source file.
 
-The shell is a training subset, not a real OS or a fully GNU-compatible shell. Tilde paths, stderr redirection and awk concatenation are supported; PCRE `\d`/`\D` in BRE/ERE grep are explicitly rejected in favor of POSIX character classes. Variable expansion, command substitution, network clients and arbitrary program execution are unavailable. vi/view/sl are unsupported in SOCroom. less/more print text without an interactive pager. sudo only simulates privilege for supported commands and never permits changing original evidence.
+The shell is a training subset, not a real OS or a fully GNU-compatible shell. Tilde paths, stderr redirection and awk concatenation are supported; PCRE `\d`/`\D` in BRE/ERE grep are explicitly rejected in favor of POSIX character classes. The `rg` command supports `\d`/`\D` for files and piped input without a PCRE flag. Variable expansion, command substitution, network clients and arbitrary program execution are unavailable. vi/view/sl are unsupported in SOCroom. less/more print text without an interactive pager. sudo only simulates privilege for supported commands and never permits changing original evidence.
 
-`src/vendor-shell.js` comes from Logroom commit `6d54626138261b9756d959050bca8fe29d1d9181`. `scripts/logroom-source.json` records repository, path, commit and upstream SHA-256. `scripts/sync-logroom.js` takes a downloaded upstream source file and a full commit SHA, verifies expected integration markers, adds exports and the digit-class guard, and refreshes the vendor header and manifest. Keep the pinned download and sync arguments identical. Review upstream changes and run terminal plus full tests after every sync; the wrapper remains the authority for immutability.
+`src/vendor-shell.js` comes from Logroom commit `6d54626138261b9756d959050bca8fe29d1d9181`. `scripts/logroom-source.json` records repository, path, commit and upstream SHA-256. `scripts/sync-logroom.js` takes a downloaded upstream source file and a full commit SHA, verifies expected integration markers including upstream's separate grep/rg digit-class handling, adds exports, and refreshes the vendor header and manifest. Keep the pinned download and sync arguments identical. Review upstream changes and run terminal plus full tests after every sync; the wrapper remains the authority for immutability.
 
 ## Saves and migration
 

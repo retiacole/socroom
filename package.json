@@ -1,6 +1,6 @@
 {
   "name": "socroom",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "description": "ブラウザだけでSOCアナリストの勤務を体験するオフライン教材",
   "license": "MIT",

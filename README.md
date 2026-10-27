@@ -2,7 +2,7 @@
   <img src="docs/images/socroom-banner.png" width="960" alt="山並みと街を見守るSOCroomのキャラクターを描いたピクセルアート">
 </p>
 
-# SOCroom v0.5
+# SOCroom v0.5.1
 
 [すぐにやってみる / Play Now](https://retiacole.github.io/socroom/) · [オフライン用HTML / Offline HTML](https://github.com/retiacole/socroom/blob/main/socroom.html)
 
@@ -14,6 +14,14 @@
 ブラウザだけで、SOCアナリストの一次対応を体験する演習室です。操作チュートリアル専用1問、ガイド付き実務演習5問、低・中・高それぞれ異なる5問、合計21問を収録しています。難易度を変えると、調査する問題そのものが変わります。仮想シェルは [Logroom](https://github.com/retiacole/logroom) のMITライセンスの実装を基にしています。
 
 <br clear="right">
+
+## v0.5.1の修正
+
+- 「複数端末へのサービス登録」は、配布完了一覧と監視復旧の両方を主証拠として確認してから完了します。
+- 中断中のチュートリアルを保存ファイルで置き換える前に、確認と旧進捗の書き出しができます。
+- 生ログの展開状態とキーボードの操作位置を、証拠追加・案件到着後も保持します。
+- 照会したすべての質問を「回答待ち」と返信到着の表示に反映します。
+- 仮想端末の `rg` で `\d`・`\D` を使った検索を修正しました。
 
 ## v0.5の主な変更
 
@@ -117,7 +125,7 @@ GUIのソース・ユーザー・IPなどは検索用の正規化項目です。
 
 形式の参考資料：[Windowsイベント4720](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4720)、[Entra SigninLogsの列](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/signinlogs)、[nginxアクセスログ設定](https://nginx.org/en/docs/http/ngx_http_log_module.html)。
 
-仮想シェルは学習用の部分実装です。`~`、`2>/dev/null`、awkの文字列連結を使えます。`grep -E` の `\d` はPCREとの混同を避けるため未対応として明示し、数字には `[0-9]` または `[[:digit:]]` を使います。シェル変数展開、コマンド置換、任意のプログラム実行、完全なGNU互換は提供しません。`sudo` もブラウザ内の模擬機能であり、SOCroomの原本は昇格しても変更できません。対応範囲は `help コマンド名` で確認してください。
+仮想シェルは学習用の部分実装です。`~`、`2>/dev/null`、awkの文字列連結を使えます。`grep`・`grep -E` の `\d`・`\D` は未対応として明示し、数字には `[0-9]` または `[[:digit:]]` を使います。`rg` では `\d`・`\D` をファイル検索とパイプ入力の両方で使えます。シェル変数展開、コマンド置換、任意のプログラム実行、完全なGNU互換は提供しません。`sudo` もブラウザ内の模擬機能であり、SOCroomの原本は昇格しても変更できません。対応範囲は `help コマンド名` で確認してください。
 
 ## 判定と学習の範囲
 
@@ -171,7 +179,7 @@ npm test
 
 ### Logroomのシェルを同期する
 
-現在の取り込み元は [`6d54626138261b9756d959050bca8fe29d1d9181`](https://github.com/retiacole/logroom/commit/6d54626138261b9756d959050bca8fe29d1d9181) です。ソースURL・コミット・SHA-256を `scripts/logroom-source.json` とvendorヘッダーに記録しています。同期時の変更はCommonJS／ShellErrorの公開と、PCRE数字クラスを明示的に拒否する互換ガードです。原本保護や証拠登録は別ファイルのアダプターに残します。
+現在の取り込み元は [`6d54626138261b9756d959050bca8fe29d1d9181`](https://github.com/retiacole/logroom/commit/6d54626138261b9756d959050bca8fe29d1d9181) です。ソースURL・コミット・SHA-256を `scripts/logroom-source.json` とvendorヘッダーに記録しています。同期時の変更はCommonJS／ShellErrorの公開です。`grep` と `rg` の数字クラスの扱いは上流実装を保持し、同期時に互換性の確認箇所を検証します。原本保護や証拠登録は別ファイルのアダプターに残します。
 
 現在の版を再生成する場合：
 
