@@ -1,6 +1,6 @@
 /*
 Vendored from https://github.com/retiacole/logroom/blob/6d54626138261b9756d959050bca8fe29d1d9181/src/shell.js
-SOCroom changes: ShellError/CommonJS exports and explicit PCRE digit-class rejection.
+SOCroom changes: ShellError/CommonJS exports. Upstream grep/rg digit-class handling is preserved.
 Regenerate with scripts/sync-logroom.js; verify read-only adapter tests after every sync.
 
 MIT License
@@ -86,7 +86,6 @@ SOFTWARE.
   }
   function regex(pattern, extended = true, insensitive = false) {
     if (pattern.length > 512) fail('regular expression exceeds 512 characters');
-    if (/(^|[^\\])(\\\\)*\\[dD]/.test(pattern)) fail('PCRE \\d/\\D is unsupported; use [[:digit:]] or [^[:digit:]]');
     let source=posixClasses(extended ? pattern : basicRegex(pattern));
     if (/\(\?/.test(source)) fail('regular expression lookarounds and special groups are unsupported');
     if (/\([^)]*[*+][^)]*\)[*+{]/.test(source)) fail('nested repeated groups are unsupported in this browser exercise; for an IPv4-shaped token use [0-9]{1,3}(\\.[0-9]{1,3}){3} with grep -E (this does not validate octet ranges)');

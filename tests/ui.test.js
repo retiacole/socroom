@@ -983,3 +983,99 @@ test('source, host, UTC range and query filters combine and are retained in the 
   assert.equal(h.get('#evidence-only').checked, false);
   assert.equal(h.document.querySelectorAll('.timeline-item').length, Math.min(100, h.window.SocEngine.visibleLogs(h.session, c.id).length));
 });
+
+test('inactive tutorial import offers the saved tutorial before replacing it from home or another mode', async t => {
+  const author = harness(t);
+  author.click('[data-action="tutorial-start"]');
+  author.click('[data-action="export"]');
+  const incoming = author.downloads.at(-1).content;
+  tutorialTo(author, 'document-evidence');
+  author.input('#draft-summary', '置換前のチュートリアルの調査メモ');
+  author.click('[data-tab="terminal"]');
+  author.input('#terminal-input', 'echo preserved > /home/analyst/tutorial-note.txt');
+  author.submit('#terminal-form');
+  author.click('[data-action="tutorial-exit"]');
+  const savedTutorial = author.storage.get(TUTORIAL_STORE);
+  for (const mode of ['home', 'normal', 'bridge']) {
+    const h = harness(t, null, { tutorialSaved: savedTutorial });
+    if (mode === 'normal') start(h, 'medium');
+    if (mode === 'bridge') h.click('[data-action="bridge-start"]');
+    if (mode !== 'home') h.input('#draft-summary', '別モードのメモを保持');
+    await h.importFile(incoming);
+    assert.match(h.get('#dialog').textContent, /現在のチュートリアルを置き換え/);
+    assert.equal(h.storage.get(TUTORIAL_STORE), savedTutorial, 'opening the confirmation preserves the existing save');
+    h.click('[data-action="export-before-import"]');
+    assert.equal(h.downloads.at(-1).name, 'socroom-tutorial.json');
+    assert.deepEqual(JSON.parse(h.downloads.at(-1).content), JSON.parse(savedTutorial), 'backup includes the original guide, notes and workspace');
+    h.click('#dialog [data-action="close-dialog"]');
+    assert.equal(h.storage.get(TUTORIAL_STORE), savedTutorial, 'cancelling does not replace the tutorial');
+    await h.importFile(incoming);
+    h.click('[data-action="import-confirmed"]');
+    assert.equal(tutorialStep(h), 'welcome');
+    assert.equal(h.get('#draft-summary').value, '');
+    if (mode !== 'home') {
+      const other = JSON.parse(h.storage.get(mode === 'normal' ? STORE : 'socroom.bridge.v1'));
+      assert.equal(other.session.records[other.session.selectedCaseId].draft.summary, '別モードのメモを保持');
+    }
+  }
+});
+
+test('normal and guided practice retain raw log expansion and keyboard focus when adding evidence', t => {
+  for (const mode of ['normal', 'bridge']) {
+    const h = harness(t);
+    if (mode === 'normal') start(h);
+    else h.click('[data-action="bridge-start"]');
+    const details = h.get('details[data-log-details]'), id = details.dataset.logDetails;
+    details.open = true;
+    h.get(`[data-evidence="${id}"]`).focus();
+    h.click(`[data-evidence="${id}"]`);
+    assert.equal(h.get(`[data-log-details="${id}"]`).open, true);
+    assert.equal(h.document.activeElement, h.get(`[data-log-details="${id}"] summary`));
+    h.click('[data-tab="resources"]');
+    h.click('[data-tab="logs"]');
+    assert.equal(h.get(`[data-log-details="${id}"]`).open, true, 'switching tools retains the open log');
+    h.get(`[data-log-details="${id}"]`).open = false;
+    h.click('[data-tab="resources"]');
+    h.click('[data-tab="logs"]');
+    assert.equal(h.get(`[data-log-details="${id}"]`).open, false, 'a deliberately closed log stays closed');
+  }
+});
+
+test('a timed case arrival preserves the open raw log and its summary focus, while a new shift starts closed', t => {
+  const h = harness(t);
+  start(h, 'high');
+  const details = h.get('details[data-log-details]'), id = details.dataset.logDetails;
+  details.open = true;
+  details.querySelector('summary').focus();
+  h.tick(45);
+  assert.equal(h.document.querySelectorAll('.alert-card').length, 2);
+  assert.equal(h.get(`[data-log-details="${id}"]`).open, true);
+  assert.equal(h.document.activeElement, h.get(`[data-log-details="${id}"] summary`));
+  h.click('[data-action="home"]');
+  h.click('[data-action="start"]');
+  h.click('[data-action="start-confirmed"]');
+  assert.equal(h.get(`[data-log-details="${id}"]`).open, false, 'a fresh shift does not inherit the previous view state');
+});
+
+test('queue waiting state includes every requested question and the contact tab marks any available reply', t => {
+  const h = harness(t);
+  const c = h.window.SOC_DATA.cases.find(c => c.id === 'medium-mfa-fatigue');
+  start(h, 'medium', null, c.id);
+  const E = h.window.SocEngine, third = c.contact.questions.find(q => !['specific', 'vague'].includes(q.id));
+  h.click('[data-tab="contact"]');
+  h.click('[data-action="contact"][data-question="vague"]');
+  assert.equal(h.get('.alert-card.active .case-state').textContent, '回答待ち');
+  assert.equal(h.document.querySelector('[data-tab="contact"] .dot'), null);
+  while (!E.replyAvailable(h.session, c.id, 'vague')) h.click('[data-action="step"]');
+  assert.equal(h.get('.alert-card.active .case-state').textContent, '調査中');
+  assert.ok(h.document.querySelector('[data-tab="contact"] .dot'), 'a non-default reply also marks the tab');
+  h.click('[data-action="contact"][data-question="specific"]');
+  assert.equal(h.get('.alert-card.active .case-state').textContent, '回答待ち', 'an available reply does not hide another pending request');
+  h.tick(1);
+  h.click(`[data-action="contact"][data-question="${third.id}"]`);
+  while (!E.replyAvailable(h.session, c.id, 'specific')) h.tick(0.5);
+  assert.equal(E.replyAvailable(h.session, c.id, third.id), false);
+  assert.equal(h.get('.alert-card.active .case-state').textContent, '回答待ち', 'the default reply does not hide a later non-default request');
+  while (!E.replyAvailable(h.session, c.id, third.id)) h.click('[data-action="step"]');
+  assert.equal(h.get('.alert-card.active .case-state').textContent, '調査中');
+});

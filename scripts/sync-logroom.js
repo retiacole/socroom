@@ -9,13 +9,12 @@ if (!original.includes('class LogLabShell') || !original.includes('class ShellEr
 const marker = '  root.LogLabShell=LogLabShell;';
 if (original.split(marker).length !== 2) throw new Error('Export marker changed: review adapter before syncing');
 let source = original.replace(marker, '  LogLabShell.ShellError=ShellError;\n' + marker + '\n  if (typeof module === "object" && module.exports) module.exports=LogLabShell;');
-// Fail explicitly instead of treating PCRE \d as a POSIX digit class.
-const regexMarker = '    let source=posixClasses(extended ? pattern : basicRegex(pattern));';
-if (!source.includes(regexMarker)) throw new Error('Regex implementation changed: review compatibility guard');
-source = source.replace(regexMarker, String.raw`    if (/(^|[^\\])(\\\\)*\\[dD]/.test(pattern)) fail('PCRE \\d/\\D is unsupported; use [[:digit:]] or [^[:digit:]]');` + '\n' + regexMarker);
+// Preserve upstream's grep-only digit-class guard. A shared regex guard would
+// also reject the digit escapes that rg explicitly supports.
+if (!source.includes('if(!options.allowDigitEscapes)') || !source.includes('{allowDigitEscapes:true}')) throw new Error('grep/rg digit-class handling changed: review compatibility before syncing');
 const root = path.resolve(__dirname, '..');
 const license = fs.readFileSync(path.join(root, 'LICENSE'), 'utf8');
-const header = '/*\nVendored from https://github.com/retiacole/logroom/blob/' + commit + '/src/shell.js\nSOCroom changes: ShellError/CommonJS exports and explicit PCRE digit-class rejection.\nRegenerate with scripts/sync-logroom.js; verify read-only adapter tests after every sync.\n\n' + license + '\n*/\n';
+const header = '/*\nVendored from https://github.com/retiacole/logroom/blob/' + commit + '/src/shell.js\nSOCroom changes: ShellError/CommonJS exports. Upstream grep/rg digit-class handling is preserved.\nRegenerate with scripts/sync-logroom.js; verify read-only adapter tests after every sync.\n\n' + license + '\n*/\n';
 fs.writeFileSync(path.join(root, 'src/vendor-shell.js'), header + source);
 fs.writeFileSync(path.join(root, 'scripts/logroom-source.json'), JSON.stringify({repository:'https://github.com/retiacole/logroom',commit,path:'src/shell.js',sha256:crypto.createHash('sha256').update(original).digest('hex')},null,2)+'\n');
 console.log('Synced Logroom ' + commit);

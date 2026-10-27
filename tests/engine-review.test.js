@@ -30,6 +30,75 @@ function answer(E, s, id) {
   r.evidenceIds = c.answer.evidenceGroups.map(group => group.find(ref => E.evidenceAvailable(s, ref)));
 }
 
+function rolloutFixture(previousRubric = false) {
+  // Exercise the authored case directly; release tests verify its generated copy.
+  const c = JSON.parse(fs.readFileSync(path.join(__dirname, '../content/high.json'), 'utf8')).cases.find(item => item.id === 'high-rollout');
+  if (previousRubric) c.answer.evidenceGroups = [['hi-ed-doc-change'], ['hi-ed-06', 'hi-ed-09', 'hi-ed-12'], ['hi-ed-13', 'hi-ed-16'], ['hi-ed-reply']];
+  const sandbox = { SOC_DATA: { version: 'socroom-3', cases: [c], scenarios: [{ id: 'high', difficulty: 'high', caseIds: [c.id] }] } };
+  vm.runInNewContext(source, sandbox);
+  const E = sandbox.SocEngine, s = E.createSession('high', 'high', c.id);
+  E.requestContact(s, c.id);
+  E.advance(s, 90);
+  const r = s.records[c.id];
+  r.draft = { verdict: 'benign', priority: 'low', action: 'close', target: c.answer.target, summary: c.answer.summary, nextStep: c.answer.nextStep };
+  for (const id of ['hi-ed-doc-change', 'hi-ed-06', 'hi-ed-13', 'hi-ed-reply']) E.addEvidence(s, c.id, id);
+  return { E, c, s };
+}
+
+test('rollout closure requires both the deployment list and the later monitoring recovery', () => {
+  const { E, c, s } = rolloutFixture();
+  assert.equal(E.evidenceAvailable(s, 'hi-ed-16'), false);
+  assert.throws(() => E.addEvidence(s, c.id, 'hi-ed-16'));
+  const early = E.submitCase(s, c.id);
+  assert.equal(early.passed, false);
+  assert.equal(early.checks.find(check => check.id === 'evidence').passed, false);
+  assert.equal(s.phase, 'running');
+  E.advance(s, 89);
+  assert.equal(E.evidenceAvailable(s, 'hi-ed-16'), false);
+  E.advance(s, 1);
+  assert.equal(E.evidenceAvailable(s, 'hi-ed-16'), true);
+  assert.equal(E.assessCase(s, c.id).passed, false, 'arrival alone is not collected evidence');
+  E.addEvidence(s, c.id, 'hi-ed-16');
+  E.removeEvidence(s, c.id, 'hi-ed-13');
+  assert.equal(E.assessCase(s, c.id).passed, false, 'monitoring recovery cannot replace the deployment scope');
+  E.addEvidence(s, c.id, 'hi-ed-13');
+  assert.equal(s.records[c.id].evidenceIds.length, 5);
+  assert.equal(E.evidenceLimit(c.id), 7, 'retain the default two-item allowance');
+  const complete = E.submitCase(s, c.id);
+  assert.equal(complete.passed, true);
+  assert.equal(complete.score, 100);
+  assert.equal(s.phase, 'completed');
+  assert.equal(E.hydrate(clone(s)).phase, 'completed');
+});
+
+test('previously completed rollout saves reopen without losing the report or collected evidence', () => {
+  for (const version of ['socroom-3', 'socroom-2']) {
+    const prior = rolloutFixture(true);
+    assert.equal(prior.E.submitCase(prior.s, prior.c.id).score, 100);
+    const saved = clone(prior.s);
+    saved.version = version;
+    const { E, c } = rolloutFixture();
+    const restored = E.hydrate(saved), r = restored.records[c.id];
+    assert.equal(restored.phase, 'paused', version);
+    assert.equal(r.status, 'investigating', version);
+    assert.equal(r.assessment.passed, false, version);
+    assert.deepEqual(clone(r.draft), saved.records[c.id].draft);
+    assert.deepEqual(clone(r.evidenceIds), saved.records[c.id].evidenceIds);
+    assert.deepEqual(clone(r.submission), saved.records[c.id].submission);
+    assert.equal(E.hydrate(clone(restored)).phase, 'paused', 're-exported progress remains valid');
+    if (version === 'socroom-2') {
+      assert.equal(restored.migration.untimedReview, true);
+      assert.deepEqual(clone(restored.migration.reopenedCaseIds), [c.id]);
+    }
+    E.resume(restored);
+    E.advance(restored, 90);
+    E.addEvidence(restored, c.id, 'hi-ed-16');
+    assert.equal(E.submitCase(restored, c.id).score, 100);
+    assert.equal(restored.phase, 'completed');
+    assert.equal(E.hydrate(clone(restored)).phase, 'completed');
+  }
+});
+
 test('selecting every available item fails evidence focus; focused independent evidence earns full credit', () => {
   const { E } = fixture(), s = E.createSession('shift', 'medium', 'a');
   answer(E, s, 'a');

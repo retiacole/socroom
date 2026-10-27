@@ -205,16 +205,29 @@ test('tilde paths, awk concatenation and stderr redirection support a complete i
   assert.equal(terminal.getWorkspace().files['/dev/null'], undefined);
 });
 
-test('grep ERE rejects PCRE digit escapes and supports POSIX digit classes', () => {
+test('grep BRE and ERE reject PCRE digit escapes and support POSIX digit classes', () => {
   const terminal = create({'/var/log/sample.log': '123\nabc\nd\n'});
-  for (const pattern of ['\\d', '\\D']) {
-    const result = terminal.run("grep -E '" + pattern + "' /var/log/sample.log");
+  for (const mode of ['', '-E ']) for (const pattern of ['\\d', '\\D']) {
+    const result = terminal.run("grep " + mode + "'" + pattern + "' /var/log/sample.log");
     assert.equal(result.code, 2);
     assert.equal(result.stdout, '');
     assert.match(result.stderr, /PCRE|unsupported|not supported/);
   }
   assert.equal(terminal.run("grep -E '[[:digit:]]+' /var/log/sample.log").stdout, '123\n');
   assert.equal(terminal.run("grep -E '[^[:digit:]]+' /var/log/sample.log").stdout, 'abc\nd\n');
+});
+
+test('rg digit escapes work for both files and piped input without requiring PCRE', () => {
+  const terminal = create({'/var/log/sample.log': '123\nabc\nd\n'});
+  for (const [pattern, expected] of [['\\d+', '123\n'], ['\\D+', 'abc\nd\n']]) {
+    for (const command of [
+      "rg '" + pattern + "' /var/log/sample.log",
+      "cat /var/log/sample.log | rg '" + pattern + "'"
+    ]) assert.deepEqual(terminal.run(command), {stdout: expected, stderr: '', code: 0}, command);
+  }
+  assert.deepEqual(terminal.run("echo 123 | rg '\\d+'"), {stdout: '123\n', stderr: '', code: 0});
+  assert.deepEqual(terminal.run("echo '\\d' | rg -F '\\d'"), {stdout: '\\d\n', stderr: '', code: 0});
+  assert.deepEqual(terminal.run("echo '\\d' | grep -F '\\d'"), {stdout: '\\d\n', stderr: '', code: 0});
 });
 
 test('simulated sudo cannot bypass the immutable source boundary or alter the next command identity', () => {
