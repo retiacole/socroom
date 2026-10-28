@@ -1,4 +1,4 @@
-# SOCroom v0.8.0 implementation contract
+# SOCroom v0.8.1 implementation contract
 
 The product is one offline HTML. Runtime: vanilla JavaScript, embedded CSS and data, no network/API/framework. Source modules are UMD/CommonJS for tests. User-facing language is Japanese. Build with `node build.js`; develop and test with Node.js 22 or later. The bundled file must not request external CSS, fonts, scripts or data; retain `connect-src 'none'`.
 

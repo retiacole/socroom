@@ -135,7 +135,7 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
     if(value!=='ja'&&value!=='en')return false;
     try{root.localStorage.setItem(KEY,value);return root.localStorage.getItem(KEY)===value;}catch(_){return false;}
   }
-  function menu(){return `<label class="language-menu"><span>${locale==='ja'?'言語':'Language'}</span><select data-language aria-label="${locale==='ja'?'表示言語':'Display language'}"><option value="ja" ${locale==='ja'?'selected':''}>日本語</option><option value="en" ${locale==='en'?'selected':''}>English</option></select></label>`;}
+  function menu(){return `<label class="language-menu"><span>Language</span><select data-language aria-label="Language"><option value="ja" ${locale==='ja'?'selected':''}>日本語</option><option value="en" ${locale==='en'?'selected':''}>English</option></select></label>`;}
   function initPage(){
     if(!root.document)return;
     root.document.documentElement.lang=locale;
@@ -152,7 +152,7 @@ dialog{background:#131e29;color:var(--text);border:1px solid #425462;border-radi
   "use strict";
   const data = {
   "version": "socroom-3",
-  "releaseVersion": "0.8.0",
+  "releaseVersion": "0.8.1",
   "company": {
     "name": "青凪システムズ",
     "description": "架空の企業のSOCで、監視・調査・初動の引き継ぎを担当します。2026年10月20日の記録を使った演習です。ログ・資料・担当者の回答の時刻はすべてUTC。人物・組織・通信先は教材用の合成データで、アプリは外部へ通信しません。"
@@ -35483,7 +35483,7 @@ SOFTWARE.
   return Object.freeze({ CASE_IDS, create, currentCase, stepComplete, mark, normalize, finish, advance, resumeArchived, hydrate });
 }));
 </script>
-<script>/* SOCroom v0.8.0 — offline analyst workbench */
+<script>/* SOCroom v0.8.1 — offline analyst workbench */
 (() => {
   'use strict';
   const D = globalThis.SOC_DATA, E = globalThis.SocEngine, T = globalThis.SocTutorial, B = globalThis.SocBridge;

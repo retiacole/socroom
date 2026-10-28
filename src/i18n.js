@@ -27,7 +27,7 @@
     if(value!=='ja'&&value!=='en')return false;
     try{root.localStorage.setItem(KEY,value);return root.localStorage.getItem(KEY)===value;}catch(_){return false;}
   }
-  function menu(){return `<label class="language-menu"><span>${locale==='ja'?'言語':'Language'}</span><select data-language aria-label="${locale==='ja'?'表示言語':'Display language'}"><option value="ja" ${locale==='ja'?'selected':''}>日本語</option><option value="en" ${locale==='en'?'selected':''}>English</option></select></label>`;}
+  function menu(){return `<label class="language-menu"><span>Language</span><select data-language aria-label="Language"><option value="ja" ${locale==='ja'?'selected':''}>日本語</option><option value="en" ${locale==='en'?'selected':''}>English</option></select></label>`;}
   function initPage(){
     if(!root.document)return;
     root.document.documentElement.lang=locale;
