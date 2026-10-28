@@ -1,4 +1,4 @@
-/* SOCroom v0.8.0 — offline analyst workbench */
+/* SOCroom v0.8.1 — offline analyst workbench */
 (() => {
   'use strict';
   const D = globalThis.SOC_DATA, E = globalThis.SocEngine, T = globalThis.SocTutorial, B = globalThis.SocBridge;

@@ -31,7 +31,9 @@ function page(t,language,saved){
 test('Japanese and English home screens and manual language preferences select the matching content',t=>{
   for(const [browser,saved,expected] of [['ja-JP',undefined,'ja'],['en-US',undefined,'en'],['th-TH',undefined,'en'],['en-US','ja','ja'],['ja-JP','en','en']]){
     const h=page(t,browser,saved);assert.equal(h.document.documentElement.lang,expected);assert.equal(h.document.querySelector('[data-language]').value,expected);
-    assert.equal(h.window.SOC_DATA.cases.length,22);assert.ok(h.document.querySelector('.release-version').textContent.includes('0.8.0'));
+    assert.equal(h.document.querySelector('.language-menu > span').textContent,'Language');
+    assert.equal(h.document.querySelector('[data-language]').getAttribute('aria-label'),'Language');
+    assert.equal(h.window.SOC_DATA.cases.length,22);assert.ok(h.document.querySelector('.release-version').textContent.includes(require('../package.json').version));
     assert.equal(/[ぁ-んァ-ヶ一-龠]/.test(h.document.querySelector('h1').textContent),expected==='ja');
     assert.equal(h.storage.get('socroom.language.v1'),saved,'initial render must not store an automatic choice');
   }

@@ -2,7 +2,7 @@
   <img src="docs/images/socroom-banner.png" width="960" alt="山並みと街を見守るSOCroomのキャラクターを描いたピクセルアート">
 </p>
 
-# SOCroom v0.8.0
+# SOCroom v0.8.1
 
 [すぐにやってみる / Play Now](https://retiacole.github.io/socroom/) · [オフライン用HTML / Offline HTML](https://github.com/retiacole/socroom/blob/main/socroom.html)
 
@@ -14,6 +14,10 @@
 ブラウザだけで、SOCアナリストの一次対応を体験する演習室です。操作チュートリアル専用1問、ガイド付き実務演習6問（最後に端末隔離を実施）、低・中・高それぞれ異なる5問、合計22問を収録しています。難易度を変えると、調査する問題そのものが変わります。仮想シェルは [Logroom](https://github.com/retiacole/logroom) のMITライセンスの実装を基にしています。
 
 <br clear="right">
+
+## v0.8.1の変更
+
+- 言語選択欄のラベルを、日本語・英語のどちらでも「Language」に統一しました。
 
 ## v0.8.0の変更
 
