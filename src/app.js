@@ -1,10 +1,10 @@
-/* SOCroom v0.7.0 — offline analyst workbench */
+/* SOCroom v0.8.0 — offline analyst workbench */
 (() => {
   'use strict';
   const D = globalThis.SOC_DATA, E = globalThis.SocEngine, T = globalThis.SocTutorial, B = globalThis.SocBridge;
   const $ = id => document.getElementById(id);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const labels = E.LABELS;
+  const labels = E.LABELS, I = globalThis.SocI18n;
   const paths = {search:'M21 21l-5-5 M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0',logs:'M5 3h14v18H5z M8 7h8 M8 11h8 M8 15h5',folder:'M3 6h6l2 2h10v12H3z M3 6V4h6l2 2',clock:'M12 8v5l3 2 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',terminal:'M4 7l5 5-5 5 M12 17h7',message:'M3 4h18v13H8l-5 4z M7 8h10 M7 12h6',plus:'M12 5v14 M5 12h14',check:'M5 12l4 4L19 6',close:'M6 6l12 12 M18 6L6 18',play:'M8 4l12 8-12 8z',pause:'M8 5v14 M16 5v14',save:'M12 3v12 M7 10l5 5 5-5 M4 17v4h16v-4',upload:'M12 16V4 M7 9l5-5 5 5 M4 17v4h16v-4',arrow:'M4 12h16 M14 6l6 6-6 6',help:'M9 8a3 3 0 0 1 6 0c0 2-3 2-3 5 M12 17v.1 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',home:'M3 10l9-7 9 7 M5 9v12h14V9 M9 21v-8h6v8',shield:'M12 3l8 3v7c0 5-8 9-8 9S4 18 4 13V6z M8 12l3 3 5-6',flag:'M5 22V3 M5 3h14l-3 5 3 5H5',refresh:'M20 7V2 M20 7h-5 M20 7a9 9 0 1 0 1 8',link:'M10 14l4-4 M8 16l-2 2a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0 M16 8l2-2a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0'};
   const icon = name => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name] || paths.logs}"/></svg>`;
   const fmt = seconds => {const n = Math.max(0,Math.floor(Number(seconds)||0));return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;};
@@ -206,7 +206,7 @@
     if(!B.advance(bridge)){exitBridge();home={scenarioId:'low',difficulty:'low',individual:'',untimed:false};render();notify('6件の実務演習が完了しました。次は難易度「低」で調査をつなげてみましょう。');return;}
     session=B.resumeArchived(bridge)||E.createSession('bridge','low',B.currentCase(bridge).id);if(session.phase==='paused')E.resume(session);terminal=null;const archivedWorkspace=bridge.reviewWorkspaces?.[session.selectedCaseId];if(archivedWorkspace){terminal=globalThis.SocTerminal.create({});terminal.setWorkspace(archivedWorkspace);delete bridge.reviewWorkspaces[session.selectedCaseId];}ui=freshUI();screen='work';prepareBridgeStep();syncTerminal();lastTick=performance.now();lastSave=0;save(true);render();checkOutcome();
   }
-  function topbar(inSession=false){return `<header class="topbar"><a href="#" class="brand" data-action="home"><span class="brand-symbol">s_</span><span>SOC<em>room</em></span><small class="release-version">v${esc(D.releaseVersion)}</small></a><div class="top-actions"><span class="local"><i class="dot"></i>LOCAL ONLY</span>${inSession?`<button class="btn ghost compact" data-action="export">${icon('save')}保存</button>`:''}<button class="btn ghost compact" data-action="import">${icon('upload')}読込</button><button class="btn ghost compact" data-action="guide">${icon('help')}進め方</button></div></header>`;}
+  function topbar(inSession=false){return `<header class="topbar"><a href="#" class="brand" data-action="home"><span class="brand-symbol">s_</span><span>SOC<em>room</em></span><small class="release-version">v${esc(D.releaseVersion)}</small></a><div class="top-actions">${!inSession&&I?I.menu():''}<span class="local"><i class="dot"></i>LOCAL ONLY</span>${inSession?`<button class="btn ghost compact" data-action="export">${icon('save')}保存</button>`:''}<button class="btn ghost compact" data-action="import">${icon('upload')}読込</button><button class="btn ghost compact" data-action="guide">${icon('help')}進め方</button></div></header>`;}
   function modeTiming(sc,selection,untimed){
     if(!selection)return {low:'制限なし · 1件ずつ到着',medium:'各20分 · 5件同時に到着',high:'各15分 · 45秒ごとに到着'}[sc.difficulty];
     const unlimited=sc.difficulty==='low'||untimed;
@@ -382,6 +382,14 @@
         modal('保存した勤務へ切り替え',`<p>読み込む${nextBridge?'ガイド付き実務演習':nextGuide?'チュートリアル':'勤務'}：${esc(D.scenarios.find(s=>s.id===next.scenarioId)?.title)} · 難易度 ${labels[next.difficulty]} · ${fmt(next.elapsed)} 経過</p><p>${nextBridge?'現在のガイド付き実務演習':nextGuide?'現在のチュートリアル':'現在の通常勤務'}を置き換えます。必要なら先に保存してください。${(tutorial||bridge)&&!nextGuide&&!nextBridge?'練習の進捗は別に保存されます。':''}</p>`,`<button class="btn" data-action="export-before-import">置き換え前の進捗を保存</button><button class="btn ghost" data-action="close-dialog">戻る</button><button class="btn primary" data-action="import-confirmed">読み込む</button>`,true);
       }else apply();
     }catch(error){notify('読み込めませんでした：'+error.message,true);}
+  });
+  document.addEventListener('change',event=>{
+    if(!event.target.matches('[data-language]')||!I)return;
+    const value=event.target.value;if(value===I.locale)return;
+    save(true);
+    if(session&&!storageOK){event.target.value=I.locale;notify('進捗を保存できないため言語を変更しませんでした。先に保存ファイルを書き出してください。',true);return;}
+    if(!I.persist(value)){event.target.value=I.locale;notify(I.locale==='ja'?'言語を保存できません。ブラウザの保存設定を確認してください。':'Unable to save the language. Check your browser storage settings.',true);return;}
+    location.reload();
   });
   document.addEventListener('keydown',event=>{if(event.key==='/'&&screen==='work'&&!$('dialog').open&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){event.preventDefault();ui.tab='logs';render();$('log-search')?.focus();}});
   function updateTimers(){if(screen!=='work'||!session)return;if($('shift-clock'))$('shift-clock').textContent=fmt(session.elapsed);document.querySelectorAll('[data-deadline]').forEach(el=>{const r=session.records[el.dataset.deadline],left=remaining(el.dataset.deadline);el.textContent=deadlineText(el.dataset.deadline);el.classList.toggle('urgent',left!==null&&left<120&&r.status!=='resolved');});document.querySelectorAll('[data-reply-countdown]').forEach(el=>{const q=E.getContactQuestions(selected().id).find(x=>x.id===el.dataset.replyCountdown),at=record().contactRequests?.[q.id];el.textContent=fmt(at+q.delaySeconds*E.DIFFICULTIES[session.difficulty].replyMultiplier-session.elapsed);});}

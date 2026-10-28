@@ -4,7 +4,7 @@
   "use strict";
   const data = {
   "version": "socroom-3",
-  "releaseVersion": "0.7.0",
+  "releaseVersion": "0.8.0",
   "company": {
     "name": "青凪システムズ",
     "description": "架空の企業のSOCで、監視・調査・初動の引き継ぎを担当します。2026年10月20日の記録を使った演習です。ログ・資料・担当者の回答の時刻はすべてUTC。人物・組織・通信先は教材用の合成データで、アプリは外部へ通信しません。"

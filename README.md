@@ -2,7 +2,7 @@
   <img src="docs/images/socroom-banner.png" width="960" alt="山並みと街を見守るSOCroomのキャラクターを描いたピクセルアート">
 </p>
 
-# SOCroom v0.7.0
+# SOCroom v0.8.0
 
 [すぐにやってみる / Play Now](https://retiacole.github.io/socroom/) · [オフライン用HTML / Offline HTML](https://github.com/retiacole/socroom/blob/main/socroom.html)
 
@@ -14,6 +14,14 @@
 ブラウザだけで、SOCアナリストの一次対応を体験する演習室です。操作チュートリアル専用1問、ガイド付き実務演習6問（最後に端末隔離を実施）、低・中・高それぞれ異なる5問、合計22問を収録しています。難易度を変えると、調査する問題そのものが変わります。仮想シェルは [Logroom](https://github.com/retiacole/logroom) のMITライセンスの実装を基にしています。
 
 <br clear="right">
+
+## v0.8.0の変更
+
+- ブラウザの最優先言語が日本語なら日本語、それ以外は英語で開始します。ホームの言語メニューで選び直した場合は、その選択を優先します。変更時はホームを再読込し、通常勤務・チュートリアル・実務演習の保存済み進捗を保持します。
+- 全22問の問題文・資料・照会・ヒント・解説、操作チュートリアル、画面と報告の英語表示を追加しました。英語の引継ぎ先も記録できます。
+- 生ログは両言語で同じ原文を表示します。証拠ID・時刻・採点条件・保存形式は共通で、手入力の報告文や作業ファイルを翻訳・上書きしません。
+
+The initial display follows your preferred browser language: Japanese for Japanese browsers, English otherwise. Choose 日本語 or English on the home screen to save a preference. All 22 cases, instructions, reference records, hints and explanations support English. Original raw logs and your own reports remain unchanged; progress is shared between languages.
 
 ## v0.7.0の変更
 

@@ -237,7 +237,7 @@
     anchors.push(...(caseText.match(/\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/g) || []).filter(item => /\d/.test(item)));
     const summary = draft.summary.trim().toLowerCase();
     const summaryAnchored = anchors.some(item => typeof item === 'string' && item.length > 1 && summary.includes(item.toLowerCase())) || /(?:^|[^\d])(?:[01]?\d|2[0-3]):[0-5]\d(?:[^\d]|$)/.test(summary);
-    const recipientPresent = /担当|責任者|管理者|管理部|管理チーム|運用チーム|セキュリティチーム|SOC|CSIRT|情シス|情報システム|データ所有者|利用者|実施者|承認者|窓口/i.test(draft.nextStep);
+    const recipientPresent = /担当|責任者|管理者|管理部|管理チーム|運用チーム|セキュリティチーム|情シス|情報システム|データ所有者|利用者|実施者|承認者|窓口|\b(?:owner|manager|administrator|admin|teams?|operator|approver|user|helpdesk|service desk|SOC|CSIRT|IR)\b/i.test(draft.nextStep) || /\bIT\b/.test(draft.nextStep);
     const limit = evidenceLimit(caseId);
     const checks = [
       { id: 'verdict', label: '判定', passed: draft.verdict === answer.verdict, detail: '確認できた事実と判定が一致しているか' },

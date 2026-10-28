@@ -1,4 +1,4 @@
-# SOCroom v0.7.0 implementation contract
+# SOCroom v0.8.0 implementation contract
 
 The product is one offline HTML. Runtime: vanilla JavaScript, embedded CSS and data, no network/API/framework. Source modules are UMD/CommonJS for tests. User-facing language is Japanese. Build with `node build.js`; develop and test with Node.js 22 or later. The bundled file must not request external CSS, fonts, scripts or data; retain `connect-src 'none'`.
 
@@ -99,3 +99,9 @@ Use node:test and jsdom 26.1.0. Cover all 22 cases, preserve the exact fifteen n
 An initially untimed practice has no deadline or late score penalty, while inquiry delays and log publication remain unchanged. It cannot carry a failure history. Its export labels it separately from timed completion and post-failure review. Timed pair practice retains the medium 20-minute deadline. Normal five-case shifts and old saved sessions retain their timing.
 
 The topmost brand shows the release version. Completion offers an optional external recommendation to ThreatHunting-room; same-room continuation remains available. No inter-room import or prerequisites are introduced.
+
+## Browser language and English content
+
+The first nonempty entry in `navigator.languages`, falling back to `navigator.language`, selects Japanese for `ja` / `ja-*` and English otherwise. A valid explicit `socroom.language.v1` preference overrides this; automatic detection never persists a choice. The home language menu stores the preference and reloads without changing the separate progress stores. Storage failure leaves the current page intact.
+
+Build-time AST localization wraps Japanese string literals and template segments in the UI, engine, terminal and tutorial modules. Exact dictionaries cover case content and instructions; missing translations fail the build. Only bundled learning content is localized. Raw evidence bytes, IDs, answers, times, user reports and workspace files remain unchanged. English role names are recognized by the existing recipient-presence check, which still does not judge prose semantics. An offline build embeds all dictionaries and makes no translation-service request.
