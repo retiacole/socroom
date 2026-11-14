@@ -299,9 +299,9 @@
     }
     if(focus&&!focus.disabled){focus.focus({preventScroll:true});if(selection&&typeof focus.setSelectionRange==='function')try{focus.setSelectionRange(...selection);}catch(error){}}
     highlightTutorial();highlightBridge();
-    if(transition)window.scrollTo(0,0);
+    if(transition){window.scrollTo(0,0);const heading=$('app').querySelector('h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}}
   }
-  function modal(title,body,actions='',autoResume=false){resumeAfterModal=autoResume&&running();if(running()){E.pause(session);save();render();}if($('dialog').open)$('dialog').close();$('dialog').innerHTML=`<div class="modal-head"><h2 id="dialog-title">${esc(title)}</h2><button class="icon-btn" data-action="close-dialog" aria-label="閉じる">${icon('close')}</button></div><div class="modal-body">${body}</div><div class="modal-actions">${actions||'<button class="btn primary" data-action="close-dialog">調査に戻る</button>'}</div>`;$('dialog').showModal();lastTick=performance.now();highlightTutorial();highlightBridge();}
+  function modal(title,body,actions='',autoResume=false){resumeAfterModal=autoResume&&running();if(running()){E.pause(session);save();render();}if($('dialog').open)$('dialog').close();$('dialog').innerHTML=`<div class="modal-head"><h2 id="dialog-title">${esc(title)}</h2><button class="icon-btn" data-action="close-dialog" aria-label="閉じる">${icon('close')}</button></div><div class="modal-body" tabindex="0">${body}</div><div class="modal-actions">${actions||'<button class="btn primary" data-action="close-dialog">調査に戻る</button>'}</div>`;$('dialog').showModal();lastTick=performance.now();highlightTutorial();highlightBridge();}
   function closeModal(resume=true){
     const should=resume&&resumeAfterModal,contextRead=tutorialContextOpen&&resume,bridgeRead=bridgeContextOpen&&resume;resumeAfterModal=false;
     if($('dialog').open)$('dialog').close();if(should&&session?.phase==='paused')E.resume(session);
