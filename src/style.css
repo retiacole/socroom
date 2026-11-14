@@ -72,3 +72,9 @@ dialog::backdrop { overflow:hidden; overscroll-behavior:contain; }
     min-block-size:2.75rem; min-inline-size:2.75rem;
   }
 }
+
+@media (max-width:600px) {
+  .shiftbar { flex-wrap:wrap; }
+  .shiftbar .clock-group { flex:1 0 100%; justify-content:space-between; }
+  .clock-group .btn { flex-shrink:0; white-space:nowrap; }
+}
