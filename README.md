@@ -2,6 +2,12 @@
   <img src="docs/images/socroom-banner.png" width="960" alt="山並みと街を見守るSOCroomのキャラクターを描いたピクセルアート">
 </p>
 
+<p align="center">
+  <a href="https://github.com/retiacole#blue-series"><img src="docs/images/blue-series.svg" width="960" alt="BLUE SERIES — 守るための基礎・検知・調査 / Foundations, detection and investigation"></a>
+</p>
+
+**BLUEシリーズ：守るための基礎・検知・調査。** [シリーズ一覧](https://github.com/retiacole#blue-series) · 弱点と影響の検証を学ぶ別のコース：[REDシリーズ・pentestroom](https://github.com/retiacole/pentestroom)。
+
 # SOCroom v0.8.1
 
 [すぐにやってみる / Play Now](https://retiacole.github.io/socroom/) · [オフライン用HTML / Offline HTML](https://github.com/retiacole/socroom/blob/main/socroom.html)

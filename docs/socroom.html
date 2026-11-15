@@ -111,6 +111,11 @@ dialog::backdrop { overflow:hidden; overscroll-behavior:contain; }
   .shiftbar .clock-group { flex:1 0 100%; justify-content:space-between; }
   .clock-group .btn { flex-shrink:0; white-space:nowrap; }
 }
+
+/* Shared room-series identity; course content and status colors keep their meanings. */
+.brand .room-series-label{display:block;font:700 .75rem/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.08em;color:#93c5fd;text-align:left;white-space:normal}
+.brand .brand-symbol{background:#102e50;color:#dbeafe;border-color:#3b82f6}
+.topbar{background:#0e233b;box-shadow:inset 0 -2px 0 #3b82f6}
 </style>
 </head>
 <body>
@@ -35708,7 +35713,7 @@ SOFTWARE.
     if(!B.advance(bridge)){exitBridge();home={scenarioId:'low',difficulty:'low',individual:'',untimed:false};render();notify(globalThis.SocI18n.t("6件の実務演習が完了しました。次は難易度「低」で調査をつなげてみましょう。"));return;}
     session=B.resumeArchived(bridge)||E.createSession('bridge','low',B.currentCase(bridge).id);if(session.phase==='paused')E.resume(session);terminal=null;const archivedWorkspace=bridge.reviewWorkspaces?.[session.selectedCaseId];if(archivedWorkspace){terminal=globalThis.SocTerminal.create({});terminal.setWorkspace(archivedWorkspace);delete bridge.reviewWorkspaces[session.selectedCaseId];}ui=freshUI();screen='work';prepareBridgeStep();syncTerminal();lastTick=performance.now();lastSave=0;save(true);render();checkOutcome();
   }
-  function topbar(inSession=false){return `<header class="topbar"><a href="#" class="brand" data-action="home"><span class="brand-symbol">s_</span><span>SOC<em>room</em></span><small class="release-version">v${esc(D.releaseVersion)}</small></a><div class="top-actions">${!inSession&&I?I.menu():''}<span class="local"><i class="dot"></i>LOCAL ONLY</span>${inSession?`<button class="btn ghost compact" data-action="export">${icon('save')}${globalThis.SocI18n.t("保存</button>")}`:''}<button class="btn ghost compact" data-action="import">${icon('upload')}${globalThis.SocI18n.t("読込</button><button class=\"btn ghost compact\" data-action=\"guide\">")}${icon('help')}${globalThis.SocI18n.t("進め方</button></div></header>")}`;}
+  function topbar(inSession=false){return `<header class="topbar"><a href="#" class="brand" data-action="home"><span class="brand-symbol">s_</span><span>SOC<em>room</em><span class="room-series-label">BLUE SERIES</span></span><small class="release-version">v${esc(D.releaseVersion)}</small></a><div class="top-actions">${!inSession&&I?I.menu():''}<span class="local"><i class="dot"></i>LOCAL ONLY</span>${inSession?`<button class="btn ghost compact" data-action="export">${icon('save')}${globalThis.SocI18n.t("保存</button>")}`:''}<button class="btn ghost compact" data-action="import">${icon('upload')}${globalThis.SocI18n.t("読込</button><button class=\"btn ghost compact\" data-action=\"guide\">")}${icon('help')}${globalThis.SocI18n.t("進め方</button></div></header>")}`;}
   function modeTiming(sc,selection,untimed){
     if(!selection)return {low:globalThis.SocI18n.t("制限なし · 1件ずつ到着"),medium:globalThis.SocI18n.t("各20分 · 5件同時に到着"),high:globalThis.SocI18n.t("各15分 · 45秒ごとに到着")}[sc.difficulty];
     const unlimited=sc.difficulty==='low'||untimed;
