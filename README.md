@@ -10,7 +10,7 @@
 
 # SOCroom v0.8.1
 
-[すぐにやってみる / Play Now](https://retiacole.github.io/socroom/) · [オフライン用HTML / Offline HTML](https://github.com/retiacole/socroom/blob/main/socroom.html)
+[すぐにやってみる / Play Now](https://retiacole.github.io/socroom/) · [オフライン用HTML / Offline HTML](https://github.com/retiacole/socroom/blob/main/socroom.html) · [質問・不具合を報告する](https://github.com/retiacole/socroom/issues/new/choose) / [Ask a question or report a problem](https://github.com/retiacole/socroom/issues/new/choose)
 
 <img src="docs/images/socroom-character.png" align="right" width="120" alt="青い盾と剣を持つSOCroomのキャラクター">
 
@@ -200,6 +200,14 @@ v0.3では問題構成を変更したため、v0.2 とは別の保存領域を�
 - **報告を書き出す**：勤務完了またはゲームオーバーの画面から、証拠と記録をテキストで保存します。
 
 自動保存にはlocalStorageを使いますが、ローカルHTMLの保存挙動はブラウザや設定に依存します。重要な進捗はJSONファイルに保存してください。ブラウザデータの消去やファイルの移動では自動保存が引き継がれない場合があります。保存ファイルのバージョン・ケース・証拠・時刻は読み込み時に検証します。
+
+## 質問・不具合の報告 / Questions and problems
+
+[質問・不具合を報告する](https://github.com/retiacole/socroom/issues/new/choose) / [Ask a question or report a problem](https://github.com/retiacole/socroom/issues/new/choose)
+
+分かりにくかった点や改善提案も、日本語・英語で受け付けています。投稿にはGitHubアカウントが必要です。内容は公開されるため、社内情報・個人情報は含めず、教材のデータで説明してください。
+
+Questions, unclear instructions, and suggestions are welcome in Japanese or English. A GitHub account is required to post. Posts are public: use the course's sample data and leave out company or personal information.
 
 ## 開発
 
